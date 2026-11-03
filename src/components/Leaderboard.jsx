@@ -11,8 +11,6 @@ const PERIODS = [
   { key: 'custom', label: '직접 설정' },
 ]
 
-const MEDALS = ['🥇', '🥈', '🥉']
-
 export default function Leaderboard({ members, myId, myName, records }) {
   const [period, setPeriod] = useState('week')
   const [cs, setCs] = useState('')
@@ -57,7 +55,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <CardTitle>리더보드 🏆</CardTitle>
+        <CardTitle>리더보드</CardTitle>
         <span className="text-2xs text-dim">
           {startKey.slice(5).replace('-', '.')} ~ {endKey.slice(5).replace('-', '.')}
         </span>
@@ -108,8 +106,8 @@ export default function Leaderboard({ members, myId, myName, records }) {
               const medal = r.rank <= 3 && r.count > 0
               return (
                 <div key={r.id} className="flex items-center gap-2.5 border-b border-line py-3 last:border-b-0">
-                  <span className={cx('w-6.5 flex-none text-center font-extrabold text-dim', medal ? 'text-lg' : 'text-sm')}>
-                    {medal ? MEDALS[r.rank - 1] : r.rank}
+                  <span className={cx('w-6.5 flex-none text-center font-extrabold', medal ? 'text-lg text-brand' : 'text-sm text-dim')}>
+                    {r.rank}
                   </span>
                   <MemberAvatar name={r.name} avatar={r.avatar} active={r.rank === 1 && r.count > 0} />
                   <div className="min-w-0 flex-1">

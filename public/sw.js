@@ -5,7 +5,7 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()))
 self.addEventListener('push', (event) => {
   let data = {}
   try { data = event.data ? event.data.json() : {} } catch { /* noop */ }
-  const title = data.title || 'Absolid 💪'
+  const title = data.title || 'Absolid'
   const options = {
     body: data.body || '오늘 아직 운동 기록이 없어요. 복근 챙기러 가요!',
     icon: '/icon-192.png',

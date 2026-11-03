@@ -51,7 +51,7 @@ function MemberRow({ name, isMe, dates, avatar, cheer }) {
             onClick={cheer.onCheer}
             aria-label={`${name}님 응원하기`}
           >
-            {cheer.sent ? '✓ 응원함' : doneToday ? '👏 잘했어요' : '💪 힘내요'}
+            {cheer.sent ? '✓ 응원함' : doneToday ? '잘했어요' : '힘내요'}
             {cheer.count > 0 && <span className="ml-1 opacity-70">{cheer.count}</span>}
           </button>
         ))}
@@ -401,7 +401,7 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
       {loaded && <Leaderboard members={members} myId={myId} myName={myName} records={records} />}
 
       <Card>
-        <CardTitle>오늘의 인증샷 📷</CardTitle>
+        <CardTitle>오늘의 인증샷</CardTitle>
         {todayPhotos.length ? (
           <div className="mt-3.5 grid max-h-87 grid-cols-3 gap-2 overflow-y-auto overscroll-contain">
             {todayPhotos.map(p => (

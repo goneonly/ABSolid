@@ -167,7 +167,7 @@ export default function Workout({ onDone, session }) {
       <Card>
         <CardTitle>오늘의 루틴</CardTitle>
         <Sub className="mt-1.5">
-          중간에 나가면 완료로 기록되지 않아요. 끝까지 함께해요! 💪
+          중간에 나가면 완료로 기록되지 않아요. 끝까지 함께해요!
         </Sub>
       </Card>
 

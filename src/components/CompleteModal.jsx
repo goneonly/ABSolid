@@ -14,14 +14,14 @@ export default function CompleteModal({ day, busy, onSave, onSkip }) {
 
   return (
     <Modal>
-      <ModalTitle>🎉 Day {day} 운동 완료!</ModalTitle>
+      <ModalTitle>Day {day} 운동 완료!</ModalTitle>
       <ModalText>오늘의 인증샷을 남겨볼까요? (선택)</ModalText>
 
       <button
         className="mt-4.5 flex min-h-50 w-full items-center justify-center overflow-hidden rounded-lg border-[1.5px] border-dashed border-line bg-surface-2 text-center text-lg font-semibold text-dim"
         onClick={() => fileRef.current?.click()}
       >
-        {photo ? <img className="block w-full" src={photo} alt="인증샷 미리보기" /> : '📷 탭하여 사진 첨부'}
+        {photo ? <img className="block w-full" src={photo} alt="인증샷 미리보기" /> : '탭하여 사진 첨부'}
       </button>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
 

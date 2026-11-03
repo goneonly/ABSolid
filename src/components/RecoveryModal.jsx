@@ -34,7 +34,7 @@ export default function RecoveryModal({ onClose }) {
 
   return (
     <Modal label="새 비밀번호 설정">
-      <ModalTitle>새 비밀번호 설정 🔑</ModalTitle>
+      <ModalTitle>새 비밀번호 설정</ModalTitle>
       <ModalText>안전한 새 비밀번호를 입력해 주세요. (6자 이상, 영문+숫자)</ModalText>
       <Field
         id="rec-pw"

@@ -262,7 +262,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
 
       {askExport && (
         <Modal label="기록 내보내기" onBackdrop={() => setAskExport(false)}>
-          <ModalTitle>기록 내보내기 📄</ModalTitle>
+          <ModalTitle>기록 내보내기</ModalTitle>
           <ModalText>CSV를 다운로드 받겠습니까?</ModalText>
           <Button
             className="mt-4.5"
@@ -281,7 +281,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
 
       {askResetPw && (
         <Modal label="비밀번호 확인">
-          <ModalTitle>비밀번호 확인 🔒</ModalTitle>
+          <ModalTitle>비밀번호 확인</ModalTitle>
           <ModalText>
             운동 기록 초기화는 되돌릴 수 없어요. 본인 확인을 위해 비밀번호를
             입력해 주세요.
@@ -505,7 +505,7 @@ function PushToggleRow({ session, onNeedInstall }) {
       } else {
         await enablePush();
         setEnabled(true);
-        toast("운동 안 한 날 저녁 리마인더와 응원 알림을 보내드릴게요 🔔");
+        toast("운동 안 한 날 저녁 리마인더와 응원 알림을 보내드릴게요.");
       }
     } catch (e) {
       toast(e.message || "알림 설정에 실패했어요.");
@@ -516,7 +516,7 @@ function PushToggleRow({ session, onNeedInstall }) {
   return (
     <RowButton
       disabled={busy}
-      hint={busy ? "처리 중…" : enabled ? "켜짐 🔔" : "꺼짐 🔕"}
+      hint={busy ? "처리 중…" : enabled ? "켜짐" : "꺼짐"}
       onClick={toggle}
     >
       알림 (리마인더·응원)
@@ -555,7 +555,7 @@ function DeleteAccountModal({ email, onClose }) {
 
   return (
     <Modal label="회원 탈퇴" onBackdrop={onClose}>
-      <ModalTitle>회원 탈퇴 😢</ModalTitle>
+      <ModalTitle>회원 탈퇴</ModalTitle>
       <ModalText>
         탈퇴하면 계정과 운동 기록·인증샷·그룹 정보가 <strong>모두 영구 삭제</strong>
         되며 되돌릴 수 없어요. 계속하려면 비밀번호를 입력해 주세요.
@@ -592,7 +592,7 @@ function GuestNotice() {
   const count = Object.values(getRecords()).filter((r) => r?.completed).length;
   return (
     <Banner className="mt-4 mb-0">
-      ⚠️ {count > 0 ? `운동 기록 ${count}개가 이 기기에만 저장돼 있어요.` : "비회원 기록은 이 기기에만 저장돼요."}
+      {count > 0 ? `운동 기록 ${count}개가 이 기기에만 저장돼 있어요.` : "비회원 기록은 이 기기에만 저장돼요."}
       <br />
       브라우저 데이터를 지우면 사라지고, 로그인해도 계정으로 옮겨지지 않아요. 로그인한 뒤의 운동부터 계정에 기록돼요.
     </Banner>
@@ -621,7 +621,7 @@ function NicknameModal({ session, initial, onSaved, onClose }) {
 
   return (
     <Modal label="닉네임 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>닉네임 변경 ✏️</ModalTitle>
+      <ModalTitle>닉네임 변경</ModalTitle>
       <ModalText>그룹에서 다른 멤버에게 보이는 이름이에요.</ModalText>
       <Field
         id="nick"
@@ -695,7 +695,7 @@ function ProfileInfoModal({ onClose }) {
 
   return (
     <Modal label="이름·전화번호 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>이름·전화번호 변경 📇</ModalTitle>
+      <ModalTitle>이름·전화번호 변경</ModalTitle>
       <ModalText>그룹 멤버에게는 보이지 않아요. '회원만 받기' 그룹에 참여하려면 둘 다 필요해요.</ModalText>
       {!loaded ? (
         <Sub className={cx("mt-4 text-center", loadError && "text-brand")}>{loadError || "불러오는 중…"}</Sub>
@@ -780,7 +780,7 @@ function ChangePasswordModal({ email, onClose }) {
 
   return (
     <Modal label="비밀번호 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>비밀번호 변경 🔑</ModalTitle>
+      <ModalTitle>비밀번호 변경</ModalTitle>
       <Field
         id="pw-current"
         label="현재 비밀번호"
@@ -840,7 +840,7 @@ function InstallGuideModal({ onClose }) {
     : ["Chrome 으로 이 사이트를 열어요.", "오른쪽 위 메뉴(⋮)를 눌러요.", "'앱 설치' 또는 '홈 화면에 추가'를 눌러요."];
   return (
     <Modal label="홈 화면에 앱 추가" onBackdrop={onClose}>
-      <ModalTitle>홈 화면에 앱 추가 📲</ModalTitle>
+      <ModalTitle>홈 화면에 앱 추가</ModalTitle>
       <ModalText>앱처럼 바로 실행할 수 있어요.</ModalText>
       <ol className="mt-4 space-y-2.5 rounded-md bg-surface-2 px-4 py-3.5 text-base">
         {steps.map((step, i) => (

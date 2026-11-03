@@ -12,19 +12,17 @@ export default function WeeklyReport({ records }) {
 
   const message =
     count === 0
-      ? "이번 주 첫 운동을 시작해 볼까요? 💪"
+      ? "이번 주 첫 운동을 시작해 볼까요?"
       : delta > 0
-        ? "지난주보다 더 활발해요! 이 기세 그대로 🔥"
+        ? "지난주보다 더 활발해요! 이 기세 그대로 가요."
         : delta < 0
           ? "지난주엔 더 열심이었어요. 오늘 한 번 어때요?"
-          : "지난주와 같은 페이스로 꾸준해요 👍";
+          : "지난주와 같은 페이스로 꾸준해요.";
 
   return (
     <Card>
-      <div className="flex items-center justify-between">
-        <CardTitle>주간 리포트</CardTitle>
-        <span className="text-2xs text-dim">이번 주 · {range}</span>
-      </div>
+      <CardTitle>주간 리포트</CardTitle>
+      <Sub className="mt-1 text-2xs">이번 주 · {range}</Sub>
 
       <div className="mt-3.5 grid grid-cols-3 gap-2">
         <Stat value={count} unit="회" label="이번 주 인증" />

@@ -127,7 +127,7 @@ function ReportsSection() {
       {!loaded ? (
         <Sub className="mt-1.5">불러오는 중…</Sub>
       ) : reports.length === 0 ? (
-        <Sub className="mt-1.5">미처리 신고가 없어요. 👍</Sub>
+        <Sub className="mt-1.5">미처리 신고가 없어요.</Sub>
       ) : (
         reports.map((r) => (
           <div className={ADMIN_ROW} key={r.id}>

@@ -39,10 +39,10 @@ export default function Home({ records, onStart, session }) {
 
   return (
     <Page>
-      {notice && <Banner>📢 {notice.message}</Banner>}
+      {notice && <Banner>{notice.message}</Banner>}
       {showReminder && (
         <Banner className="flex items-center justify-between gap-2.5" role="alert">
-          <span>⏰ 오늘 아직 운동 전이에요. 자기 전에 복근 챙겨요!</span>
+          <span>오늘 아직 운동 전이에요. 자기 전에 복근 챙겨요!</span>
           <span className="flex flex-none items-center gap-1">
             <button className="px-1.5 py-1 text-sm font-bold text-brand" onClick={onStart}>지금 시작</button>
             <button className="px-1.5 py-1 text-sm font-bold text-brand" aria-label="리마인더 닫기" onClick={dismissReminder}>✕</button>
@@ -50,7 +50,7 @@ export default function Home({ records, onStart, session }) {
         </Banner>
       )}
       {cheers.length > 0 && <CheersBanner cheers={cheers} />}
-      <PageTitle>오늘도 복근 챙기기 🔥</PageTitle>
+      <PageTitle>오늘도 복근 챙기기</PageTitle>
       <Sub>Day {day} 운동이 준비되어 있어요.</Sub>
 
       <Card className="px-5 py-8 text-center">
@@ -79,7 +79,7 @@ function CheersBanner({ cheers }) {
   const allDone = cheers.every((c) => c.kind === 'done')
   return (
     <Banner>
-      {allDone ? '👏' : '💪'} <strong>{shown}</strong>
+      <strong>{shown}</strong>
       {rest > 0 && ` 외 ${rest}명`}님이 오늘 응원을 보냈어요
       {allDone ? '!' : '. 오늘 운동하러 가볼까요?'}
     </Banner>

@@ -49,8 +49,8 @@ Deno.serve(async (req) => {
   const name = me?.nickname || '그룹 멤버'
   const where = group?.name ? `[${group.name}] ` : ''
   const body = cheer.kind === 'done'
-    ? `${where}${name}님이 오늘 운동을 응원했어요 👏`
-    : `${where}${name}님이 응원을 보냈어요 💪 오늘 운동하러 가볼까요?`
+    ? `${where}${name}님이 오늘 운동을 응원했어요.`
+    : `${where}${name}님이 응원을 보냈어요. 오늘 운동하러 가볼까요?`
 
   const result = await sendPushToUsers(admin, [cheer.to_user], {
     title: 'Absolid',

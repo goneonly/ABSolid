@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
   const targets = [...new Set((subs || []).map((s) => s.user_id))].filter((id) => !doneSet.has(id))
 
   const result = await sendPushToUsers(admin, targets, {
-    title: 'Absolid 💪',
+    title: 'Absolid',
     body: '오늘 아직 운동 기록이 없어요. 자기 전에 복근 챙겨요!',
     url: '/',
     tag: 'absolid-reminder',

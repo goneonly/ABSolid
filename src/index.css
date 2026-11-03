@@ -58,7 +58,8 @@
   html, body {
     @apply bg-bg font-sans text-md text-fg antialiased;
   }
-  #root { @apply mx-auto min-h-dvh max-w-120; }
+  /* 홈 화면 앱(standalone)은 viewport-fit=cover 로 상태표시줄 아래까지 그려짐 → 그만큼 띄움 (브라우저 탭에선 0) */
+  #root { @apply mx-auto min-h-dvh max-w-120 pt-[env(safe-area-inset-top)]; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
   input[type="date"] { color-scheme: dark; }
 }

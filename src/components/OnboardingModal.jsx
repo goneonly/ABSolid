@@ -55,7 +55,7 @@ export default function OnboardingModal({ onClose }) {
 
   return (
     <Modal label="Absolid 기능 소개">
-      <ModalTitle>환영해요! 🎉</ModalTitle>
+      <ModalTitle>환영해요!</ModalTitle>
       <ModalText>Absolid에서 이런 걸 할 수 있어요</ModalText>
 
       <div className="mt-4.5 rounded-lg border border-line bg-bg px-7 py-4.5 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">{slide.art}</div>
