@@ -37,9 +37,9 @@ export function formatPhone(raw) {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
 }
 
-// 비밀번호(가입): 6자 이상, 공백 금지, 영문+숫자 조합
+// 비밀번호(가입·변경): 8자 이상, 공백 금지, 영문+숫자 조합 (기존 6~7자 비밀번호도 로그인은 그대로 가능)
 export function validatePassword(pw) {
-  if (!pw || pw.length < 6) return '비밀번호는 6자 이상이어야 해요.'
+  if (!pw || pw.length < 8) return '비밀번호는 8자 이상이어야 해요.'
   if (pw.length > 72) return '비밀번호는 72자 이하로 입력해 주세요.'
   if (/\s/.test(pw)) return '비밀번호에는 공백을 쓸 수 없어요.'
   if (!/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return '비밀번호는 영문과 숫자를 함께 사용해 주세요.'

@@ -274,15 +274,17 @@ export async function fetchGroupStatus(groupId) {
   const since = new Date(); since.setDate(since.getDate() - 6)
   const sinceKey = todayKey(since)
   const todayStr = todayKey()
-  const [{ data: profs }, { data: works }] = await Promise.all([
+  const [{ data: profs }, { data: works }, blocked] = await Promise.all([
     supabase.rpc('get_group_profiles', { gid: groupId }),
     supabase.from('workouts').select('user_id, date, photo_url').in('user_id', ids).gte('date', sinceKey),
+    fetchBlockedIds(),
   ])
   const names = Object.fromEntries((profs || []).map(p => [p.id, p.nickname]))
   const avatars = Object.fromEntries((profs || []).map(p => [p.id, p.avatar_url || '']))
   const doneDates = {}
   const todayPhotoRows = []
   for (const w of works || []) {
+    if (blocked.has(w.user_id)) continue // 차단한 멤버의 기록·인증샷은 숨김
     (doneDates[w.user_id] ||= new Set()).add(w.date)
     if (w.date === todayStr && w.photo_url) todayPhotoRows.push(w)
   }
@@ -295,13 +297,45 @@ export async function fetchGroupStatus(groupId) {
       url: signed[photoObjectPath(w.photo_url)] || null,
     }))
     .filter(p => p.url)
-  const members = ids.map(id => ({
+  const members = ids.filter(id => !blocked.has(id)).map(id => ({
     id,
     name: names[id] || '이름 없음',
     avatar: avatars[id] || '',
     dates: doneDates[id] || new Set(),
   }))
-  return { members, photos }
+  return { members, photos, hiddenCount: ids.length - members.length }
+}
+
+// ── 사용자 차단 (v0.9 SQL) ───────────────────
+// 차단한 사람은 그룹 화면(멤버·리더보드·인증샷)과 받은 응원에서 숨기고, 서로 응원도 보낼 수 없음.
+// 상대에게는 차단 사실을 알리지 않음.
+const BLOCK_SQL_HINT = '차단 기능을 쓸 수 없어요. 잠시 후 다시 시도해 주세요.'
+
+// 내가 차단한 사용자 id → Set (비회원·SQL 미적용·오류 시 빈 Set → 아무도 숨기지 않음)
+export async function fetchBlockedIds() {
+  if (!(await uid())) return new Set()
+  const { data, error } = await supabase.from('user_blocks').select('blocked')
+  return error ? new Set() : new Set((data || []).map(r => r.blocked))
+}
+
+export async function blockUser(userId) {
+  if (!(await uid())) throw new Error('로그인이 필요해요.')
+  const { error } = await supabase.rpc('block_user', { p_target: userId })
+  if (error) throw new Error(error.code === 'P0001' ? error.message : BLOCK_SQL_HINT)
+}
+
+export async function unblockUser(userId) {
+  if (!(await uid())) throw new Error('로그인이 필요해요.')
+  const { error } = await supabase.rpc('unblock_user', { p_target: userId })
+  if (error) throw new Error(error.code === 'P0001' ? error.message : BLOCK_SQL_HINT)
+}
+
+// 설정 화면용 차단 목록 [{ id, nickname, created_at }]
+export async function fetchMyBlocks() {
+  if (!(await uid())) return []
+  const { data, error } = await supabase.rpc('my_blocks')
+  if (error) throw new Error(BLOCK_SQL_HINT)
+  return data || []
 }
 
 // ── 응원 (v0.8 SQL) ──────────────────────────

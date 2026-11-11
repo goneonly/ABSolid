@@ -50,12 +50,12 @@ describe('휴대폰 번호', () => {
 })
 
 describe('비밀번호', () => {
-  it.each(['abc123', 'Passw0rd!', 'a1'.repeat(36)])('통과: %s', (v) => {
+  it.each(['abcd1234', 'Passw0rd!', 'a1'.repeat(36)])('통과: %s', (v) => {
     expect(validatePassword(v)).toBe(ok)
   })
   it.each([
-    ['', '6자 이상'], ['ab12', '6자 이상'], ['a1'.repeat(36) + 'x', '72자 이하'],
-    ['abc 123', '공백'], ['abcdef', '영문과 숫자'], ['123456', '영문과 숫자'],
+    ['', '8자 이상'], ['ab12', '8자 이상'], ['abc1234', '8자 이상'], ['a1'.repeat(36) + 'x', '72자 이하'],
+    ['abcd 1234', '공백'], ['abcdefgh', '영문과 숫자'], ['12345678', '영문과 숫자'],
   ])('거부: %s', (v, msg) => {
     expect(validatePassword(v)).toContain(msg)
   })

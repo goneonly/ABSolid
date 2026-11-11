@@ -6,7 +6,8 @@ insert into public.profiles (id, nickname, full_name, phone) values
   (tests.uid('A'), '민준', '김민준', '010-1111-1111'),
   (tests.uid('B'), '서연', '이서연', '010-2222-2222'),
   (tests.uid('C'), '외부인', '', ''),
-  (tests.uid('M'), '관리자', '', '');
+  (tests.uid('M'), '관리자', '', '')
+on conflict (id) do update set nickname = excluded.nickname, full_name = excluded.full_name, phone = excluded.phone;
 update public.profiles set role = 'admin' where id = tests.uid('M'); -- SQL Editor 에서 관리자 지정
 
 -- A: 응원반(3명) · 회원반(2명, 회원만) 생성 / B: 응원반 참여

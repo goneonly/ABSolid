@@ -47,10 +47,11 @@ select tests.lives(format($$update public.profiles set avatar_url = 'https://x.s
   'B: 본인 폴더 사진 주소는 저장 가능');
 select tests.lives(format($$update public.profiles set avatar_url = null where id = %L$$, tests.uid('B')), 'B: 프로필 사진 삭제 가능');
 
--- ── 가입 직후 E: 관리자로 위장한 프로필 생성 ──
+-- ── 가입 직후 E: 관리자로 위장한 프로필 저장 (가입 트리거가 만든 행에 앱처럼 upsert) ──
 select tests.login('E');
-select tests.lives(format($$insert into public.profiles (id, nickname, role, is_active) values (%L, '신입', 'admin', false)$$, tests.uid('E')),
-  'E: 본인 프로필 생성 가능');
+select tests.lives(format($$insert into public.profiles (id, nickname, role, is_active) values (%L, '신입', 'admin', false)
+    on conflict (id) do update set nickname = excluded.nickname, role = excluded.role, is_active = excluded.is_active$$, tests.uid('E')),
+  'E: 본인 프로필 저장 가능');
 select tests.eq((select role || '/' || is_active from public.profiles where id = tests.uid('E')), 'user/true',
   'E: 가입 시 관리자·비활성 값은 무시되고 일반·활성으로 시작');
 select tests.eq((select age_over_14 from public.profiles where id = tests.uid('E')), false, 'E: 연령 확인 기본값은 미확인');

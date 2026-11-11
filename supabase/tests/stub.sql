@@ -18,6 +18,8 @@ create schema auth;
 create table auth.users (
   id uuid primary key,
   email text,
+  raw_user_meta_data jsonb,  -- 가입 요청의 options.data (앱이 보낸 이름·전화번호 등)
+  raw_app_meta_data jsonb,   -- 서버가 정하는 값 (provider: 'email' 등)
   created_at timestamptz not null default now()
 );
 -- 로그인한 사용자 id — Supabase 처럼 요청의 JWT sub 값을 읽음 (없으면 null = 비로그인·운영자)

@@ -3,7 +3,7 @@ import { todayKey, lastNDays, getProfile } from '../storage.js'
 import { supabase } from '../supabase.js'
 import {
   fetchMyGroups, createGroup, joinGroup, leaveGroup, fetchGroupStatus,
-  uploadGroupPhoto, removeGroupPhoto, sendCheer, notifyCheer, fetchTodayCheers,
+  uploadGroupPhoto, removeGroupPhoto, sendCheer, notifyCheer, fetchTodayCheers, blockUser,
 } from '../api.js'
 import { submitReport } from '../admin.js'
 import { toast } from '../toast.js'
@@ -18,7 +18,8 @@ const WEEK = ['일', '월', '화', '수', '목', '금', '토']
 const OPTION_ROW = 'flex items-center justify-between gap-3 border-b border-line py-3 text-base last:border-b-0'
 
 // cheer: { count, sent, busy, onCheer } — 로그인 상태의 그룹 화면에서만 전달
-function MemberRow({ name, isMe, dates, avatar, cheer }) {
+// onBlock: 다른 멤버 행에서만 전달 (차단하기)
+function MemberRow({ name, isMe, dates, avatar, cheer, onBlock }) {
   const days = lastNDays(7, {})
   const doneToday = dates.has(todayKey())
   return (
@@ -55,6 +56,11 @@ function MemberRow({ name, isMe, dates, avatar, cheer }) {
             {cheer.count > 0 && <span className="ml-1 opacity-70">{cheer.count}</span>}
           </button>
         ))}
+        {onBlock && (
+          <button className="text-2xs text-dim underline" onClick={onBlock} aria-label={`${name}님 차단하기`}>
+            차단
+          </button>
+        )}
       </div>
     </div>
   )
@@ -261,6 +267,7 @@ function JoinCreateCard({ onDone }) {
 function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged, onLeft }) {
   const [members, setMembers] = useState([])
   const [photos, setPhotos] = useState([])
+  const [hiddenCount, setHiddenCount] = useState(0) // 내가 차단해서 숨긴 멤버 수
   const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -291,9 +298,10 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
   const load = useCallback(async () => {
     setBusy(true)
     try {
-      const { members, photos } = await fetchGroupStatus(group.id)
+      const { members, photos, hiddenCount } = await fetchGroupStatus(group.id)
       setMembers(members)
       setPhotos(photos)
+      setHiddenCount(hiddenCount || 0)
       setCheers(await fetchTodayCheers(members.map(m => m.id)))
     } catch { /* 네트워크 오류 시 조용히 패스 */ }
     setLoaded(true)
@@ -303,7 +311,7 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
   useEffect(() => { load() }, [load])
 
   async function onLeave() {
-    const count = members.length || group.memberCount
+    const count = (members.length + hiddenCount) || group.memberCount // 차단해 숨긴 멤버도 실제 멤버
     const msg = count <= 1
       ? '마지막 멤버라 나가면 그룹이 삭제돼요. 나갈까요?'
       : isOwner
@@ -327,6 +335,23 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
     try {
       await submitReport(p.id, todayKey(), reason)
       toast('신고가 접수됐어요. 관리자가 확인 후 처리할게요.')
+    } catch (e) { toast(e.message); return }
+    if (confirm(`${p.name}님을 차단할까요?\n이 멤버의 기록과 인증샷이 더 이상 보이지 않아요.`)) blockMember(p, true)
+  }
+
+  // 차단: 그룹 화면(멤버·리더보드·인증샷)과 받은 응원에서 숨기고, 서로 응원 불가. 상대에게는 알리지 않음.
+  async function blockMember(m, confirmed = false) {
+    if (!confirmed && !confirm(
+      `${m.name}님을 차단할까요?\n\n` +
+      '• 그룹 화면에서 이 멤버의 기록과 인증샷이 보이지 않아요.\n' +
+      '• 서로 응원을 보낼 수 없어요.\n' +
+      '• 상대에게는 알리지 않아요.\n\n' +
+      '설정 > 차단한 사용자에서 언제든 해제할 수 있어요.',
+    )) return
+    try {
+      await blockUser(m.id)
+      toast(`${m.name}님을 차단했어요.`)
+      load()
     } catch (e) { toast(e.message) }
   }
 
@@ -359,7 +384,7 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-2xl font-bold tracking-tight">{group.name}</h2>
             <div className="mt-0.5 text-xs text-dim">
-              멤버 {members.length || group.memberCount}/{group.max_members}명{isOwner && ' · 내가 그룹장'}
+              멤버 {(members.length + hiddenCount) || group.memberCount}/{group.max_members}명{isOwner && ' · 내가 그룹장'}
             </div>
           </div>
         </div>
@@ -388,9 +413,13 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
                   busy: cheering === m.id,
                   onCheer: () => cheerFor(m),
                 }}
+                onBlock={m.id === myId ? undefined : () => blockMember(m)}
               />
             ))}
           </div>
+        )}
+        {hiddenCount > 0 && (
+          <Sub className="mt-2">차단한 멤버 {hiddenCount}명은 표시되지 않아요. (설정에서 해제)</Sub>
         )}
         <div className="mt-3 flex items-center gap-4 text-xs text-dim">
           <span><i className="mr-1.5 inline-block size-2.5 rounded-full bg-brand" />운동 함</span>
@@ -410,9 +439,14 @@ function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged,
                 <figcaption className="mt-1 truncate text-center text-2xs text-dim">
                   {p.id === myId ? (myName || p.name) : p.name}
                   {p.id !== myId && (
-                    <button className="ml-1.5 text-2xs text-dim underline" onClick={() => reportPhoto(p)} aria-label="이 사진 신고">
-                      신고
-                    </button>
+                    <>
+                      <button className="ml-1.5 text-2xs text-dim underline" onClick={() => reportPhoto(p)} aria-label="이 사진 신고">
+                        신고
+                      </button>
+                      <button className="ml-1 text-2xs text-dim underline" onClick={() => blockMember(p)} aria-label={`${p.name}님 차단하기`}>
+                        차단
+                      </button>
+                    </>
                   )}
                 </figcaption>
               </figure>

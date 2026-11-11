@@ -23,7 +23,7 @@ select tests.throws(format($$insert into public.groups (name, invite_code, creat
   'row-level security', 'C: 그룹 직접 생성 불가 (함수로만)');
 select tests.throws(format($$insert into public.group_members (group_id, user_id) values (%L, %L)$$, tests.gid('응원반'), tests.uid('C')),
   'row-level security', 'C: 초대 코드 없이 멤버 직접 추가 불가 (정원·회원제한 우회 차단)');
-select tests.throws($$select * from public.join_group('NOPE99')$$, '초대 코드를 찾을 수 없어요', '없는 초대 코드 거부');
+select tests.eq(tests.count($$select * from public.join_group('NOPE99')$$), 0, '없는 초대 코드는 빈 결과 (앱이 "코드를 찾을 수 없어요" 표시)');
 
 -- ── 참여 ──
 select tests.lives(format($$select * from public.join_group(%L)$$, '  ' || lower(tests.code('응원반')) || ' '), 'C: 소문자·공백 섞인 코드로 참여');

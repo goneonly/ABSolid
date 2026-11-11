@@ -8,8 +8,25 @@ import { authErrorMessage } from './authErrors.js'
 import { disablePush } from './push.js'
 
 // consent: { age_over_14, terms_version, terms_agreed_at } — 가입 화면에서 받은 필수 동의 기록
-export async function signUp(email, password, nickname, fullName, phone, consent = {}) {
-  const { data, error } = await supabase.auth.signUp({ email, password })
+// 이름·전화번호·동의는 가입 요청에 함께 실어 보냄 → 서버(v0.10 SQL 가입 트리거)가 검증해 바로 저장.
+// 그래서 메일 인증 후 다른 기기에서 로그인해도 정보가 유지됨.
+// captchaToken: 봇 방지 토큰 (components/Captcha.jsx) — 서버 캡차가 꺼져 있으면 없어도 됨
+export async function signUp(email, password, nickname, fullName, phone, consent = {}, captchaToken) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      captchaToken: captchaToken || undefined,
+      emailRedirectTo: window.location.origin, // 인증 메일 링크를 누르면 앱으로 돌아와 바로 로그인
+      data: {
+        full_name: fullName || '',
+        phone: phone || '',
+        nickname: nickname || '',
+        age_over_14: consent.age_over_14 === true,
+        terms_version: consent.terms_version || '',
+      },
+    },
+  })
   if (error) return { error: authErrorMessage(error) }
   const profile = {
     nickname: nickname || fullName || '',
@@ -40,8 +57,31 @@ export async function flushPendingProfile() {
   if (!error) clearPendingProfile()
 }
 
-export async function signIn(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+// 가입 인증 메일 다시 보내기 (메일을 못 받았거나 링크가 만료된 경우)
+export async function resendSignupEmail(email, captchaToken) {
+  if (!supabase) return { error: '서버가 연결되어 있지 않아요.' }
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: (email || '').trim(),
+    options: { emailRedirectTo: window.location.origin, captchaToken: captchaToken || undefined },
+  })
+  if (error) return { error: authErrorMessage(error) }
+  return { data: true }
+}
+
+// 일회용(임시) 메일인지 가입 전에 확인 (v0.11 SQL) — 확인 실패 시 false (서버가 가입 때 다시 막음)
+export async function isDisposableEmail(email) {
+  if (!supabase) return false
+  const { data, error } = await supabase.rpc('is_disposable_email', { p_email: (email || '').trim() })
+  return !error && data === true
+}
+
+export async function signIn(email, password, captchaToken) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken: captchaToken || undefined },
+  })
   if (error) return { error: authErrorMessage(error) }
   return { data }
 }
@@ -54,10 +94,11 @@ export async function signOut() {
 }
 
 // 비밀번호 재설정 메일 발송 — 링크를 누르면 앱으로 돌아와 새 비밀번호를 설정
-export async function sendPasswordReset(email) {
+export async function sendPasswordReset(email, captchaToken) {
   if (!supabase) return { error: '서버가 연결되어 있지 않아요.' }
   const { error } = await supabase.auth.resetPasswordForEmail((email || '').trim(), {
     redirectTo: window.location.origin,
+    captchaToken: captchaToken || undefined,
   })
   if (error) return { error: authErrorMessage(error) }
   return { data: true }

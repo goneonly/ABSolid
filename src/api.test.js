@@ -14,7 +14,7 @@ const { client, bucket, workoutsTable } = vi.hoisted(() => {
 })
 vi.mock('./supabase.js', () => ({ supabase: client }))
 
-const { completeWorkout, retryPendingCompletions } = await import('./api.js')
+const { completeWorkout, retryPendingCompletions, fetchBlockedIds, blockUser } = await import('./api.js')
 const { getRecords, saveRecord } = await import('./storage.js')
 
 const UID = 'u-1'
@@ -107,5 +107,48 @@ describe('못 보낸 완료 기록 재시도 (앱 시작 시)', () => {
     expect(r['2026-10-12'].pendingSession).toBeNull()
     expect(r['2026-10-14'].pendingSession).toBeNull()
     expect(client.rpc).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('사용자 차단', () => {
+  const blocksTable = (result) => client.from.mockReturnValueOnce({ select: vi.fn().mockResolvedValue(result) })
+
+  it('차단한 사용자 id 를 Set 으로 돌려준다', async () => {
+    signedIn()
+    blocksTable({ data: [{ blocked: 'u-2' }, { blocked: 'u-3' }], error: null })
+    const ids = await fetchBlockedIds()
+    expect([...ids]).toEqual(['u-2', 'u-3'])
+    expect(client.from).toHaveBeenCalledWith('user_blocks')
+  })
+  it('조회 실패(SQL 미적용 등)면 아무도 숨기지 않는다', async () => {
+    signedIn()
+    blocksTable({ data: null, error: { code: '42P01', message: 'relation does not exist' } })
+    expect((await fetchBlockedIds()).size).toBe(0)
+  })
+  it('비회원은 서버에 묻지 않고 빈 목록', async () => {
+    client.auth.getSession.mockResolvedValue({ data: { session: null } })
+    expect((await fetchBlockedIds()).size).toBe(0)
+    expect(client.from).not.toHaveBeenCalled()
+  })
+  it('서버가 판단해 거절(P0001)하면 그 문구를, 그 외 오류는 일반 안내를 보여준다', async () => {
+    signedIn()
+    client.rpc.mockResolvedValueOnce(rpcError('P0001', '자기 자신은 차단할 수 없어요.'))
+    await expect(blockUser(UID)).rejects.toThrow('자기 자신은 차단할 수 없어요.')
+    client.rpc.mockResolvedValueOnce(rpcError('PGRST202', 'function not found'))
+    await expect(blockUser('u-2')).rejects.toThrow('차단 기능을 쓸 수 없어요')
+    expect(client.rpc).toHaveBeenLastCalledWith('block_user', { p_target: 'u-2' })
+  })
+})
+
+describe('일회용 이메일 확인', async () => {
+  const { isDisposableEmail } = await import('./auth.js')
+  it('서버가 일회용이라고 답하면 true', async () => {
+    client.rpc.mockResolvedValueOnce({ data: true, error: null })
+    await expect(isDisposableEmail(' bot@yopmail.com ')).resolves.toBe(true)
+    expect(client.rpc).toHaveBeenLastCalledWith('is_disposable_email', { p_email: 'bot@yopmail.com' })
+  })
+  it('확인에 실패하면(SQL 미적용 등) 가입을 막지 않는다 — 서버가 가입 때 다시 검사', async () => {
+    client.rpc.mockResolvedValueOnce({ data: null, error: { code: 'PGRST202' } })
+    await expect(isDisposableEmail('me@gmail.com')).resolves.toBe(false)
   })
 })

@@ -19,6 +19,7 @@ MIGRATIONS=(
   schema storage avatars
   profiles-update groups-update profiles-security-fix admin security-and-fixes notifications
   v0.5-groups-and-fixes v0.6-security v0.7-workout-verify-and-consent v0.8-cheers-and-push
+  v0.9-user-blocks v0.10-signup-profile v0.11-abuse-limits
 )
 FIRST_RERUNNABLE=3 # schema·storage·avatars 는 최초 1회용 (재실행 시 정책 중복 오류)
 

@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { signIn, signUp, sendPasswordReset } from '../auth.js'
+import { signIn, signUp, sendPasswordReset, resendSignupEmail, isDisposableEmail } from '../auth.js'
+import { EMAIL_NOT_CONFIRMED } from '../authErrors.js'
 import { getProfile, markOnboardingPending, cancelOnboarding } from '../storage.js'
 import {
   validateEmail, validateName, validatePhone, formatPhone, validatePassword,
 } from '../validation.js'
 import { PrivacyModal, TermsModal, TERMS_VERSION } from '../components/LegalModals.jsx'
 import { Button, Field, FieldError, LinkButton, Logo, Sub } from '../components/ui.jsx'
+import { useCaptcha, CAPTCHA_WAIT } from '../components/Captcha.jsx'
 
 // 앱 첫 화면 — 로그인 / 회원가입 / 비회원으로 시작
 // 로그인(또는 즉시 세션이 생기는 가입)에 성공하면 onDone → App이 메인 화면으로 전환
@@ -24,6 +26,9 @@ export default function Login({ onDone, onGuest }) {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [resetBusy, setResetBusy] = useState(false)
+  const [canResend, setCanResend] = useState(false) // 가입 직후·미인증 로그인 시 '인증 메일 다시 보내기' 노출
+  const [resendBusy, setResendBusy] = useState(false)
+  const captcha = useCaptcha() // 로그인·가입·메일 요청 모두 같은 확인란 사용 (토큰은 요청마다 새로)
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
   const allAgreed = agreed.age && agreed.terms && agreed.privacy
@@ -60,23 +65,34 @@ export default function Login({ onDone, onGuest }) {
     e.preventDefault()
     setError('')
     setNotice('')
+    setCanResend(false)
     if (!validateAll()) return
+    if (!captcha.ready) return setError(CAPTCHA_WAIT)
     setBusy(true)
     if (!signup) {
-      const res = await signIn(email.trim(), password)
+      const res = await signIn(email.trim(), password, captcha.token)
+      captcha.reset()
       setBusy(false)
-      if (res?.error) setError(res.error)
-      else onDone()
+      if (res?.error) {
+        setError(res.error)
+        setCanResend(res.error === EMAIL_NOT_CONFIRMED)
+      } else onDone()
       return
     }
     // 온보딩 플래그는 가입 요청 "전"에 저장해야 함 —
     // 가입 성공 시 세션 발급(App의 팝업 체크)이 응답보다 먼저 일어나기 때문
+    if (await isDisposableEmail(email)) {
+      setBusy(false)
+      setFieldErrors((p) => ({ ...p, email: '일회용(임시) 이메일로는 가입할 수 없어요.' }))
+      return
+    }
     markOnboardingPending()
     const res = await signUp(email.trim(), password, getProfile().nickname, fullName.trim(), formatPhone(phone), {
       age_over_14: true,
       terms_version: TERMS_VERSION,
       terms_agreed_at: new Date().toISOString(),
-    })
+    }, captcha.token)
+    captcha.reset()
     setBusy(false)
     if (res?.error) {
       cancelOnboarding() // 가입 실패 시 롤백
@@ -89,8 +105,26 @@ export default function Login({ onDone, onGuest }) {
       // 이메일 인증이 필요한 경우: 로그인 모드로 돌려 인증 후 바로 로그인할 수 있게
       setMode('signin')
       setPassword('')
-      setNotice('가입 확인 메일을 보냈어요. 메일함에서 인증한 뒤 로그인해 주세요.')
+      setNotice('가입 확인 메일을 보냈어요. 메일의 링크를 누르면 바로 로그인돼요.')
+      setCanResend(true)
     }
+  }
+
+  async function resendEmail() {
+    setError('')
+    setNotice('')
+    const emailErr = validateEmail(email)
+    if (emailErr) {
+      setFieldErrors((p) => ({ ...p, email: emailErr }))
+      return
+    }
+    if (!captcha.ready) return setError(CAPTCHA_WAIT)
+    setResendBusy(true)
+    const res = await resendSignupEmail(email.trim(), captcha.token)
+    captcha.reset()
+    setResendBusy(false)
+    if (res?.error) setError(res.error)
+    else setNotice('인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.')
   }
 
   async function forgotPassword() {
@@ -101,8 +135,10 @@ export default function Login({ onDone, onGuest }) {
       setFieldErrors((p) => ({ ...p, email: emailErr }))
       return
     }
+    if (!captcha.ready) return setError(CAPTCHA_WAIT)
     setResetBusy(true)
-    const res = await sendPasswordReset(email.trim())
+    const res = await sendPasswordReset(email.trim(), captcha.token)
+    captcha.reset()
     setResetBusy(false)
     if (res?.error) setError(res.error)
     else setNotice('비밀번호 재설정 메일을 보냈어요. 메일의 링크를 열면 새 비밀번호를 정할 수 있어요.')
@@ -164,7 +200,7 @@ export default function Login({ onDone, onGuest }) {
         />
         <Field
           id="login-pw"
-          label={signup ? '비밀번호 (6자 이상, 영문+숫자)' : '비밀번호'}
+          label={signup ? '비밀번호 (8자 이상, 영문+숫자)' : '비밀번호'}
           type="password"
           value={password}
           autoComplete={signup ? 'new-password' : 'current-password'}
@@ -225,8 +261,14 @@ export default function Login({ onDone, onGuest }) {
           </div>
         )}
 
+        {captcha.widget}
         {error && <Sub className="mt-2.5 text-brand">{error}</Sub>}
         {notice && <Sub className="mt-2.5">{notice}</Sub>}
+        {canResend && !signup && (
+          <LinkButton type="button" className="mt-1.5 underline" disabled={resendBusy} onClick={resendEmail}>
+            {resendBusy ? '메일 보내는 중…' : '인증 메일 다시 보내기'}
+          </LinkButton>
+        )}
 
         <Button type="submit" className="mt-5" disabled={busy}>
           {busy ? '처리 중…' : signup ? '가입하기' : '로그인하기'}

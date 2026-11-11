@@ -57,7 +57,7 @@ select tests.eq(tests.count('select * from public.reports'), 0, 'B: 신고 목�
 
 select tests.login('M');
 select tests.lives('select public.admin_stats()', 'M: 관리자 통계 조회');
-select tests.eq((public.admin_stats() ->> 'total_users')::int, 4, 'M: 통계 — 회원 수');
+select tests.eq((public.admin_stats() ->> 'total_users')::int, 5, 'M: 통계 — 회원 수 (가입 트리거로 모든 계정에 프로필)');
 select tests.eq((public.admin_stats() ->> 'pending_reports')::int, 1, 'M: 통계 — 처리 대기 신고');
 select tests.lives($$insert into public.announcements (message) values ('점검 안내')$$, 'M: 공지 작성');
 select tests.affects($$update public.reports set status = 'resolved'$$, 1, 'M: 신고 처리');

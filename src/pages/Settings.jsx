@@ -10,7 +10,7 @@ import { supabase } from "../supabase.js";
 import { signIn, signOut, saveNickname, deleteAccount, updatePassword } from "../auth.js";
 import {
   uploadAvatar, deleteAvatar, fetchMyAvatarUrl, resetServerWorkouts,
-  fetchMyProfileInfo, updateMyProfileInfo,
+  fetchMyProfileInfo, updateMyProfileInfo, fetchMyBlocks, unblockUser,
 } from "../api.js";
 import { isPushSupported, isPushConfigured, getPushEnabled, enablePush, disablePush } from "../push.js";
 import { toast } from "../toast.js";
@@ -18,6 +18,7 @@ import { compressImage } from "../image.js";
 import { isStandalone, isIOS, canPromptInstall, promptInstall } from "../install.js";
 import { PrivacyModal, TermsModal } from "../components/LegalModals.jsx";
 import { INVALID_CREDENTIALS } from "../authErrors.js";
+import { useCaptcha, CAPTCHA_WAIT } from "../components/Captcha.jsx";
 import {
   Banner,
   Button,
@@ -49,6 +50,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
+  const [showBlocks, setShowBlocks] = useState(false);
 
   // 홈 화면에 앱 추가: 설치 창을 띄울 수 있으면 바로, 아니면(아이폰 등) 방법 안내
   async function installApp() {
@@ -86,6 +88,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
   const [resetPw, setResetPw] = useState("");
   const [resetPwError, setResetPwError] = useState("");
   const [resetPwBusy, setResetPwBusy] = useState(false);
+  const resetCaptcha = useCaptcha(); // 본인 확인 로그인에도 봇 방지 토큰 필요 (서버 캡차가 켜진 경우)
 
   async function confirmReset() {
     const msg = session
@@ -122,8 +125,10 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
       setResetPwError("비밀번호를 입력해 주세요.");
       return;
     }
+    if (!resetCaptcha.ready) return setResetPwError(CAPTCHA_WAIT);
     setResetPwBusy(true);
-    const { error } = await signIn(session.user.email, resetPw);
+    const { error } = await signIn(session.user.email, resetPw, resetCaptcha.token);
+    resetCaptcha.reset();
     setResetPwBusy(false);
     if (error) {
       setResetPwError(error);
@@ -188,6 +193,11 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           </RowButton>
         )}
         <PushToggleRow session={session} onNeedInstall={() => setShowInstall(true)} />
+        {session && (
+          <RowButton hint="그룹에서 숨긴 멤버" onClick={() => setShowBlocks(true)}>
+            차단한 사용자
+          </RowButton>
+        )}
         <RowButton hint="구글시트에서 열기 가능" onClick={() => setAskExport(true)}>
           기록 내보내기 (CSV)
         </RowButton>
@@ -249,6 +259,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
         />
       )}
       {showInfo && session && <ProfileInfoModal onClose={() => setShowInfo(false)} />}
+      {showBlocks && session && <BlockedUsersModal onClose={() => setShowBlocks(false)} />}
       {showPwChange && session && (
         <ChangePasswordModal email={session.user.email} onClose={() => setShowPwChange(false)} />
       )}
@@ -303,6 +314,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
               if (e.key === "Enter") verifyResetPw();
             }}
           />
+          {resetCaptcha.widget}
           <Button className="mt-3.5" disabled={resetPwBusy} onClick={verifyResetPw}>
             {resetPwBusy ? "확인 중…" : "확인"}
           </Button>
@@ -529,15 +541,18 @@ function DeleteAccountModal({ email, onClose }) {
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const captcha = useCaptcha();
 
   async function confirmDelete() {
     if (!pw) {
       setErr("비밀번호를 입력해 주세요.");
       return;
     }
+    if (!captcha.ready) return setErr(CAPTCHA_WAIT);
     setBusy(true);
     // 본인 확인
-    const { error: signInErr } = await signIn(email, pw);
+    const { error: signInErr } = await signIn(email, pw, captcha.token);
+    captcha.reset();
     if (signInErr) {
       setBusy(false);
       setErr(signInErr);
@@ -577,6 +592,7 @@ function DeleteAccountModal({ email, onClose }) {
           if (e.key === "Enter") confirmDelete();
         }}
       />
+      {captcha.widget}
       <Button className="mt-3.5" disabled={busy} onClick={confirmDelete}>
         {busy ? "처리 중…" : "탈퇴하기"}
       </Button>
@@ -651,6 +667,68 @@ function NicknameModal({ session, initial, onSaved, onClose }) {
 }
 
 // ── 이름·전화번호 변경 (가입 때 입력한 값 — '회원만 받기' 그룹 참여 조건) ──
+// ── 차단한 사용자 목록 · 해제 ──────────────────
+function BlockedUsersModal({ onClose }) {
+  const [list, setList] = useState(null); // null = 불러오는 중
+  const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetchMyBlocks()
+      .then((rows) => alive && setList(rows))
+      .catch((e) => alive && setError(e.message));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function unblock(u) {
+    if (!confirm(`${u.nickname}님의 차단을 해제할까요?\n그룹 화면에서 다시 보이고, 서로 응원할 수 있어요.`)) return;
+    setBusyId(u.id);
+    try {
+      await unblockUser(u.id);
+      setList((prev) => prev.filter((x) => x.id !== u.id));
+      toast(`${u.nickname}님의 차단을 해제했어요.`);
+    } catch (e) {
+      toast(e.message);
+    }
+    setBusyId(null);
+  }
+
+  return (
+    <Modal label="차단한 사용자" onBackdrop={onClose}>
+      <ModalTitle>차단한 사용자</ModalTitle>
+      <ModalText>차단한 멤버는 그룹 화면과 받은 응원에서 보이지 않고, 서로 응원할 수 없어요. 상대에게는 알리지 않아요.</ModalText>
+      {error ? (
+        <Sub className="mt-4 text-center text-brand">{error}</Sub>
+      ) : list === null ? (
+        <Sub className="mt-4 text-center">불러오는 중…</Sub>
+      ) : list.length === 0 ? (
+        <Sub className="mt-4 text-center">차단한 사용자가 없어요.</Sub>
+      ) : (
+        <div className="mt-3 max-h-72 overflow-y-auto overscroll-contain">
+          {list.map((u) => (
+            <div key={u.id} className="flex items-center justify-between gap-3 border-b border-line py-3 last:border-b-0">
+              <span className="truncate text-base">{u.nickname}</span>
+              <button
+                className="shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-semibold disabled:opacity-60"
+                disabled={busyId === u.id}
+                onClick={() => unblock(u)}
+              >
+                {busyId === u.id ? "해제 중…" : "차단 해제"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <Button variant="secondary" className="mt-4" onClick={onClose}>
+        닫기
+      </Button>
+    </Modal>
+  );
+}
+
 function ProfileInfoModal({ onClose }) {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -749,6 +827,7 @@ function ChangePasswordModal({ email, onClose }) {
   const [confirmPw, setConfirmPw] = useState("");
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const captcha = useCaptcha();
 
   async function submit() {
     const errs = {
@@ -758,8 +837,10 @@ function ChangePasswordModal({ email, onClose }) {
     };
     setErrors(errs);
     if (Object.values(errs).some(Boolean)) return;
+    if (!captcha.ready) return setErrors({ current: CAPTCHA_WAIT });
     setBusy(true);
-    const check = await signIn(email, current);
+    const check = await signIn(email, current, captcha.token);
+    captcha.reset();
     if (check?.error) {
       setBusy(false);
       // 비밀번호 불일치만 '현재 비밀번호' 오류로, 연결 실패 등은 원래 안내 그대로
@@ -797,7 +878,7 @@ function ChangePasswordModal({ email, onClose }) {
       />
       <Field
         id="pw-next"
-        label="새 비밀번호 (6자 이상, 영문+숫자)"
+        label="새 비밀번호 (8자 이상, 영문+숫자)"
         type="password"
         autoComplete="new-password"
         value={next}
@@ -822,6 +903,7 @@ function ChangePasswordModal({ email, onClose }) {
           if (e.key === "Enter") submit();
         }}
       />
+      {captcha.widget}
       <Button className="mt-3.5" disabled={busy} onClick={submit}>
         {busy ? "변경 중…" : "비밀번호 변경"}
       </Button>

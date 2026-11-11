@@ -82,7 +82,8 @@ export async function submitReport(targetUserId, targetDate, reason) {
     target_date: targetDate,
     reason: (reason || "").slice(0, 200),
   });
-  if (error) throw new Error("신고 접수에 실패했어요.");
+  // 중복 신고·하루 20건 초과는 서버가 이유를 알려줌 (v0.11 SQL)
+  if (error) throw new Error(error.code === "P0001" ? error.message : "신고 접수에 실패했어요.");
 }
 
 // 관리자: 미처리 신고 목록 (신고 대상 사진·닉네임 포함)

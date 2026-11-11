@@ -42,6 +42,13 @@ Deno.serve(async (req) => {
   if (error) return json({ error: error.message }, 500)
   if (!cheer) return json({ sent: 0, skipped: true })
 
+  // 받는 사람이 보낸 사람을 차단했으면 알리지 않음 (응원 직후 차단한 경우 — v0.9 SQL)
+  const { data: blocked } = await admin
+    .from('user_blocks').select('blocker')
+    .eq('blocker', cheer.to_user).eq('blocked', user.id)
+    .maybeSingle()
+  if (blocked) return json({ sent: 0, skipped: true })
+
   const [{ data: me }, { data: group }] = await Promise.all([
     admin.from('profiles').select('nickname').eq('id', user.id).maybeSingle(),
     admin.from('groups').select('name').eq('id', cheer.group_id).maybeSingle(),

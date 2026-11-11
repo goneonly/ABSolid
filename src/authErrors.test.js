@@ -38,3 +38,17 @@ describe('인증 오류 → 한국어 메시지', () => {
     expect(authErrorMessage(undefined)).toBe(UNKNOWN)
   })
 })
+
+describe('가입 정보 검증 실패 (v0.10 가입 트리거)', () => {
+  it('인증 서버의 저장 실패 응답을 이름·전화번호 확인 안내로 바꾼다', () => {
+    expect(authErrorMessage({ code: 'unexpected_failure', status: 500, message: 'Database error saving new user' }))
+      .toContain('이름·전화번호')
+  })
+})
+
+describe('봇 방지 (캡차)', () => {
+  it('캡차 검증 실패를 다시 확인하라는 안내로 바꾼다', () => {
+    expect(authErrorMessage({ code: 'captcha_failed', status: 400, message: 'captcha protection: request disallowed' }))
+      .toContain('자동 가입 방지')
+  })
+})

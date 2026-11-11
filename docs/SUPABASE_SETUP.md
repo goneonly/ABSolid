@@ -60,6 +60,56 @@
 ## 2-3-4. 그룹 응원·알림 (v0.8, 필수)
 `v0.7` 실행 후 `supabase/v0.8-cheers-and-push.sql` 실행. 푸시 알림(리마인더·응원) 서버 설정은 [알림 설정 가이드](NOTIFICATIONS_SETUP.md) 참고.
 
+## 2-3-5. 사용자 차단 (v0.9, 필수)
+`v0.8` 실행 후 `supabase/v0.9-user-blocks.sql` 실행 (재실행 안전). 이어서 응원 알림 함수를 다시 배포하세요: `supabase functions deploy notify-cheer`
+- **차단**: 그룹 화면의 멤버 행·인증샷에서 차단 → 차단한 사람의 기록·인증샷·받은 응원이 숨겨지고, 서로 응원 불가 (상대에게 알리지 않음)
+- **해제**: 설정 > 차단한 사용자
+- SQL 실행 전 배포된 앱은 차단 버튼만 실패 안내를 띄우고 나머지 화면은 그대로 동작
+
+## 2-3-6. 비밀번호 최소 길이 (대시보드 설정, 필수)
+앱은 가입·비밀번호 변경 시 **8자 이상, 영문+숫자**를 요구해요. 서버도 같게 맞추세요.
+- **Authentication → Sign In / Providers → Email → Minimum password length: 8**
+- **Password requirements: Letters and digits**
+- 기존 6~7자 비밀번호 사용자는 로그인은 그대로 되고, 다음에 비밀번호를 바꿀 때 8자 규칙이 적용돼요.
+
+## 2-3-7. 가입 정보 서버 저장 (v0.10, 필수)
+`v0.9` 실행 후 `supabase/v0.10-signup-profile.sql` 실행 (재실행 안전).
+- 가입 요청에 실린 이름·전화번호·만 14세 동의를 서버가 검증해 가입 순간에 저장 → 메일 인증 후 어느 기기로 로그인해도 유지
+- 이메일 가입은 이름·전화번호·동의가 없거나 형식이 틀리면 가입 자체가 거절됨 (API 직접 가입으로 우회 불가)
+- 대시보드 **Authentication → Users → Add user** 로 만드는 계정은 검사하지 않음 (빈 프로필로 생성)
+
+## 2-3-8. 이메일 인증 켜기 (대시보드 설정 — 순서 중요)
+**SMTP 를 먼저 연결하세요.** Supabase 기본 메일 서버는 프로젝트 팀원에게만, 시간당 몇 통만 보내서 SMTP 없이 인증을 켜면 일반 사용자는 가입 메일을 못 받아 **가입이 막혀요.**
+1. **Authentication → Emails → SMTP Settings**: 외부 SMTP 연결 (예: Gmail 앱 비밀번호 `smtp.gmail.com:465`, 또는 Resend 등)
+2. **Authentication → URL Configuration**: Site URL `https://absolid.vercel.app`, Redirect URLs 에 같은 주소 추가 (인증 메일 링크가 앱으로 돌아오게)
+3. (선택) **Authentication → Emails → Templates → Confirm signup** 문구를 한국어로
+4. **Authentication → Sign In / Providers → Email → Confirm email: ON**
+- 켜면: 가입 → "확인 메일을 보냈어요" 안내 → 메일 링크를 누르면 앱으로 돌아와 바로 로그인. 미인증 상태로 로그인하면 '인증 메일 다시 보내기' 버튼이 나와요.
+- 이미 가입한 사용자는 영향 없음.
+
+## 2-3-9. 가입·기능 남용 방지 (v0.11, 필수)
+`v0.10` 실행 후 `supabase/v0.11-abuse-limits.sql` 실행 (재실행 안전).
+- **일회용 메일 가입 차단**: 앱이 가입 전에 안내하고, API 로 직접 가입해도 서버가 거절. 도메인 추가: `insert into public.blocked_email_domains values ('example.com');`
+- **그룹 생성** 하루 5개 · **신고** 하루 20건, 같은 인증샷 중복 신고 불가
+- **초대 코드**: 틀린 코드는 한 사람당 1시간에 10번까지 (코드 무작위 대입 방지)
+
+## 2-3-10. 봇 가입·로그인 차단 — Cloudflare Turnstile (선택이지만 출시 전 권장)
+**앱 키와 서버 키를 함께 설정하세요.** 서버만 켜면 앱이 토큰을 못 보내 로그인이 전부 막혀요.
+1. Cloudflare 대시보드 → **Turnstile → Add widget**: 도메인 `absolid.vercel.app` (로컬 테스트용 `localhost` 도 추가), Widget mode **Managed** → **Site Key**·**Secret Key** 발급 (무료)
+2. Vercel → Project → Settings → Environment Variables: `VITE_TURNSTILE_SITE_KEY` = Site Key → **재배포**
+3. 재배포 확인 후 Supabase **Authentication → Attack Protection → Enable Captcha protection**: Provider **Turnstile**, Secret Key 입력
+- 적용 범위: 가입·로그인·비밀번호 재설정·인증 메일 재발송, 설정의 본인 확인(기록 초기화·비밀번호 변경·탈퇴)
+- 보통 사용자는 퍼즐 없이 자동 통과. 의심스러운 요청만 확인란 클릭을 요구
+
+## 2-3-11. IP 당 요청 제한 (대시보드 설정, 권장)
+**Authentication → Rate Limits** 에서 아래 정도로 설정 (기본값보다 엄격하게):
+| 항목 | 권장값 |
+|---|---|
+| Sign-ups and sign-ins (IP 당 5분) | 30 |
+| Token refreshes (IP 당 5분) | 150 (기본값 유지) |
+| Email sending (시간당, SMTP 연결 후) | 30 |
+| Verifications / OTP (IP 당 5분) | 30 |
+
 ## 2-4. 회원 탈퇴 기능 (선택 — 엣지 함수)
 계정·데이터 완전 삭제를 켜려면 Supabase CLI로 배포하세요:
 ```bash
