@@ -9,6 +9,14 @@
 
 ## 다음 버전
 
+**변경**
+- 서비스 이름 표기를 Absolid → ABSolid 로 변경 (앱 제목, 로고, 알림, 약관, 문서). GitHub 저장소 주소도 ABSolid 로
+
+**서버**
+- 알림 제목 변경을 위해 `notify-cheer`, `send-reminders` 함수 재배포 (완료)
+
+## 0.5.1 (2026-11-11)
+
 **내부**
 - 코드 리팩토링. 화면 동작은 그대로이고 구조만 정리했습니다.
   - `Settings.jsx`(948줄)를 `pages/settings/` 6개 파일로, `Group.jsx`(549줄)를 `pages/group/` 3개 파일로 나눔
@@ -20,7 +28,6 @@
 - 쓰지 않는 SQL 삭제: `auto-admin.sql`, `photos-cleanup.sql`, `reset-delete-policies.sql` (이후 SQL 이 같은 내용을 포함)
 
 **변경**
-- 서비스 이름 표기를 Absolid → ABSolid 로 변경 (앱 제목, 로고, 알림, 약관, 문서). GitHub 저장소 주소도 ABSolid 로
 - 프로필 사진 오류 안내가 알림창(alert)에서 화면 아래 토스트로 바뀜
 - 운동 기록 초기화의 비밀번호 확인 창을 바깥 영역을 눌러 닫을 수 있음
 - 관리자 화면에서 목록을 불러오지 못하면 토스트 대신 해당 카드 안에 사유를 표시
