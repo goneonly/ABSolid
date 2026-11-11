@@ -1,10 +1,28 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  todayKey, todayWorkoutDay, getRecords, saveRecord, computeStreak, lastNDays, cleanupLocalPhotos,
-  mergeRecords, clearLocalUserData, clearAllAppData, getProfile, saveProfile,
-  isGuestChosen, setGuestChosen, isReminderDismissedToday, dismissReminderToday,
-  isServerCleanupDoneToday, markServerCleanupDone, loadPendingProfile, savePendingProfile,
-  isOnboardingPending, markOnboardingPending, markOnboardingDone, isPushConsentAsked, markPushConsentAsked,
+  todayKey,
+  todayWorkoutDay,
+  getRecords,
+  saveRecord,
+  computeStreak,
+  lastNDays,
+  cleanupLocalPhotos,
+  mergeRecords,
+  clearLocalUserData,
+  clearAllAppData,
+  getProfile,
+  saveProfile,
+  isGuestChosen,
+  setGuestChosen,
+  isReminderDismissedToday,
+  dismissReminderToday,
+  isServerCleanupDoneToday,
+  markServerCleanupDone,
+  isOnboardingPending,
+  markOnboardingPending,
+  markOnboardingDone,
+  isPushConsentAsked,
+  markPushConsentAsked,
 } from './storage.js'
 
 // 한국 시간 2026-10-15(목) 00:30 = UTC 10-14 15:30
@@ -16,7 +34,7 @@ const at = (date) => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(date)
 }
-const done = (...keys) => Object.fromEntries(keys.map(k => [k, { completed: true }]))
+const done = (...keys) => Object.fromEntries(keys.map((k) => [k, { completed: true }]))
 
 describe('날짜 키 (한국 시간)', () => {
   it('UTC 가 아닌 기기 시간대로 날짜를 만든다 — 자정 직후', () => {
@@ -108,8 +126,10 @@ describe('최근 N일', () => {
   it('오래된 날부터 오늘까지 순서대로, 완료 여부 표시', () => {
     at(KST_AFTER_MIDNIGHT)
     const days = lastNDays(3, done('2026-10-14'))
-    expect(days.map(d => [d.key, d.done])).toEqual([
-      ['2026-10-13', false], ['2026-10-14', true], ['2026-10-15', false],
+    expect(days.map((d) => [d.key, d.done])).toEqual([
+      ['2026-10-13', false],
+      ['2026-10-14', true],
+      ['2026-10-15', false],
     ])
   })
 })
@@ -135,23 +155,28 @@ describe('기기 플래그', () => {
   })
   it('리마인더 닫기·서버 정리는 한국 시간 자정이 지나면 다시 필요해진다', () => {
     at(KST_BEFORE_MIDNIGHT)
-    dismissReminderToday(); markServerCleanupDone()
+    dismissReminderToday()
+    markServerCleanupDone()
     expect(isReminderDismissedToday()).toBe(true)
     expect(isServerCleanupDoneToday()).toBe(true)
     vi.setSystemTime(KST_AFTER_MIDNIGHT)
     expect(isReminderDismissedToday()).toBe(false)
     expect(isServerCleanupDoneToday()).toBe(false)
   })
-  it('가입 대기 정보: 저장·읽기, 깨진 값은 null', () => {
-    savePendingProfile({ email: 'a@b.co', profile: { nickname: '민준' } })
-    expect(loadPendingProfile()).toEqual({ email: 'a@b.co', profile: { nickname: '민준' } })
-    localStorage.setItem('absolid.pendingProfile.v1', '{x')
-    expect(loadPendingProfile()).toBeNull()
-  })
   it('localStorage 접근이 막혀도(프라이빗 모드 등) 오류 없이 기본값', () => {
     vi.stubGlobal('localStorage', {
-      getItem() { throw new Error('denied') }, setItem() { throw new Error('denied') },
-      removeItem() { throw new Error('denied') }, get length() { throw new Error('denied') },
+      getItem() {
+        throw new Error('denied')
+      },
+      setItem() {
+        throw new Error('denied')
+      },
+      removeItem() {
+        throw new Error('denied')
+      },
+      get length() {
+        throw new Error('denied')
+      },
     })
     expect(isGuestChosen()).toBe(false)
     expect(() => setGuestChosen(true)).not.toThrow()
@@ -166,8 +191,11 @@ describe('기기 데이터 정리', () => {
   const seed = () => {
     saveRecord('2026-10-14', { completed: true })
     saveProfile({ nickname: '민준' })
-    markServerCleanupDone(); dismissReminderToday()
-    setGuestChosen(true); markPushConsentAsked(); markOnboardingDone()
+    markServerCleanupDone()
+    dismissReminderToday()
+    setGuestChosen(true)
+    markPushConsentAsked()
+    markOnboardingDone()
     localStorage.setItem('other.app', 'keep')
   }
   it('로그아웃: 계정별 데이터만 지우고 기기 설정은 유지', () => {

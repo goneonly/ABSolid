@@ -29,10 +29,14 @@ Deno.serve(async (req) => {
   const asUser = createClient(url, publishableKey(), {
     global: { headers: { Authorization: authHeader } },
   })
-  const { data: { user }, error: uErr } = await asUser.auth.getUser()
+  const {
+    data: { user },
+    error: uErr,
+  } = await asUser.auth.getUser()
   if (uErr || !user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401, headers: { ...cors, 'Content-Type': 'application/json' },
+      status: 401,
+      headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
   const uid = user.id
@@ -64,7 +68,8 @@ Deno.serve(async (req) => {
     if (dErr) throw dErr
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500, headers: { ...cors, 'Content-Type': 'application/json' },
+      status: 500,
+      headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
 

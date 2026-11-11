@@ -1,12 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import {
-  daysInRange, getRange, getPrevRange, mondayOf, rankRows, withRankDelta, weeklySummary,
-} from './stats.js'
+import { daysInRange, getRange, getPrevRange, mondayOf, rankRows, withRankDelta, weeklySummary } from './stats.js'
 
 // 2026-10-15(목) 한국 시간 09:00
 const THU = new Date(2026, 9, 15, 9)
 const SUN = new Date(2026, 9, 18, 21)
-const done = (...keys) => Object.fromEntries(keys.map(k => [k, { completed: true }]))
+const done = (...keys) => Object.fromEntries(keys.map((k) => [k, { completed: true }]))
 
 describe('기간 계산', () => {
   it('일수는 양 끝 포함, 서머타임 없는 한국 시간 기준', () => {
@@ -51,36 +49,54 @@ describe('리더보드 순위', () => {
   it('인증 횟수 순, 동점은 같은 순위 (다음 순위는 건너뜀)', () => {
     const sets = { me: ['2026-10-12'], b: ['2026-10-12', '2026-10-13'], c: ['2026-10-12', '2026-10-14'] }
     const rows = rankRows(members, sets, 'me', null, ...range)
-    expect(rows.map(r => [r.id, r.count, r.rank])).toEqual([
-      ['c', 2, 1], ['b', 2, 1], ['me', 1, 3], ['d', 0, 4],
+    expect(rows.map((r) => [r.id, r.count, r.rank])).toEqual([
+      ['c', 2, 1],
+      ['b', 2, 1],
+      ['me', 1, 3],
+      ['d', 0, 4],
     ])
   })
   it('내 기록은 서버에 아직 없어도 로컬 기록으로 보충 (기간 안만, 중복 없이)', () => {
     const records = { ...done('2026-10-12', '2026-10-15', '2026-10-01'), '2026-10-14': { completed: false } }
     const rows = rankRows(members, { me: ['2026-10-12'] }, 'me', records, ...range)
-    expect(rows.find(r => r.id === 'me').count).toBe(2)
+    expect(rows.find((r) => r.id === 'me').count).toBe(2)
   })
   it('다른 사람 기록은 로컬 기록으로 보충하지 않는다', () => {
     const rows = rankRows(members, {}, 'me', done('2026-10-13'), ...range)
-    expect(rows.filter(r => r.count > 0).map(r => r.id)).toEqual(['me'])
+    expect(rows.filter((r) => r.count > 0).map((r) => r.id)).toEqual(['me'])
   })
   it('순위 변동: 올라가면 양수, 새 멤버는 0', () => {
-    const now = [{ id: 'a', rank: 1 }, { id: 'b', rank: 2 }, { id: 'new', rank: 3 }]
-    const before = [{ id: 'b', rank: 1 }, { id: 'a', rank: 3 }]
-    expect(withRankDelta(now, before).map(r => r.delta)).toEqual([2, -1, 0])
+    const now = [
+      { id: 'a', rank: 1 },
+      { id: 'b', rank: 2 },
+      { id: 'new', rank: 3 },
+    ]
+    const before = [
+      { id: 'b', rank: 1 },
+      { id: 'a', rank: 3 },
+    ]
+    expect(withRankDelta(now, before).map((r) => r.delta)).toEqual([2, -1, 0])
   })
 })
 
 describe('주간 리포트', () => {
-  const at = (d) => { vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(d) }
+  const at = (d) => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(d)
+  }
 
   it('이번 주 인증·지난주 대비·달성률(지난 날 기준)', () => {
     at(THU) // 월~목 4일 경과
-    const s = weeklySummary(done(
-      '2026-10-12', '2026-10-13', '2026-10-15', // 이번 주 3회
-      '2026-10-05', '2026-10-11', // 지난주 2회
-      '2026-10-04', // 지지난주 — 제외
-    ))
+    const s = weeklySummary(
+      done(
+        '2026-10-12',
+        '2026-10-13',
+        '2026-10-15', // 이번 주 3회
+        '2026-10-05',
+        '2026-10-11', // 지난주 2회
+        '2026-10-04', // 지지난주 — 제외
+      ),
+    )
     expect(s).toMatchObject({ count: 3, lastCount: 2, delta: 1, rate: 75, streak: 1, range: '10.12 ~ 10.18' })
     expect(s.recent).toHaveLength(7)
     expect(s.recent.at(-1)).toMatchObject({ key: '2026-10-15', done: true })

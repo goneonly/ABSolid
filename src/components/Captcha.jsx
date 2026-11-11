@@ -17,7 +17,10 @@ function loadTurnstile() {
     s.src = SCRIPT
     s.async = true
     s.onload = () => resolve(window.turnstile)
-    s.onerror = () => { loading = null; reject(new Error('turnstile load failed')) }
+    s.onerror = () => {
+      loading = null
+      reject(new Error('turnstile load failed'))
+    }
     document.head.appendChild(s)
   })
   return loading

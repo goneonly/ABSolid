@@ -9,7 +9,11 @@ export default function CompleteModal({ day, busy, onSave, onSkip }) {
   async function handleFile(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    try { setPhoto(await compressImage(file)) } catch { /* 무시 */ }
+    try {
+      setPhoto(await compressImage(file))
+    } catch {
+      /* 무시 */
+    }
   }
 
   return (

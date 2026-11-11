@@ -8,7 +8,9 @@ if (typeof window !== 'undefined') {
     e.preventDefault() // 브라우저 기본 배너 대신 설정 화면 버튼으로
     deferredPrompt = e
   })
-  window.addEventListener('appinstalled', () => { deferredPrompt = null })
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null
+  })
 }
 
 // 이미 홈 화면 앱으로 실행 중인지

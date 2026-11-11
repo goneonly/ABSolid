@@ -1,8 +1,8 @@
 // Supabase Storage 버킷 이름과 파일 경로 규칙 — 업로드·삭제·서명은 모두 여기서 만든 경로를 사용
 // (supabase/functions/delete-account 의 그룹 사진 경로도 groupPhotoPath 와 같은 규칙)
 export const BUCKET = {
-  photos: 'photos',            // 인증샷 (비공개, signed URL 로만 열람)
-  avatars: 'avatars',          // 프로필 사진 (공개)
+  photos: 'photos', // 인증샷 (비공개, signed URL 로만 열람)
+  avatars: 'avatars', // 프로필 사진 (공개)
   groupPhotos: 'group-photos', // 그룹 사진 (공개, 그룹장만 변경)
 }
 

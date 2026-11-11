@@ -1,23 +1,23 @@
-import { useMemo } from "react";
-import { weeklySummary } from "../stats.js";
-import { Card, CardTitle, Sub, cx } from "./ui.jsx";
+import { useMemo } from 'react'
+import { weeklySummary } from '../stats.js'
+import { Card, CardTitle, Sub, cx } from './ui.jsx'
 
-const DOW = ["일", "월", "화", "수", "목", "금", "토"];
+const DOW = ['일', '월', '화', '수', '목', '금', '토']
 
 // 이번 주(월~일) 인증 요약 + 지난주 대비 + 최근 7일 현황
 export default function WeeklyReport({ records }) {
-  const data = useMemo(() => weeklySummary(records), [records]);
+  const data = useMemo(() => weeklySummary(records), [records])
 
-  const { count, lastCount, delta, rate, streak, recent, range } = data;
+  const { count, lastCount, delta, rate, streak, recent, range } = data
 
   const message =
     count === 0
-      ? "이번 주 첫 운동을 시작해 볼까요?"
+      ? '이번 주 첫 운동을 시작해 볼까요?'
       : delta > 0
-        ? "지난주보다 더 활발해요! 이 기세 그대로 가요."
+        ? '지난주보다 더 활발해요! 이 기세 그대로 가요.'
         : delta < 0
-          ? "지난주엔 더 열심이었어요. 오늘 한 번 어때요?"
-          : "지난주와 같은 페이스로 꾸준해요.";
+          ? '지난주엔 더 열심이었어요. 오늘 한 번 어때요?'
+          : '지난주와 같은 페이스로 꾸준해요.'
 
   return (
     <Card>
@@ -31,16 +31,19 @@ export default function WeeklyReport({ records }) {
       </div>
 
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
-        <i className="block h-full rounded-full bg-brand transition-[width] duration-300" style={{ width: `${Math.min(100, rate)}%` }} />
+        <i
+          className="block h-full rounded-full bg-brand transition-[width] duration-300"
+          style={{ width: `${Math.min(100, rate)}%` }}
+        />
       </div>
 
       <Sub className="mt-2.5">
         지난주 {lastCount}회
         {delta !== 0 && (
-          <span className={cx("ml-1.5 text-2xs font-bold", delta > 0 ? "text-success" : "text-dim")}>
+          <span className={cx('ml-1.5 text-2xs font-bold', delta > 0 ? 'text-success' : 'text-dim')}>
             {delta > 0 ? `▲${delta}` : `▼${-delta}`}
           </span>
-        )}{" "}
+        )}{' '}
         · {message}
       </Sub>
 
@@ -51,12 +54,12 @@ export default function WeeklyReport({ records }) {
             <div className="flex flex-col items-center gap-2 text-xs text-dim" key={d.key}>
               <div
                 className={cx(
-                  "flex size-7 items-center justify-center rounded-full text-sm",
-                  d.done ? "bg-brand font-bold text-white" : "bg-dot",
-                  i === 6 && "outline-2 outline-offset-2 outline-brand",
+                  'flex size-7 items-center justify-center rounded-full text-sm',
+                  d.done ? 'bg-brand font-bold text-white' : 'bg-dot',
+                  i === 6 && 'outline-2 outline-offset-2 outline-brand',
                 )}
               >
-                {d.done ? "✓" : d.date.getDate()}
+                {d.done ? '✓' : d.date.getDate()}
               </div>
               {DOW[d.date.getDay()]}
             </div>
@@ -64,7 +67,7 @@ export default function WeeklyReport({ records }) {
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
 function Stat({ value, unit, label }) {
@@ -76,5 +79,5 @@ function Stat({ value, unit, label }) {
       </b>
       {label}
     </div>
-  );
+  )
 }

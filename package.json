@@ -10,7 +10,9 @@
     "lint": "eslint src",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "bash supabase/tests/run.sh"
+    "test:db": "bash supabase/tests/run.sh",
+    "format": "prettier --write src supabase/functions",
+    "format:check": "prettier --check src supabase/functions"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",
@@ -27,6 +29,7 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
+    "prettier": "^3.9.10",
     "supabase": "^2.109.1",
     "tailwindcss": "^4.3.3",
     "vite": "^5.4.11",

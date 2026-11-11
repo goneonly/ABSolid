@@ -85,23 +85,36 @@ SQL 파일을 새로 만들면 `supabase/tests/run.sh`의 실행 순서 목록�
 - [Supabase 설정](docs/SUPABASE_SETUP.md): SQL 실행 순서, 스토리지, Edge Function 배포, 이메일 인증, 캡차, 요청 제한
 - [푸시 알림 설정](docs/NOTIFICATIONS_SETUP.md): VAPID 키, 리마인더 발송
 
+코드를 읽기 전에 보면 좋은 문서입니다.
+
+- [API 명세](docs/API.md): 서버 함수, 테이블과 권한, 저장소, 앱 함수 목록
+- [변경 기록](docs/CHANGELOG.md): 버전별 변경 사항. 버전을 올릴 때마다 함께 고칩니다.
+
 ## 프로젝트 구조
 
 ```
 src/
+├── App.jsx          화면 전환과 로그인 상태에 따른 시작 처리
 ├── pages/           화면 (Login, Home, Workout, Group, Settings, Admin)
-├── components/      공통 UI, 모달, 리더보드, 주간 리포트, 캡차
-├── api.js           서버 통신 (기록, 그룹, 사진, 응원, 차단)
+│   ├── group/       그룹 화면 부품 (상세, 멤버 줄, 참여·생성 카드)
+│   └── settings/    설정 화면 부품 (프로필 사진, 변경 모달, 본인 확인, 알림, 차단 목록)
+├── components/      공통 UI(ui.jsx), 모달, 리더보드, 주간 리포트, 캡차, 사진 고르기
+├── api.js           서버 통신 — 회원 기능 (기록, 사진, 프로필, 그룹, 응원, 차단, 신고)
+├── admin.js         서버 통신 — 관리자 화면 전용
 ├── auth.js          가입, 로그인, 비밀번호, 탈퇴
-├── admin.js         관리자 기능
+├── push.js          푸시 알림 구독
+├── supabase.js      Supabase 연결, 로그인 사용자 조회
 ├── storage.js       기기 저장소(localStorage). 키는 이 파일에서만 관리
 ├── storagePaths.js  Storage 버킷과 파일 경로 규칙
 ├── stats.js         리더보드 순위, 주간 리포트 계산
+├── validation.js    입력값 검사 (이메일, 이름, 전화번호, 비밀번호, 닉네임)
+├── useLoad.js       화면에서 서버 데이터를 불러오는 공통 훅
 └── index.css        디자인 토큰 (색상, 글자 크기, 모서리)
 supabase/
 ├── *.sql            스키마와 보안 정책 (실행 순서는 Supabase 설정 문서 참고)
 ├── tests/           DB 보안 테스트
 └── functions/       delete-account(탈퇴), send-reminders(리마인더), notify-cheer(응원 알림)
+docs/                API 명세, 변경 기록, 서버 설정 문서
 prototypes/
 └── situp-render/    운동 영상을 3D로 만드는 Blender 파이프라인 (작업 중)
 ```

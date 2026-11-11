@@ -13,15 +13,21 @@ import RecoveryModal from './components/RecoveryModal.jsx'
 import { supabase } from './supabase.js'
 import { isPushSupported } from './push.js'
 import {
-  getRecords, mergeRecords, cleanupLocalPhotos,
-  isGuestChosen, setGuestChosen, isOnboardingPending, markOnboardingDone,
-  isPushConsentAsked, markPushConsentAsked, isServerCleanupDoneToday, markServerCleanupDone,
+  getRecords,
+  mergeRecords,
+  cleanupLocalPhotos,
+  isGuestChosen,
+  setGuestChosen,
+  isOnboardingPending,
+  markOnboardingDone,
+  isPushConsentAsked,
+  markPushConsentAsked,
+  isServerCleanupDoneToday,
+  markServerCleanupDone,
 } from './storage.js'
 import { useAuth } from './useAuth.js'
-import { flushPendingProfile, signOut } from './auth.js'
-import { fetchServerRecords, retryPendingCompletions, cleanupOldServerPhotos } from './api.js'
-import { fetchMyRole } from './admin.js'
-
+import { signOut } from './auth.js'
+import { fetchMyRole, fetchServerRecords, retryPendingCompletions, cleanupOldServerPhotos } from './api.js'
 
 export default function App() {
   // view: home | workout | group | settings | admin
@@ -32,19 +38,24 @@ export default function App() {
   const [showPushConsent, setShowPushConsent] = useState(false)
   const [showRecovery, setShowRecovery] = useState(false)
   const [guest, setGuest] = useState(isGuestChosen)
-  const refresh = useCallback(() => setTick(t => t + 1), [])
+  const refresh = useCallback(() => setTick((t) => t + 1), [])
   const session = useAuth()
   const records = getRecords()
   const accountKey = session?.user?.id || 'guest'
 
   // 앱 시작 시: 7일 지난 로컬 인증샷 정리 (localStorage 용량 보호)
-  useEffect(() => { cleanupLocalPhotos(7) }, [])
+  useEffect(() => {
+    cleanupLocalPhotos(7)
+  }, [])
 
   // 비밀번호 재설정 메일 링크로 진입하면 새 비밀번호 설정 모달 표시
   useEffect(() => {
     if (!supabase) return
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') { setView('settings'); setShowRecovery(true) }
+      if (event === 'PASSWORD_RECOVERY') {
+        setView('settings')
+        setShowRecovery(true)
+      }
       // 로그아웃·탈퇴하면 다시 첫 로그인 화면부터
       if (event === 'SIGNED_OUT') {
         setGuestChosen(false)
@@ -65,18 +76,25 @@ export default function App() {
 
   // 로그인 시: 역할 확인 (관리자 메뉴 노출) + 비활성 계정 차단
   useEffect(() => {
-    if (!session) { setIsAdmin(false); return }
+    if (!session) {
+      setIsAdmin(false)
+      return
+    }
     let alive = true
-    fetchMyRole().then(({ role, isActive }) => {
-      if (!alive) return
-      if (!isActive) {
-        alert('이용이 제한된 계정이에요. 문의가 필요하면 관리자에게 연락해 주세요.')
-        signOut()
-        return
-      }
-      setIsAdmin(role === 'admin')
-    }).catch(() => {})
-    return () => { alive = false }
+    fetchMyRole()
+      .then(({ role, isActive }) => {
+        if (!alive) return
+        if (!isActive) {
+          alert('이용이 제한된 계정이에요. 문의가 필요하면 관리자에게 연락해 주세요.')
+          signOut()
+          return
+        }
+        setIsAdmin(role === 'admin')
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
   }, [session])
 
   // 로그인되면: 연결 문제로 못 남긴 완료 기록 재시도 + 서버 기록 내려받아 병합
@@ -85,17 +103,23 @@ export default function App() {
   useEffect(() => {
     if (!session) return
     let alive = true
-    flushPendingProfile().catch(() => {}) // 가입 시 못 올린 이름·전화번호 반영
     retryPendingCompletions()
       .then(fetchServerRecords)
-      .then(server => { if (alive && server) { mergeRecords(server); refresh() } })
+      .then((server) => {
+        if (alive && server) {
+          mergeRecords(server)
+          refresh()
+        }
+      })
       .catch(() => {})
     if (!isServerCleanupDoneToday()) {
       cleanupOldServerPhotos(30)
         .then(markServerCleanupDone)
         .catch(() => {})
     }
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [session, refresh])
 
   // 첫 화면: 서버 연결 시, 로그인도 비회원 선택도 안 했으면 로그인 화면
@@ -124,7 +148,15 @@ export default function App() {
       </header>
 
       {view === 'home' && <Home records={records} session={session} onStart={() => setView('workout')} />}
-      {view === 'workout' && <Workout session={session} onDone={() => { refresh(); setView('home') }} />}
+      {view === 'workout' && (
+        <Workout
+          session={session}
+          onDone={() => {
+            refresh()
+            setView('home')
+          }}
+        />
+      )}
       {/* 계정이 바뀌면 화면 상태(닉네임 입력값·선택한 그룹 등)를 새로 시작 */}
       {view === 'group' && <Group key={accountKey} records={records} session={session} />}
       {view === 'settings' && (
@@ -141,9 +173,15 @@ export default function App() {
           }}
         />
       )}
-      {view === 'admin' && (isAdmin
-        ? <Admin onBack={() => setView('settings')} />
-        : <Page><PageTitle>관리자</PageTitle><Sub>접근 권한이 없어요.</Sub></Page>)}
+      {view === 'admin' &&
+        (isAdmin ? (
+          <Admin onBack={() => setView('settings')} />
+        ) : (
+          <Page>
+            <PageTitle>관리자</PageTitle>
+            <Sub>접근 권한이 없어요.</Sub>
+          </Page>
+        ))}
 
       {showOnboarding && (
         <OnboardingModal

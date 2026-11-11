@@ -13,10 +13,19 @@ export function Logo({ size = 26, className }) {
     <span className={cx('flex items-center gap-2', className)}>
       <svg width={size} height={size} viewBox="0 0 26 26" fill="none" aria-hidden="true">
         <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--color-brand)" />
-        <path d="M8 18 L13 7 L18 18" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path
+          d="M8 18 L13 7 L18 18"
+          stroke="#fff"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
         <path d="M10 14.5 H16" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
       </svg>
-      <strong className="font-extrabold tracking-tight">Abs<em className="text-brand not-italic">olid</em></strong>
+      <strong className="font-extrabold tracking-tight">
+        Abs<em className="text-brand not-italic">olid</em>
+      </strong>
     </span>
   )
 }
@@ -141,7 +150,9 @@ export function FieldError({ children }) {
 export function Field({ id, label, error, className, ...inputProps }) {
   return (
     <div className={cx('mt-3.5', className)}>
-      <label htmlFor={id} className="mb-1.5 block text-sm text-dim">{label}</label>
+      <label htmlFor={id} className="mb-1.5 block text-sm text-dim">
+        {label}
+      </label>
       <Input id={id} aria-invalid={!!error} {...inputProps} />
       {error && <FieldError>{error}</FieldError>}
     </div>

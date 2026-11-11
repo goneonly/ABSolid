@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
-  BUCKET, workoutPhotoPath, workoutPhotoDate, avatarPath, groupPhotoPath, inFolder, photoObjectPath,
+  BUCKET,
+  workoutPhotoPath,
+  workoutPhotoDate,
+  avatarPath,
+  groupPhotoPath,
+  inFolder,
+  photoObjectPath,
 } from './storagePaths.js'
 
 // 경로 규칙은 DB 보안 정책과 맞물려 있음:

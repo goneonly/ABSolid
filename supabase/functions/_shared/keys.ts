@@ -6,7 +6,7 @@ function pick(jsonEnv: string, prefix: string, legacyEnv: string): string {
   if (raw) {
     try {
       const parsed = JSON.parse(raw)
-      const value = typeof parsed === 'string' ? parsed : parsed.default ?? Object.values(parsed)[0]
+      const value = typeof parsed === 'string' ? parsed : (parsed.default ?? Object.values(parsed)[0])
       if (typeof value === 'string' && value) return value
     } catch {
       if (raw.startsWith(prefix)) return raw

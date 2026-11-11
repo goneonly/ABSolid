@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { signIn, signUp, sendPasswordReset, resendSignupEmail, isDisposableEmail } from '../auth.js'
 import { EMAIL_NOT_CONFIRMED } from '../authErrors.js'
 import { getProfile, markOnboardingPending, cancelOnboarding } from '../storage.js'
-import {
-  validateEmail, validateName, validatePhone, formatPhone, validatePassword,
-} from '../validation.js'
+import { validateEmail, validateName, validatePhone, formatPhone, validatePassword } from '../validation.js'
 import { PrivacyModal, TermsModal, TERMS_VERSION } from '../components/LegalModals.jsx'
 import { Button, Field, FieldError, LinkButton, Logo, Sub } from '../components/ui.jsx'
 import { useCaptcha, CAPTCHA_WAIT } from '../components/Captcha.jsx'
@@ -61,56 +59,73 @@ export default function Login({ onDone, onGuest }) {
     return !Object.values(errs).some(Boolean)
   }
 
+  // 캡차 토큰이 필요한 요청 공통 처리: 확인란 통과 여부 확인 → 요청 → 토큰 새로 받기(토큰은 1회용)
+  // 확인란이 아직 준비되지 않았으면 안내만 띄우고 null 반환
+  async function withCaptcha(request) {
+    if (!captcha.ready) {
+      setError(CAPTCHA_WAIT)
+      return null
+    }
+    const res = await request(captcha.token)
+    captcha.reset()
+    return res
+  }
+
   async function submit(e) {
     e.preventDefault()
     setError('')
     setNotice('')
     setCanResend(false)
     if (!validateAll()) return
-    if (!captcha.ready) return setError(CAPTCHA_WAIT)
     setBusy(true)
-    if (!signup) {
-      const res = await signIn(email.trim(), password, captcha.token)
-      captcha.reset()
-      setBusy(false)
-      if (res?.error) {
-        setError(res.error)
-        setCanResend(res.error === EMAIL_NOT_CONFIRMED)
-      } else onDone()
+    await (signup ? submitSignUp() : submitSignIn())
+    setBusy(false)
+  }
+
+  async function submitSignIn() {
+    const res = await withCaptcha((token) => signIn(email.trim(), password, token))
+    if (!res) return
+    if (res.error) {
+      setError(res.error)
+      setCanResend(res.error === EMAIL_NOT_CONFIRMED)
       return
     }
-    // 온보딩 플래그는 가입 요청 "전"에 저장해야 함 —
-    // 가입 성공 시 세션 발급(App의 팝업 체크)이 응답보다 먼저 일어나기 때문
+    onDone()
+  }
+
+  async function submitSignUp() {
     if (await isDisposableEmail(email)) {
-      setBusy(false)
       setFieldErrors((p) => ({ ...p, email: '일회용(임시) 이메일로는 가입할 수 없어요.' }))
       return
     }
+    // 온보딩 표시는 가입 요청 "전"에 저장 — 가입에 성공하면 응답보다 세션 발급(App 의 팝업 확인)이 먼저 일어남
     markOnboardingPending()
-    const res = await signUp(email.trim(), password, getProfile().nickname, fullName.trim(), formatPhone(phone), {
-      age_over_14: true,
-      terms_version: TERMS_VERSION,
-      terms_agreed_at: new Date().toISOString(),
-    }, captcha.token)
-    captcha.reset()
-    setBusy(false)
-    if (res?.error) {
-      cancelOnboarding() // 가입 실패 시 롤백
-      setError(res.error)
+    const res = await withCaptcha((token) =>
+      signUp({
+        email: email.trim(),
+        password,
+        nickname: getProfile().nickname,
+        fullName: fullName.trim(),
+        phone: formatPhone(phone),
+        termsVersion: TERMS_VERSION,
+        captchaToken: token,
+      }),
+    )
+    if (!res || res.error) {
+      cancelOnboarding() // 가입하지 못했으면 되돌림
+      if (res) setError(res.error)
       return
     }
-    if (res?.data?.session) {
-      onDone()
-    } else {
-      // 이메일 인증이 필요한 경우: 로그인 모드로 돌려 인증 후 바로 로그인할 수 있게
-      setMode('signin')
-      setPassword('')
-      setNotice('가입 확인 메일을 보냈어요. 메일의 링크를 누르면 바로 로그인돼요.')
-      setCanResend(true)
-    }
+    if (res.data?.session) return onDone()
+    // 이메일 인증이 필요한 경우: 로그인 화면으로 돌려 인증 후 바로 로그인할 수 있게
+    setMode('signin')
+    setPassword('')
+    setNotice('가입 확인 메일을 보냈어요. 메일의 링크를 누르면 바로 로그인돼요.')
+    setCanResend(true)
   }
 
-  async function resendEmail() {
+  // 메일 요청 (비밀번호 재설정 / 인증 메일 다시 보내기) — 이메일 칸에 적힌 주소로 보냄
+  async function sendMail(send, setSending, doneMessage) {
     setError('')
     setNotice('')
     const emailErr = validateEmail(email)
@@ -118,38 +133,33 @@ export default function Login({ onDone, onGuest }) {
       setFieldErrors((p) => ({ ...p, email: emailErr }))
       return
     }
-    if (!captcha.ready) return setError(CAPTCHA_WAIT)
-    setResendBusy(true)
-    const res = await resendSignupEmail(email.trim(), captcha.token)
-    captcha.reset()
-    setResendBusy(false)
-    if (res?.error) setError(res.error)
-    else setNotice('인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.')
+    setSending(true)
+    const res = await withCaptcha((token) => send(email, token))
+    setSending(false)
+    if (!res) return
+    if (res.error) setError(res.error)
+    else setNotice(doneMessage)
   }
 
-  async function forgotPassword() {
-    setError('')
-    setNotice('')
-    const emailErr = validateEmail(email)
-    if (emailErr) {
-      setFieldErrors((p) => ({ ...p, email: emailErr }))
-      return
-    }
-    if (!captcha.ready) return setError(CAPTCHA_WAIT)
-    setResetBusy(true)
-    const res = await sendPasswordReset(email.trim(), captcha.token)
-    captcha.reset()
-    setResetBusy(false)
-    if (res?.error) setError(res.error)
-    else setNotice('비밀번호 재설정 메일을 보냈어요. 메일의 링크를 열면 새 비밀번호를 정할 수 있어요.')
-  }
+  const resendEmail = () =>
+    sendMail(resendSignupEmail, setResendBusy, '인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.')
+  const forgotPassword = () =>
+    sendMail(
+      sendPasswordReset,
+      setResetBusy,
+      '비밀번호 재설정 메일을 보냈어요. 메일의 링크를 열면 새 비밀번호를 정할 수 있어요.',
+    )
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
       <Logo size={48} className="justify-center gap-3 text-3xl" />
       <Sub className="mt-2 text-center">매일 복근, 같이</Sub>
 
-      <form className="mt-8 w-full rounded-2xl border border-line bg-surface px-5 pt-6 pb-5" onSubmit={submit} noValidate>
+      <form
+        className="mt-8 w-full rounded-2xl border border-line bg-surface px-5 pt-6 pb-5"
+        onSubmit={submit}
+        noValidate
+      >
         <h2 className="text-xl font-bold">{signup ? '회원가입' : '로그인'}</h2>
         {signup && (
           <>
@@ -205,7 +215,9 @@ export default function Login({ onDone, onGuest }) {
           value={password}
           autoComplete={signup ? 'new-password' : 'current-password'}
           error={fieldErrors.password}
-          onBlur={() => signup && setFieldErrors((p) => ({ ...p, password: password ? validatePassword(password) : '' }))}
+          onBlur={() =>
+            signup && setFieldErrors((p) => ({ ...p, password: password ? validatePassword(password) : '' }))
+          }
           onChange={(e) => {
             setPassword(e.target.value)
             clearFieldError('password')

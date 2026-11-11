@@ -4,25 +4,45 @@ const KEY_PREFIX = 'absolid.'
 const KEYS = {
   records: 'absolid.records.v1',
   profile: 'absolid.profile.v1',
-  pendingProfile: 'absolid.pendingProfile.v1', // 이메일 인증 대기 중인 가입 정보
-  serverCleanup: 'absolid.cleanup.v1',         // 서버 인증샷을 마지막으로 정리한 날짜
+  serverCleanup: 'absolid.cleanup.v1', // 서버 인증샷을 마지막으로 정리한 날짜
   remindDismissed: 'absolid.remind.dismissed', // 저녁 리마인더 배너를 닫은 날짜
-  onboarding: 'absolid.onboarding.v1',         // 'pending' | 'done'
-  pushConsent: 'absolid.pushconsent.v1',       // 푸시 동의 팝업을 이미 보여줬는지
-  guest: 'absolid.guest.v1',                   // 첫 화면에서 '비회원으로 시작하기'를 골랐는지
+  onboarding: 'absolid.onboarding.v1', // 'pending' | 'done'
+  pushConsent: 'absolid.pushconsent.v1', // 푸시 동의 팝업을 이미 보여줬는지
+  guest: 'absolid.guest.v1', // 첫 화면에서 '비회원으로 시작하기'를 골랐는지
 }
-const RECORDS_KEY = KEYS.records
-const PROFILE_KEY = KEYS.profile
 
 // 단순 값 읽기·쓰기 (프라이빗 모드 등에서 localStorage 접근이 실패해도 앱이 죽지 않게)
 function read(key) {
-  try { return localStorage.getItem(key) } catch { return null }
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
 }
 function write(key, value) {
-  try { localStorage.setItem(key, value) } catch { /* noop */ }
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    /* noop */
+  }
 }
 function remove(key) {
-  try { localStorage.removeItem(key) } catch { /* noop */ }
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    /* noop */
+  }
+}
+// JSON 값 읽기·쓰기 (없거나 깨진 값이면 fallback)
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || fallback
+  } catch {
+    return fallback
+  }
+}
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value))
 }
 
 export function todayKey(d = new Date()) {
@@ -37,19 +57,22 @@ export function todayWorkoutDay(d = new Date()) {
   return Math.min(d.getDate(), 30)
 }
 
+// ── 운동 기록 ────────────────────────────────
+// { 'YYYY-MM-DD': { completed, day, completedAt, photo(기기 사진), photoUrl(서버 경로), pendingSession } }
 export function getRecords() {
-  try { return JSON.parse(localStorage.getItem(RECORDS_KEY)) || {} } catch { return {} }
+  return readJson(KEYS.records, {})
 }
 
+// 그 날짜 기록에 값을 덮어씀 (없던 날짜면 새로 만듦)
 export function saveRecord(dateKey, rec) {
   const all = getRecords()
   all[dateKey] = { ...(all[dateKey] || {}), ...rec }
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(all))
+  writeJson(KEYS.records, all)
   return all
 }
 
 export function clearRecords() {
-  localStorage.removeItem(RECORDS_KEY)
+  localStorage.removeItem(KEYS.records)
 }
 
 // 로그아웃 시: 이 기기에 남은 계정별 데이터 정리
@@ -65,7 +88,9 @@ export function clearAllAppData() {
     const keys = []
     for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i))
     for (const k of keys) if (k?.startsWith(KEY_PREFIX)) localStorage.removeItem(k)
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 // ── 기기 플래그 ──────────────────────────────
@@ -91,13 +116,6 @@ export const markServerCleanupDone = () => write(KEYS.serverCleanup, todayKey())
 export const isReminderDismissedToday = () => read(KEYS.remindDismissed) === todayKey()
 export const dismissReminderToday = () => write(KEYS.remindDismissed, todayKey())
 
-// 이메일 인증 대기 중인 가입 정보 ({ email, profile })
-export function loadPendingProfile() {
-  try { return JSON.parse(read(KEYS.pendingProfile)) } catch { return null }
-}
-export const savePendingProfile = (value) => write(KEYS.pendingProfile, JSON.stringify(value))
-export const clearPendingProfile = () => remove(KEYS.pendingProfile)
-
 // 오래된 인증샷(dataURL)만 로컬에서 정리 — 완료 기록 자체는 유지
 // localStorage 한도(약 5MB) 보호: 최근 keepDays일 사진만 남김
 export function cleanupLocalPhotos(keepDays = 7) {
@@ -112,7 +130,7 @@ export function cleanupLocalPhotos(keepDays = 7) {
       changed = true
     }
   }
-  if (changed) localStorage.setItem(RECORDS_KEY, JSON.stringify(all))
+  if (changed) writeJson(KEYS.records, all)
 }
 
 export function computeStreak(records = getRecords()) {
@@ -139,12 +157,13 @@ export function lastNDays(n, records = getRecords()) {
   return out
 }
 
+// ── 내 프로필 (닉네임·프로필 사진) ─────────────
 export function getProfile() {
-  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || { nickname: '' } } catch { return { nickname: '' } }
+  return readJson(KEYS.profile, { nickname: '' })
 }
 
 export function saveProfile(p) {
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(p))
+  writeJson(KEYS.profile, p)
 }
 
 // 서버 기록을 로컬로 병합 (로컬에만 있는 사진 등은 유지)
@@ -154,5 +173,5 @@ export function mergeRecords(server) {
   for (const [k, v] of Object.entries(server)) {
     all[k] = { ...v, ...(all[k]?.photo ? { photo: all[k].photo } : {}) }
   }
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(all))
+  writeJson(KEYS.records, all)
 }

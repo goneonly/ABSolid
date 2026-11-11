@@ -30,15 +30,17 @@ export async function sendPushToUsers(admin: SupabaseClient, userIds: string[], 
   const body = JSON.stringify(payload)
   let sent = 0
   const expired: number[] = []
-  await Promise.all((subs || []).map(async (s) => {
-    try {
-      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body)
-      sent++
-    } catch (err) {
-      const code = (err as { statusCode?: number }).statusCode
-      if (code === 404 || code === 410) expired.push(s.id) // 구독 만료/취소
-    }
-  }))
+  await Promise.all(
+    (subs || []).map(async (s) => {
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body)
+        sent++
+      } catch (err) {
+        const code = (err as { statusCode?: number }).statusCode
+        if (code === 404 || code === 410) expired.push(s.id) // 구독 만료/취소
+      }
+    }),
+  )
   if (expired.length) await admin.from('push_subscriptions').delete().in('id', expired)
   return { sent, cleaned: expired.length }
 }

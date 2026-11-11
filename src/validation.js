@@ -4,7 +4,8 @@
 export function validateEmail(email) {
   const v = (email || '').trim()
   if (!v) return '이메일을 입력해 주세요.'
-  const re = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/
+  const re =
+    /^[A-Za-z0-9._%+-]+@[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/
   if (!re.test(v)) return '올바른 이메일 형식이 아니에요. (예: name@example.com)'
   if (v.length > 254) return '이메일이 너무 길어요.'
   return ''

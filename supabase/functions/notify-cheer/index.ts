@@ -21,7 +21,9 @@ Deno.serve(async (req) => {
   const asUser = createClient(url, publishableKey(), {
     global: { headers: { Authorization: req.headers.get('Authorization') || '' } },
   })
-  const { data: { user } } = await asUser.auth.getUser()
+  const {
+    data: { user },
+  } = await asUser.auth.getUser()
   if (!user) return json({ error: 'Unauthorized' }, 401)
 
   const { cheerId } = await req.json().catch(() => ({}))
@@ -44,8 +46,10 @@ Deno.serve(async (req) => {
 
   // 받는 사람이 보낸 사람을 차단했으면 알리지 않음 (응원 직후 차단한 경우 — v0.9 SQL)
   const { data: blocked } = await admin
-    .from('user_blocks').select('blocker')
-    .eq('blocker', cheer.to_user).eq('blocked', user.id)
+    .from('user_blocks')
+    .select('blocker')
+    .eq('blocker', cheer.to_user)
+    .eq('blocked', user.id)
     .maybeSingle()
   if (blocked) return json({ sent: 0, skipped: true })
 
@@ -55,9 +59,10 @@ Deno.serve(async (req) => {
   ])
   const name = me?.nickname || '그룹 멤버'
   const where = group?.name ? `[${group.name}] ` : ''
-  const body = cheer.kind === 'done'
-    ? `${where}${name}님이 오늘 운동을 응원했어요.`
-    : `${where}${name}님이 응원을 보냈어요. 오늘 운동하러 가볼까요?`
+  const body =
+    cheer.kind === 'done'
+      ? `${where}${name}님이 오늘 운동을 응원했어요.`
+      : `${where}${name}님이 응원을 보냈어요. 오늘 운동하러 가볼까요?`
 
   const result = await sendPushToUsers(admin, [cheer.to_user], {
     title: 'Absolid',

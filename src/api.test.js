@@ -12,7 +12,11 @@ const { client, bucket, workoutsTable } = vi.hoisted(() => {
   }
   return { client, bucket, workoutsTable }
 })
-vi.mock('./supabase.js', () => ({ supabase: client }))
+// 로그인 사용자 조회(currentUserId)는 실제 구현과 같게: 가짜 클라이언트의 세션에서 읽음
+vi.mock('./supabase.js', () => {
+  const currentUser = async () => (await client.auth.getSession()).data.session?.user || null
+  return { supabase: client, currentUser, currentUserId: async () => (await currentUser())?.id || null }
+})
 
 const { completeWorkout, retryPendingCompletions, fetchBlockedIds, blockUser } = await import('./api.js')
 const { getRecords, saveRecord } = await import('./storage.js')
@@ -40,7 +44,8 @@ describe('운동 완료 요청', () => {
   it('서버가 판단해 거절(P0001: 시청 시간 부족 등)하면 다시 시도하지 않는다', async () => {
     client.rpc.mockResolvedValue(rpcError('P0001', '영상을 끝까지 시청해야 완료로 기록돼요. 약 3분 남았어요.'))
     await expect(completeWorkout('s1')).rejects.toMatchObject({
-      retryable: false, message: expect.stringContaining('약 3분 남았어요'),
+      retryable: false,
+      message: expect.stringContaining('약 3분 남았어요'),
     })
   })
   it('연결 문제 등 그 밖의 오류는 나중에 다시 시도할 수 있다', async () => {
@@ -79,7 +84,11 @@ describe('못 보낸 완료 기록 재시도 (앱 시작 시)', () => {
     client.rpc.mockResolvedValue({ data: '2026-10-14', error: null })
     saveRecord('2026-10-15', { completed: true, pendingSession: 's1', photo: 'data:image/jpeg;base64,AAAA' })
     await retryPendingCompletions()
-    expect(bucket.upload).toHaveBeenCalledWith(`${UID}/2026-10-14.jpg`, expect.any(Blob), expect.objectContaining({ upsert: true }))
+    expect(bucket.upload).toHaveBeenCalledWith(
+      `${UID}/2026-10-14.jpg`,
+      expect.any(Blob),
+      expect.objectContaining({ upsert: true }),
+    )
     expect(workoutsTable.update).toHaveBeenCalledWith({ photo_url: `${UID}/2026-10-14.jpg` })
   })
 

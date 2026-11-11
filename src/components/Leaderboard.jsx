@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { todayKey } from '../storage.js'
 import { fetchGroupWorkoutDates } from '../api.js'
-import { daysInRange, getPrevRange, getRange, rankRows, withRankDelta } from '../stats.js'
+import { daysInRange, getPrevRange, getRange, rankRows, shortDate, withRankDelta } from '../stats.js'
 import { Card, CardTitle, Input, MemberAvatar, Sub, cx } from './ui.jsx'
 
 const PERIODS = [
@@ -27,18 +27,25 @@ export default function Leaderboard({ members, myId, myName, records }) {
     async function run() {
       if (!members.length) return
       setLoading(true)
-      const ids = members.map(m => m.id)
+      const ids = members.map((m) => m.id)
       try {
         const [c, p] = await Promise.all([
           fetchGroupWorkoutDates(ids, startKey, endKey),
           fetchGroupWorkoutDates(ids, pStartKey, pEndKey),
         ])
-        if (alive) { setCur(c); setPrev(p) }
-      } catch { /* 네트워크 오류 시 조용히 패스 */ }
+        if (alive) {
+          setCur(c)
+          setPrev(p)
+        }
+      } catch {
+        /* 네트워크 오류 시 조용히 패스 */
+      }
       if (alive) setLoading(false)
     }
     run()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [members, myId, startKey, endKey, pStartKey, pEndKey])
 
   const rows = useMemo(() => {
@@ -50,19 +57,19 @@ export default function Leaderboard({ members, myId, myName, records }) {
   }, [cur, prev, members, myId, records, startKey, endKey, pStartKey, pEndKey])
 
   const totalDays = daysInRange(startKey, endKey)
-  const me = rows?.find(r => r.id === myId)
+  const me = rows?.find((r) => r.id === myId)
 
   return (
     <Card>
       <div className="flex items-center justify-between">
         <CardTitle>리더보드</CardTitle>
         <span className="text-2xs text-dim">
-          {startKey.slice(5).replace('-', '.')} ~ {endKey.slice(5).replace('-', '.')}
+          {shortDate(startKey)} ~ {shortDate(endKey)}
         </span>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {PERIODS.map(p => (
+        {PERIODS.map((p) => (
           <button
             key={p.key}
             className={cx(
@@ -78,11 +85,23 @@ export default function Leaderboard({ members, myId, myName, records }) {
 
       {period === 'custom' && (
         <div className="mt-2.5 flex items-center gap-2">
-          <Input type="date" className="flex-1 px-2.5 py-2 text-sm" value={cs} max={todayKey()}
-            onChange={e => setCs(e.target.value)} aria-label="시작 날짜" />
+          <Input
+            type="date"
+            className="flex-1 px-2.5 py-2 text-sm"
+            value={cs}
+            max={todayKey()}
+            onChange={(e) => setCs(e.target.value)}
+            aria-label="시작 날짜"
+          />
           <Sub>~</Sub>
-          <Input type="date" className="flex-1 px-2.5 py-2 text-sm" value={ce} max={todayKey()}
-            onChange={e => setCe(e.target.value)} aria-label="끝 날짜" />
+          <Input
+            type="date"
+            className="flex-1 px-2.5 py-2 text-sm"
+            value={ce}
+            max={todayKey()}
+            onChange={(e) => setCe(e.target.value)}
+            aria-label="끝 날짜"
+          />
         </div>
       )}
 
@@ -102,37 +121,49 @@ export default function Leaderboard({ members, myId, myName, records }) {
           )}
 
           <div className="mt-1">
-            {rows.map(r => {
+            {rows.map((r) => {
               const medal = r.rank <= 3 && r.count > 0
               return (
                 <div key={r.id} className="flex items-center gap-2.5 border-b border-line py-3 last:border-b-0">
-                  <span className={cx('w-6.5 flex-none text-center font-extrabold', medal ? 'text-lg text-brand' : 'text-sm text-dim')}>
+                  <span
+                    className={cx(
+                      'w-6.5 flex-none text-center font-extrabold',
+                      medal ? 'text-lg text-brand' : 'text-sm text-dim',
+                    )}
+                  >
                     {r.rank}
                   </span>
                   <MemberAvatar name={r.name} avatar={r.avatar} active={r.rank === 1 && r.count > 0} />
                   <div className="min-w-0 flex-1">
                     <span className={cx('text-base font-semibold', r.id === myId && 'text-brand')}>
-                      {r.id === myId ? (myName || r.name) : r.name}
+                      {r.id === myId ? myName || r.name : r.name}
                       {r.id === myId ? ' (나)' : ''}
                     </span>
                     <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-surface-2">
-                      <i className="block h-full rounded-full bg-brand transition-[width] duration-300" style={{ width: `${Math.min(100, (r.count / totalDays) * 100)}%` }} />
+                      <i
+                        className="block h-full rounded-full bg-brand transition-[width] duration-300"
+                        style={{ width: `${Math.min(100, (r.count / totalDays) * 100)}%` }}
+                      />
                     </div>
                   </div>
-                  <span className={cx('w-7.5 flex-none text-right text-2xs font-bold', r.delta > 0 ? 'text-success' : r.delta < 0 ? 'text-dim' : 'text-dot')}>
+                  <span
+                    className={cx(
+                      'w-7.5 flex-none text-right text-2xs font-bold',
+                      r.delta > 0 ? 'text-success' : r.delta < 0 ? 'text-dim' : 'text-dot',
+                    )}
+                  >
                     {r.delta > 0 ? `▲${r.delta}` : r.delta < 0 ? `▼${-r.delta}` : '—'}
                   </span>
                   <span className="w-10 flex-none text-right text-base font-extrabold">
-                    {r.count}<span className="ml-px text-2xs font-normal text-dim">회</span>
+                    {r.count}
+                    <span className="ml-px text-2xs font-normal text-dim">회</span>
                   </span>
                 </div>
               )
             })}
           </div>
 
-          <Sub className="mt-2.5 text-2xs">
-            기간 내 인증 횟수 기준 · ▲▼는 직전 {totalDays}일 대비 순위 변동
-          </Sub>
+          <Sub className="mt-2.5 text-2xs">기간 내 인증 횟수 기준 · ▲▼는 직전 {totalDays}일 대비 순위 변동</Sub>
         </>
       )}
     </Card>
