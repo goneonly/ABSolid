@@ -225,13 +225,13 @@ export default function Login({ onDone, onGuest }) {
         />
 
         {!signup && (
-          <LinkButton type="button" className="mt-2.5 underline" disabled={resetBusy} onClick={forgotPassword}>
+          <LinkButton type="button" className="mt-3 underline" disabled={resetBusy} onClick={forgotPassword}>
             {resetBusy ? '메일 보내는 중…' : '비밀번호를 잊으셨나요?'}
           </LinkButton>
         )}
         {signup && (
-          <div className="mt-4 rounded-md border border-line bg-surface-2 px-3.5 py-3">
-            <label className="flex cursor-pointer items-center gap-2 border-b border-line pb-2.5 text-base font-semibold">
+          <div className="mt-4 rounded-md border border-line bg-surface-2 px-4 py-3">
+            <label className="flex cursor-pointer items-center gap-2 border-b border-line pb-3 text-sm font-bold">
               <input
                 type="checkbox"
                 className={CHECKBOX}
@@ -249,7 +249,7 @@ export default function Login({ onDone, onGuest }) {
               ['terms', '(필수) 이용약관 동의', () => setShowTerms(true)],
               ['privacy', '(필수) 개인정보 수집·이용 및 국외 이전 동의', () => setShowPrivacy(true)],
             ].map(([key, label, onView]) => (
-              <div key={key} className="mt-2.5 flex items-center gap-2 text-sm">
+              <div key={key} className="mt-3 flex items-center gap-2 text-sm">
                 <label className="flex flex-1 cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
@@ -274,10 +274,10 @@ export default function Login({ onDone, onGuest }) {
         )}
 
         {captcha.widget}
-        {error && <Sub className="mt-2.5 text-brand">{error}</Sub>}
-        {notice && <Sub className="mt-2.5">{notice}</Sub>}
+        {error && <Sub className="mt-3 text-danger">{error}</Sub>}
+        {notice && <Sub className="mt-3">{notice}</Sub>}
         {canResend && !signup && (
-          <LinkButton type="button" className="mt-1.5 underline" disabled={resendBusy} onClick={resendEmail}>
+          <LinkButton type="button" className="mt-2 underline" disabled={resendBusy} onClick={resendEmail}>
             {resendBusy ? '메일 보내는 중…' : '인증 메일 다시 보내기'}
           </LinkButton>
         )}
@@ -285,7 +285,7 @@ export default function Login({ onDone, onGuest }) {
         <Button type="submit" className="mt-5" disabled={busy}>
           {busy ? '처리 중…' : signup ? '가입하기' : '로그인하기'}
         </Button>
-        <LinkButton type="button" className="mx-auto mt-3.5 block px-2 py-1 text-md" onClick={switchMode}>
+        <LinkButton type="button" className="mx-auto mt-4 block px-2 py-1 text-base" onClick={switchMode}>
           {signup ? '이미 계정이 있나요?' : '계정이 없나요?'}{' '}
           <span className="underline">{signup ? '로그인' : '회원가입'}</span>
         </LinkButton>

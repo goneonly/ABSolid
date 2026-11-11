@@ -5,7 +5,7 @@ import { createGroup, joinGroup } from '../../api.js'
 import { toast } from '../../toast.js'
 import { Button, Card, Input, Sub, cx } from '../../components/ui.jsx'
 
-const OPTION_ROW = 'flex items-center justify-between gap-3 border-b border-line py-3 text-base last:border-b-0'
+const OPTION_ROW = 'flex items-center justify-between gap-3 border-b border-line py-3 text-sm last:border-b-0'
 
 export default function JoinCreateCard({ onDone }) {
   const [mode, setMode] = useState('join') // join | create
@@ -73,10 +73,10 @@ export default function JoinCreateCard({ onDone }) {
         <div className="mt-3 border-t border-line">
           <div className={OPTION_ROW}>
             <label htmlFor="max-members">인원수 제한</label>
-            <span className="flex items-center gap-1.5 text-dim">
+            <span className="flex items-center gap-2 text-dim">
               <Input
                 id="max-members"
-                className="w-16 px-3 py-2 text-center text-base"
+                className="w-16 px-3 py-2 text-center text-sm"
                 type="text"
                 inputMode="numeric"
                 value={maxMembers}
@@ -91,9 +91,9 @@ export default function JoinCreateCard({ onDone }) {
             </span>
           </div>
           <label className={cx(OPTION_ROW, 'cursor-pointer')}>
-            <span className="flex flex-col gap-0.5">
+            <span className="flex flex-col gap-1">
               회원만 받기
-              <small className="text-2xs text-dim">이름·전화번호를 등록한 회원만 참여할 수 있어요</small>
+              <small className="text-xs text-dim">이름·전화번호를 등록한 회원만 참여할 수 있어요</small>
             </span>
             <input
               type="checkbox"
@@ -104,7 +104,7 @@ export default function JoinCreateCard({ onDone }) {
           </label>
         </div>
       )}
-      {error && <Sub className="mt-2 text-brand">{error}</Sub>}
+      {error && <Sub className="mt-2 text-danger">{error}</Sub>}
       <Button className="mt-3" onClick={submit} disabled={busy || !input.trim()}>
         {busy ? '처리 중…' : mode === 'join' ? '참여하기' : '만들기'}
       </Button>

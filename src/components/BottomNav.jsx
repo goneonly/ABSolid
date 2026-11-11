@@ -1,8 +1,10 @@
 import { cx } from './ui.jsx'
 
-const NAV_BTN = 'flex flex-col items-center gap-1 text-2xs [&>svg]:size-6'
-const NAV_START =
-  'mx-auto -mt-7 flex size-16 flex-col items-center justify-center gap-0.5 rounded-full bg-brand text-sm font-extrabold text-white shadow-brand transition-transform active:scale-[.94] [&>svg]:size-5.5'
+const NAV_BTN = 'flex h-full flex-col items-center justify-center gap-1 text-xs [&>svg]:size-6'
+// 가운데 큰 버튼: 빨간 원 안에는 아이콘만, 글자는 원 아래 (빨강 바탕의 작은 흰 글자는 대비 부족)
+const NAV_START = 'group mx-auto -mt-8 flex flex-col items-center gap-1 text-xs font-bold text-fg'
+const NAV_START_CIRCLE =
+  'flex size-16 items-center justify-center rounded-full bg-brand text-white shadow-brand transition-transform group-active:scale-[.94] [&>svg]:size-7'
 
 export default function BottomNav({ view, onChange }) {
   return (
@@ -25,24 +27,28 @@ export default function BottomNav({ view, onChange }) {
       </button>
       {view === 'home' ? (
         <button className={NAV_START} onClick={() => onChange('workout')} aria-label="운동 시작">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5.5v13l11-6.5z" />
-          </svg>
+          <span className={NAV_START_CIRCLE}>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5.5v13l11-6.5z" />
+            </svg>
+          </span>
           시작
         </button>
       ) : (
         <button className={NAV_START} onClick={() => onChange('home')} aria-label="홈으로">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 10.5 12 3l9 7.5" />
-            <path d="M5.5 9.5V21h13V9.5" />
-          </svg>
+          <span className={NAV_START_CIRCLE}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 10.5 12 3l9 7.5" />
+              <path d="M5.5 9.5V21h13V9.5" />
+            </svg>
+          </span>
           홈
         </button>
       )}

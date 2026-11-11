@@ -20,7 +20,7 @@ export function CameraBadge({ className, iconClassName = 'size-3.5' }) {
   return (
     <span
       className={cx(
-        'absolute -right-0.5 -bottom-0.5 flex items-center justify-center rounded-full border-surface bg-brand text-white',
+        'absolute -right-1 -bottom-1 flex items-center justify-center rounded-full border-surface bg-brand text-white',
         className,
       )}
       aria-hidden="true"
@@ -46,13 +46,13 @@ export function PhotoActionSheet({ title, busy, onReplace, onRemove, onClose }) 
   return (
     <Modal label={title} onBackdrop={onClose}>
       <ModalTitle>{title}</ModalTitle>
-      <Button variant="secondary" className="mt-4.5" disabled={busy} onClick={onReplace}>
+      <Button variant="secondary" className="mt-5" disabled={busy} onClick={onReplace}>
         사진 교체
       </Button>
-      <Button variant="danger" className="mt-2.5" disabled={busy} onClick={onRemove}>
+      <Button variant="danger" className="mt-3" disabled={busy} onClick={onRemove}>
         사진 삭제
       </Button>
-      <Button variant="secondary" className="mt-2.5" onClick={onClose}>
+      <Button variant="secondary" className="mt-3" onClick={onClose}>
         취소
       </Button>
     </Modal>

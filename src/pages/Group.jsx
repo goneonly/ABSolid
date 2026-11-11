@@ -3,7 +3,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { lastNDays, getProfile } from '../storage.js'
 import { supabase } from '../supabase.js'
 import { fetchMyGroups } from '../api.js'
-import { Button, Card, GroupPhoto, Page, PageTitle, Sub } from '../components/ui.jsx'
+import { Button, Card, EmptyState, GroupPhoto, Page, PageTitle, Skeleton, Sub } from '../components/ui.jsx'
+import { GroupArt, LockArt } from '../components/EmptyArt.jsx'
 import MemberRow from './group/MemberRow.jsx'
 import JoinCreateCard from './group/JoinCreateCard.jsx'
 import GroupDetail from './group/GroupDetail.jsx'
@@ -55,30 +56,12 @@ export default function Group({ records, session }) {
         <Card>
           <MemberRow name={myName} isMe dates={myDates} />
         </Card>
-        <Card className="relative overflow-hidden border-brand/30 bg-brand/15 px-5 py-8.5 text-center">
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-            <svg
-              className="size-21 text-dot opacity-55"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
-              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
-              <circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none" />
-            </svg>
-          </div>
-          <div className="relative z-1">
-            <strong className="text-md">그룹은 로그인 후 이용할 수 있어요</strong>
-            <Sub className="mt-2">
-              설정 탭에서 로그인/회원가입을 하면
-              <br />
-              초대 코드로 친구들과 함께할 수 있어요.
-            </Sub>
-          </div>
+        <Card>
+          <EmptyState art={<LockArt />} title="그룹은 로그인 후 이용할 수 있어요">
+            설정 탭에서 로그인/회원가입을 하면
+            <br />
+            초대 코드로 친구들과 함께할 수 있어요.
+          </EmptyState>
         </Card>
       </Page>
     )
@@ -115,46 +98,50 @@ export default function Group({ records, session }) {
       </Sub>
 
       {loading && !groups.length ? (
-        <Sub className="mt-4">불러오는 중…</Sub>
+        <Skeleton lines={2} />
       ) : loadError ? (
         <Card>
-          <Sub className="text-brand">{loadError}</Sub>
+          <Sub className="text-danger">{loadError}</Sub>
           <Button variant="secondary" className="mt-3" onClick={loadGroups}>
             다시 시도
           </Button>
         </Card>
+      ) : groups.length === 0 ? (
+        <Card>
+          <EmptyState art={<GroupArt />} title="아직 참여한 그룹이 없어요">
+            친구에게 받은 초대 코드로 참여하거나, 새 그룹을 만들어 친구를 초대해 보세요.
+          </EmptyState>
+        </Card>
       ) : (
-        groups.length > 0 && (
-          <div className="mt-4 flex flex-col gap-3">
-            {groups.map((g) => (
-              <button
-                key={g.id}
-                className="flex w-full items-center gap-3.5 rounded-xl border border-line bg-surface p-4 text-left transition-transform active:scale-[.98]"
-                onClick={() => setSelectedId(g.id)}
-              >
-                <GroupPhoto name={g.name} url={g.photo_url} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-lg font-bold">{g.name}</div>
-                  <div className="mt-0.5 text-xs text-dim">
-                    멤버 {g.memberCount}/{g.max_members}명{g.created_by === myId && ' · 그룹장'}
-                  </div>
+        <div className="mt-4 flex flex-col gap-3">
+          {groups.map((g) => (
+            <button
+              key={g.id}
+              className="flex w-full items-center gap-4 rounded-xl border border-line bg-surface p-4 text-left transition-transform active:scale-[.98]"
+              onClick={() => setSelectedId(g.id)}
+            >
+              <GroupPhoto name={g.name} url={g.photo_url} />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-base font-bold">{g.name}</div>
+                <div className="mt-1 text-xs text-dim">
+                  멤버 {g.memberCount}/{g.max_members}명{g.created_by === myId && ' · 그룹장'}
                 </div>
-                <svg
-                  className="size-5 flex-none text-dim"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="m9 6 6 6-6 6" />
-                </svg>
-              </button>
-            ))}
-          </div>
-        )
+              </div>
+              <svg
+                className="size-5 flex-none text-dim"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m9 6 6 6-6 6" />
+              </svg>
+            </button>
+          ))}
+        </div>
       )}
 
       <JoinCreateCard

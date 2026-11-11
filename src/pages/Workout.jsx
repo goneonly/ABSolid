@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadYouTubeAPI } from '../youtube.js'
-import { todayWorkoutDay, todayKey, saveRecord } from '../storage.js'
+import { todayWorkoutDay, todayKey, saveRecord, getRecords, computeStreak } from '../storage.js'
 import CompleteModal from '../components/CompleteModal.jsx'
 import { getPlaylistId, startWorkoutSession, completeWorkout, uploadPhoto } from '../api.js'
 import { toast } from '../toast.js'
 import { Button, Card, CardTitle, Page, PageTitle, Sub } from '../components/ui.jsx'
 
 const FINISH_RATIO = 0.8 // 영상 80% 이상 시청 시 수동 완료 버튼 활성화
+const PROGRAM_DAYS = 30
 
 export default function Workout({ onDone, session }) {
   const holderRef = useRef(null)
@@ -18,7 +19,9 @@ export default function Workout({ onDone, session }) {
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [canFinish, setCanFinish] = useState(false)
+  const [streak, setStreak] = useState({ from: 0, to: 0 }) // 완료 팝업에서 올라갈 연속 기록
   const day = todayWorkoutDay()
+  const [doneCount] = useState(() => Object.values(getRecords()).filter((r) => r?.completed).length)
 
   useEffect(() => {
     let cancelled = false
@@ -92,6 +95,10 @@ export default function Workout({ onDone, session }) {
   function finish() {
     if (finishedRef.current) return
     finishedRef.current = true
+    // 오늘 처음 완료하면 연속 기록 +1 (이미 완료한 날 다시 보면 그대로)
+    const records = getRecords()
+    const before = computeStreak(records)
+    setStreak({ from: before, to: records[todayKey()]?.completed ? before : before + 1 })
     setShowModal(true)
   }
 
@@ -154,7 +161,9 @@ export default function Workout({ onDone, session }) {
       <Sub>영상이 끝나면 자동으로 운동 완료 처리돼요.</Sub>
 
       <div className="relative -mx-5 mt-4 bg-black">
-        <span className="pointer-events-none absolute top-3 left-3 z-2 rounded-full bg-brand px-3 py-1 text-sm font-extrabold text-white">
+        {/* 영상 위 뱃지: 반투명 검정 바탕 + 흰 글자 (빨강 바탕의 작은 흰 글자는 대비 부족) */}
+        <span className="pointer-events-none absolute top-3 left-3 z-2 flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-sm font-bold text-white">
+          <i className="size-2 rounded-full bg-brand" />
           DAY {day}
         </span>
         {/* YouTube API가 holder div를 iframe으로 교체하므로 자식 iframe에도 같은 배치 적용 */}
@@ -164,8 +173,25 @@ export default function Workout({ onDone, session }) {
       </div>
 
       <Card>
-        <CardTitle>오늘의 루틴</CardTitle>
-        <Sub className="mt-1.5">중간에 나가면 완료로 기록되지 않아요. 끝까지 함께해요!</Sub>
+        <div className="flex items-baseline justify-between">
+          <CardTitle>30일 프로그램</CardTitle>
+          <span className="text-sm text-dim">
+            <strong className="text-xl font-extrabold text-fg tabular-nums">{day}</strong> / {PROGRAM_DAYS}일차
+          </span>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
+          <i className="block h-full rounded-full bg-brand" style={{ width: `${(day / PROGRAM_DAYS) * 100}%` }} />
+        </div>
+        <Sub className="mt-3">
+          {doneCount > 0 ? (
+            <>
+              지금까지 <strong className="text-fg">{doneCount}번</strong> 완주했어요.
+            </>
+          ) : (
+            '오늘 첫 완주에 도전해요!'
+          )}{' '}
+          중간에 나가면 완료로 기록되지 않으니 끝까지 함께해요!
+        </Sub>
       </Card>
 
       {canFinish && (
@@ -180,9 +206,11 @@ export default function Workout({ onDone, session }) {
         </button>
       )}
 
-      <p className="mt-6 text-center text-2xs text-dim opacity-80"> © XYZ Fitness - 30 days six pack abs</p>
+      <p className="mt-6 text-center text-xs text-dim"> © XYZ Fitness - 30 days six pack abs</p>
 
-      {showModal && <CompleteModal day={day} busy={saving} onSave={handleSave} onSkip={() => handleSave(null)} />}
+      {showModal && (
+        <CompleteModal day={day} streak={streak} busy={saving} onSave={handleSave} onSkip={() => handleSave(null)} />
+      )}
     </Page>
   )
 }

@@ -15,7 +15,18 @@ import {
 import { toast } from '../../toast.js'
 import Leaderboard from '../../components/Leaderboard.jsx'
 import { CameraBadge, PhotoActionSheet, readPickedImage } from '../../components/PhotoPicker.jsx'
-import { Card, CardTitle, GroupPhoto, LinkButton, Page, Sub } from '../../components/ui.jsx'
+import {
+  Card,
+  CardTitle,
+  CheckIcon,
+  EmptyState,
+  GroupPhoto,
+  LinkButton,
+  Page,
+  Skeleton,
+  Sub,
+} from '../../components/ui.jsx'
+import { CameraArt } from '../../components/EmptyArt.jsx'
 import MemberRow from './MemberRow.jsx'
 
 export default function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged, onLeft }) {
@@ -142,7 +153,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
 
   return (
     <Page>
-      <button className="-ml-1 flex items-center gap-0.5 py-1 text-sm text-dim" onClick={onBack}>
+      <button className="hit -ml-1 flex items-center gap-1 py-1 text-sm text-dim" onClick={onBack}>
         <svg
           className="size-4.5"
           viewBox="0 0 24 24"
@@ -162,26 +173,26 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
         <div className="flex items-center gap-4">
           <GroupPhotoEditor group={group} editable={isOwner} onChanged={onChanged} />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-2xl font-bold tracking-tight">{group.name}</h2>
-            <div className="mt-0.5 text-xs text-dim">
+            <h2 className="truncate text-xl font-bold tracking-tight">{group.name}</h2>
+            <div className="mt-1 text-xs text-dim">
               멤버 {members.length + hiddenCount || group.memberCount}/{group.max_members}명
               {isOwner && ' · 내가 그룹장'}
             </div>
           </div>
         </div>
-        <LinkButton
-          className="mt-3.5 w-full rounded-md bg-surface-2 px-3.5 py-2.5 text-left text-sm"
-          onClick={copyCode}
-        >
-          초대 코드 <strong className="ml-1 tracking-wider text-brand">{group.invite_code}</strong>
-          <span className="float-right">{copied ? '✓ 복사됨' : '복사'}</span>
+        <LinkButton className="mt-4 w-full rounded-md bg-surface-2 px-4 py-3 text-left text-sm" onClick={copyCode}>
+          초대 코드 <strong className="ml-1 tracking-wider text-fg">{group.invite_code}</strong>
+          <span className="float-right inline-flex items-center gap-1">
+            {copied && <CheckIcon className="size-3.5" />}
+            {copied ? '복사됨' : '복사'}
+          </span>
         </LinkButton>
       </Card>
 
       <Card>
         <CardTitle>멤버 현황</CardTitle>
         {!loaded ? (
-          <Sub className="mt-2">불러오는 중…</Sub>
+          <Skeleton inCard lines={3} />
         ) : (
           <div className="mt-2">
             {members.map((m) => (
@@ -205,11 +216,11 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
         {hiddenCount > 0 && <Sub className="mt-2">차단한 멤버 {hiddenCount}명은 표시되지 않아요. (설정에서 해제)</Sub>}
         <div className="mt-3 flex items-center gap-4 text-xs text-dim">
           <span>
-            <i className="mr-1.5 inline-block size-2.5 rounded-full bg-brand" />
+            <i className="mr-2 inline-block size-2.5 rounded-full bg-brand" />
             운동 함
           </span>
           <span>
-            <i className="mr-1.5 inline-block size-2.5 rounded-full bg-dot" />
+            <i className="mr-2 inline-block size-2.5 rounded-full bg-dot" />
             아직 안 함
           </span>
         </div>
@@ -220,7 +231,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
       <Card>
         <CardTitle>오늘의 인증샷</CardTitle>
         {todayPhotos.length ? (
-          <div className="mt-3.5 grid max-h-87 grid-cols-3 gap-2 overflow-y-auto overscroll-contain">
+          <div className="mt-4 grid max-h-87 grid-cols-3 gap-2 overflow-y-auto overscroll-contain">
             {todayPhotos.map((p) => (
               <figure key={p.id}>
                 <img
@@ -229,38 +240,36 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
                   alt={`${p.name}의 오늘 인증샷`}
                   loading="lazy"
                 />
-                <figcaption className="mt-1 truncate text-center text-2xs text-dim">
-                  {p.id === myId ? myName || p.name : p.name}
+                <figcaption className="mt-1 text-center text-xs text-dim">
+                  <span className="block truncate">{p.id === myId ? myName || p.name : p.name}</span>
                   {p.id !== myId && (
-                    <>
-                      <button
-                        className="ml-1.5 text-2xs text-dim underline"
-                        onClick={() => reportPhoto(p)}
-                        aria-label="이 사진 신고"
-                      >
+                    <span className="mt-1 flex justify-center gap-4">
+                      <button className="hit underline" onClick={() => reportPhoto(p)} aria-label="이 사진 신고">
                         신고
                       </button>
                       <button
-                        className="ml-1 text-2xs text-dim underline"
+                        className="hit underline"
                         onClick={() => blockMember(p)}
                         aria-label={`${p.name}님 차단하기`}
                       >
                         차단
                       </button>
-                    </>
+                    </span>
                   )}
                 </figcaption>
               </figure>
             ))}
           </div>
         ) : (
-          <Sub className="mt-1.5">아직 오늘 올라온 인증샷이 없어요. 첫 인증샷의 주인공이 되어 보세요!</Sub>
+          <EmptyState className="mt-2" art={<CameraArt />} title="아직 오늘의 인증샷이 없어요">
+            운동을 마치고 첫 인증샷의 주인공이 되어 보세요!
+          </EmptyState>
         )}
       </Card>
 
-      <div className="mt-3.5 flex items-center justify-between px-1">
+      <div className="mt-4 flex items-center justify-between px-1">
         <button
-          className="flex size-8.5 items-center justify-center rounded-full border border-line bg-surface-2 text-dim active:scale-[.94] disabled:opacity-50"
+          className="flex size-11 items-center justify-center rounded-full border border-line bg-surface-2 text-dim active:scale-[.94] disabled:opacity-50"
           onClick={load}
           disabled={busy}
           aria-label="새로고침"
@@ -279,7 +288,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
             <path d="M21 3v6h-6" />
           </svg>
         </button>
-        <LinkButton className="px-1 py-2 underline" onClick={onLeave} disabled={busy}>
+        <LinkButton className="px-1 py-3 underline" onClick={onLeave} disabled={busy}>
           그룹 나가기
         </LinkButton>
       </div>
@@ -292,7 +301,7 @@ function GroupPhotoEditor({ group, editable, onChanged }) {
   const fileRef = useRef(null)
   const [showSheet, setShowSheet] = useState(false)
   const [busy, setBusy] = useState(false)
-  const photo = <GroupPhoto name={group.name} url={group.photo_url} className="size-16 text-2xl" />
+  const photo = <GroupPhoto name={group.name} url={group.photo_url} className="size-16 text-xl" />
 
   if (!editable) return photo
 

@@ -30,7 +30,7 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
 
   if (!session) {
     return (
-      <div className="flex flex-col items-center pt-1.5">
+      <div className="flex flex-col items-center pt-2">
         <div className={CIRCLE} aria-label="기본 프로필 사진">
           <PersonIcon className="size-12" />
         </div>
@@ -71,7 +71,7 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
   }
 
   return (
-    <div className="flex flex-col items-center pt-1.5">
+    <div className="flex flex-col items-center pt-2">
       <button
         className={`${CIRCLE} disabled:opacity-60`}
         aria-label={avatar ? '프로필 사진 관리' : '프로필 사진 업로드'}
@@ -103,5 +103,5 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
 }
 
 function ProfileName({ nickname }) {
-  return <div className="mt-3 text-lg font-bold">{nickname?.trim() || '닉네임을 설정해 주세요'}</div>
+  return <div className="mt-3 text-base font-bold">{nickname?.trim() || '닉네임을 설정해 주세요'}</div>
 }

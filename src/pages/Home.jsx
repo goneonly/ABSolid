@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { computeStreak, todayKey, todayWorkoutDay, isReminderDismissedToday, dismissReminderToday } from '../storage.js'
 import { fetchActiveAnnouncement, fetchReceivedCheers } from '../api.js'
 import WeeklyReport from '../components/WeeklyReport.jsx'
-import { Banner, Card, Page, PageTitle, Sub, cx } from '../components/ui.jsx'
+import { Banner, Card, CheckIcon, CloseIcon, Page, PageTitle, Sub, cx } from '../components/ui.jsx'
 
 const REMIND_AFTER_HOUR = 18 // 저녁 6시 이후부터 리마인더 표시
 
-export default function Home({ records, onStart, session }) {
+// celebrate: 방금 운동을 완료하고 돌아왔으면 true → streak 숫자·완료 표시를 한 번 튀어나오게 (onCelebrated 로 해제)
+export default function Home({ records, onStart, session, celebrate, onCelebrated }) {
   const streak = computeStreak(records)
   const doneToday = !!records[todayKey()]?.completed
   const day = todayWorkoutDay()
@@ -17,6 +18,15 @@ export default function Home({ records, onStart, session }) {
   useEffect(() => {
     fetchActiveAnnouncement().then(setNotice)
   }, [])
+
+  // 축하 표시는 이 화면이 처음 열릴 때 한 번만: 부모 표시는 바로 끄고(다른 탭 다녀와도 재생 안 됨), 화면은 잠시 뒤 평소 모습으로
+  const [celebrating, setCelebrating] = useState(celebrate)
+  useEffect(() => {
+    if (!celebrating) return
+    onCelebrated()
+    const t = setTimeout(() => setCelebrating(false), 3000)
+    return () => clearTimeout(t)
+  }, [celebrating, onCelebrated])
 
   useEffect(() => {
     if (!session) return
@@ -39,18 +49,18 @@ export default function Home({ records, onStart, session }) {
     <Page>
       {notice && <Banner>{notice.message}</Banner>}
       {showReminder && (
-        <Banner className="flex items-center justify-between gap-2.5" role="alert">
+        <Banner className="flex items-center justify-between gap-3" role="alert">
           <span>오늘 아직 운동 전이에요. 자기 전에 복근 챙겨요!</span>
           <span className="flex flex-none items-center gap-1">
-            <button className="px-1.5 py-1 text-sm font-bold text-brand" onClick={onStart}>
+            <button className="hit px-2 py-1 text-sm font-bold text-brand" onClick={onStart}>
               지금 시작
             </button>
             <button
-              className="px-1.5 py-1 text-sm font-bold text-brand"
+              className="hit flex items-center px-2 py-1 text-dim"
               aria-label="리마인더 닫기"
               onClick={dismissReminder}
             >
-              ✕
+              <CloseIcon className="size-4" />
             </button>
           </span>
         </Banner>
@@ -61,16 +71,18 @@ export default function Home({ records, onStart, session }) {
 
       <Card className="px-5 py-8 text-center">
         <div className="text-display font-extrabold tracking-tight">
-          <span className="text-brand">{streak}</span>일
+          <span className={cx('inline-block text-brand', celebrating && 'motion-safe:animate-pop')}>{streak}</span>일
         </div>
-        <div className="mt-2 text-base text-dim">연속 운동 streak</div>
+        <div className="mt-2 text-sm text-dim">연속 운동 streak</div>
         <div
           className={cx(
-            'mt-4 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold',
-            doneToday ? 'bg-brand/15 text-brand' : 'bg-surface-2 text-dim',
+            'mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold',
+            doneToday ? 'bg-brand/15 text-fg [&>svg]:text-brand' : 'bg-surface-2 text-dim',
+            celebrating && 'motion-safe:animate-pop',
           )}
         >
-          {doneToday ? '✓ 오늘 운동 완료!' : '오늘 아직 운동 전이에요'}
+          {doneToday && <CheckIcon className="size-4" />}
+          {doneToday ? (celebrating ? '오늘 운동 완료! 내일도 만나요' : '오늘 운동 완료!') : '오늘 아직 운동 전이에요'}
         </div>
       </Card>
 

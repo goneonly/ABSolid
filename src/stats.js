@@ -120,3 +120,21 @@ export function weeklySummary(records, now = new Date()) {
     range: `${shortDate(weekKeys[0])} ~ ${shortDate(weekKeys[6])}`,
   }
 }
+
+// 연속 기록·프로그램 진행에 맞춘 축하 문구 (운동 완료 = 앱에서 가장 기억에 남을 순간)
+const STREAK_MILESTONES = {
+  3: '3일 연속! 좋은 출발이에요.',
+  7: '일주일 연속 달성! 습관이 되고 있어요.',
+  14: '2주 연속 달성! 꾸준함이 보여요.',
+  21: '3주 연속! 이제 완전히 습관이에요.',
+  30: '30일 연속 달성! 정말 최고예요.',
+  50: '50일 연속! 누구도 못 말리는 꾸준함이에요.',
+  100: '100일 연속! 전설이 되었어요.',
+}
+
+// 운동 완료 축하 문구 — day: 오늘 Day(1~30), streak: 오늘 포함 연속 일수
+export function cheerMessage(day, streak) {
+  if (day === 30) return '30일 프로그램 완주! 정말 대단해요.'
+  if (STREAK_MILESTONES[streak]) return STREAK_MILESTONES[streak]
+  return streak <= 1 ? '첫걸음을 뗐어요. 내일도 만나요!' : '오늘도 해냈어요. 내일도 만나요!'
+}

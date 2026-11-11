@@ -37,6 +37,8 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPushConsent, setShowPushConsent] = useState(false)
   const [showRecovery, setShowRecovery] = useState(false)
+  const [justDone, setJustDone] = useState(false) // 운동 완료 직후 홈 축하 표시
+  const endCelebration = useCallback(() => setJustDone(false), [])
   const [guest, setGuest] = useState(isGuestChosen)
   const refresh = useCallback(() => setTick((t) => t + 1), [])
   const session = useAuth()
@@ -140,19 +142,28 @@ export default function App() {
 
   return (
     <div className="flex min-h-dvh flex-col pb-22">
-      <header className="flex items-center justify-between px-5 pt-4.5 pb-2.5">
+      <header className="flex items-center justify-between px-5 pt-5 pb-3">
         <button onClick={() => setView('home')} aria-label="홈으로">
           <Logo className="text-xl" />
         </button>
-        {session && <span className="rounded-sm bg-surface-2 px-2 py-0.5 text-2xs font-bold text-dim">로그인됨</span>}
+        {session && <span className="rounded-sm bg-surface-2 px-2 py-1 text-xs font-bold text-dim">로그인됨</span>}
       </header>
 
-      {view === 'home' && <Home records={records} session={session} onStart={() => setView('workout')} />}
+      {view === 'home' && (
+        <Home
+          records={records}
+          session={session}
+          onStart={() => setView('workout')}
+          celebrate={justDone}
+          onCelebrated={endCelebration}
+        />
+      )}
       {view === 'workout' && (
         <Workout
           session={session}
           onDone={() => {
             refresh()
+            setJustDone(true)
             setView('home')
           }}
         />

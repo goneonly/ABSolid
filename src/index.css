@@ -15,30 +15,24 @@
   --color-line: #2e3138; /* border */
   --color-fg: #f2f3f5; /* text */
   --color-dim: #9a9ea8; /* text-dim */
-  --color-brand: #ff3b30; /* signature red */
+  --color-brand: #ff3b30; /* signature red — 주요 버튼·달성 표시에만 */
+  --color-brand-strong: #e5281d; /* 흰 글자를 올리는 빨강 바탕 (흰 글자 대비 4.5:1) */
+  --color-danger: #ff7a70; /* 오류·위험 동작 (브랜드 빨강과 구분, 어두운 배경에서 대비 6:1) */
   --color-dot: #4a4d55; /* 비활성 점·아이콘 */
   --color-success: #30d158;
 
   --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-  /* ── 폰트 크기 (역할별 10단계) ── */
+  /* ── 폰트 크기 (역할별 6단계 — 비슷한 크기가 섞이지 않게 최소한만) ── */
   --text-*: initial;
-  --text-2xs: 11px;
-  --text-2xs--line-height: 1.4; /* 캡션·뱃지·하단바 라벨 */
   --text-xs: 12px;
-  --text-xs--line-height: 1.4; /* 힌트·오류·작은 버튼 */
-  --text-sm: 13px;
-  --text-sm--line-height: 1.5; /* 배너·라벨·보조 설명 */
-  --text-base: 14px;
-  --text-base--line-height: 1.5; /* 본문 설명(sub) */
-  --text-md: 15px;
-  --text-md--line-height: 1.4; /* 카드 제목·이름·입력값 */
-  --text-lg: 17px;
-  --text-lg--line-height: 1.35; /* 버튼·소제목 */
-  --text-xl: 20px;
-  --text-xl--line-height: 1.3; /* 모달 제목·로고·통계 */
-  --text-2xl: 22px;
-  --text-2xl--line-height: 1.3; /* 페이지 제목 */
+  --text-xs--line-height: 1.4; /* 캡션·힌트·뱃지·하단바 라벨 */
+  --text-sm: 14px;
+  --text-sm--line-height: 1.5; /* 설명·라벨·배너 */
+  --text-base: 16px;
+  --text-base--line-height: 1.4; /* 본문 강조·카드 제목·버튼·입력 (16px 이상이라 아이폰 입력 시 확대 안 됨) */
+  --text-xl: 22px;
+  --text-xl--line-height: 1.3; /* 페이지·모달 제목, 통계 숫자 */
   --text-3xl: 30px;
   --text-3xl--line-height: 1.2; /* 로그인 화면 로고 */
   --text-display: 64px;
@@ -58,6 +52,34 @@
 
   /* ── 애니메이션 ── */
   --animate-sheet-up: sheet-up 0.25s ease;
+  --animate-pop: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; /* 완료 체크·숫자 튀어나오기 */
+  --animate-glow: glow 1.6s ease-in-out infinite alternate; /* 완료 체크 뒤 은은한 빛 */
+  --animate-shimmer: shimmer 1.2s ease-in-out infinite; /* 로딩 자리표시 */
+  @keyframes pop {
+    0% {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    100% {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes glow {
+    from {
+      opacity: 0.35;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+  @keyframes shimmer {
+    50% {
+      opacity: 0.45;
+    }
+  }
   @keyframes sheet-up {
     from {
       transform: translateY(40px);
@@ -73,7 +95,7 @@
 @layer base {
   html,
   body {
-    @apply bg-bg font-sans text-md text-fg antialiased;
+    @apply bg-bg font-sans text-base text-fg antialiased;
   }
   /* 홈 화면 앱(standalone)은 viewport-fit=cover 로 상태표시줄 아래까지 그려짐 → 그만큼 띄움 (브라우저 탭에선 0) */
   #root {
@@ -85,5 +107,19 @@
   }
   input[type='date'] {
     color-scheme: dark;
+  }
+}
+
+/* 작은 글자 버튼의 터치 영역을 44px 이상으로 넓힘 (보이는 모양은 그대로) */
+@utility hit {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
   }
 }

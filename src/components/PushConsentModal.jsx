@@ -47,10 +47,10 @@ export default function PushConsentModal({ onClose }) {
       <ModalText>
         운동을 안 한 날 저녁, 그리고 그룹 멤버가 응원을 보냈을 때 알려드릴까요? 꾸준한 streak에 도움이 돼요.
       </ModalText>
-      <Button className="mt-4.5" disabled={busy} onClick={agree}>
+      <Button className="mt-5" disabled={busy} onClick={agree}>
         {busy ? '설정 중…' : '동의하고 알림 받기'}
       </Button>
-      <Button variant="secondary" className="mt-2.5" disabled={busy} onClick={() => setStep('declined')}>
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={() => setStep('declined')}>
         미동의 (다음에 할게요)
       </Button>
     </Modal>

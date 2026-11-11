@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
-import { daysInRange, getRange, getPrevRange, mondayOf, rankRows, withRankDelta, weeklySummary } from './stats.js'
+import {
+  cheerMessage,
+  daysInRange,
+  getRange,
+  getPrevRange,
+  mondayOf,
+  rankRows,
+  withRankDelta,
+  weeklySummary,
+} from './stats.js'
 
 // 2026-10-15(목) 한국 시간 09:00
 const THU = new Date(2026, 9, 15, 9)
@@ -109,5 +118,20 @@ describe('주간 리포트', () => {
     at(SUN)
     const week = Array.from({ length: 7 }, (_, i) => `2026-10-${12 + i}`)
     expect(weeklySummary(done(...week))).toMatchObject({ count: 7, rate: 100, streak: 7 })
+  })
+})
+
+describe('운동 완료 축하 문구', () => {
+  it('30일 프로그램 완주가 가장 우선', () => {
+    expect(cheerMessage(30, 7)).toContain('완주')
+  })
+  it('연속 기록 이정표 (3·7·14·21·30일 …)', () => {
+    expect(cheerMessage(5, 3)).toContain('3일 연속')
+    expect(cheerMessage(9, 7)).toContain('일주일')
+    expect(cheerMessage(9, 30)).toContain('30일 연속')
+  })
+  it('첫날과 평소', () => {
+    expect(cheerMessage(1, 1)).toContain('첫걸음')
+    expect(cheerMessage(12, 5)).toContain('오늘도 해냈어요')
   })
 })

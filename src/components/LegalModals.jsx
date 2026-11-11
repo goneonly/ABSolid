@@ -7,7 +7,7 @@ const EFFECTIVE_DATE = '2026년 10월 10일'
 const CONTACT_URL = 'https://github.com/goneonly/ABSolid/issues'
 
 const BODY =
-  'mt-3.5 text-sm text-dim [&_li]:mt-1 [&_strong]:mt-4 [&_strong]:block [&_strong]:text-fg [&_ul]:mt-1.5 [&_ul]:ml-4.5 [&_ul]:list-disc [&_ol]:mt-1.5 [&_ol]:ml-4.5 [&_ol]:list-decimal [&>p]:mt-2 [&_a]:text-fg [&_a]:underline'
+  'mt-4 text-sm text-dim [&_li]:mt-1 [&_strong]:mt-4 [&_strong]:block [&_strong]:text-fg [&_ul]:mt-2 [&_ul]:ml-5 [&_ul]:list-disc [&_ol]:mt-2 [&_ol]:ml-5 [&_ol]:list-decimal [&>p]:mt-2 [&_a]:text-fg [&_a]:underline'
 
 function LegalModal({ title, onClose, children }) {
   return (

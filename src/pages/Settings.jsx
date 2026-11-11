@@ -90,7 +90,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
 
       <Card>
         <ProfilePhoto nickname={nickname} session={session} onChanged={onChanged} />
-        <CardTitle className="mt-4.5 mb-1.5">내 프로필</CardTitle>
+        <CardTitle className="mt-5 mb-2">내 프로필</CardTitle>
         <RowButton hint={nickname?.trim() || '설정 안 됨'} onClick={() => setModal('nickname')}>
           닉네임 변경
         </RowButton>
@@ -106,7 +106,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
         )}
         {/* 비회원: 첫 화면(로그인)으로 이동 — 회원가입도 거기서 */}
         {!session && supabase && (
-          <Button className="mt-3.5" onClick={onRequestLogin}>
+          <Button className="mt-4" onClick={onRequestLogin}>
             로그인하기
           </Button>
         )}
@@ -121,7 +121,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
       )}
 
       <Card>
-        <CardTitle className="mb-1.5">기타</CardTitle>
+        <CardTitle className="mb-2">기타</CardTitle>
         {!isStandalone() && (
           <RowButton
             hint={isIOS() && isPushConfigured() ? '아이폰 알림 받으려면 필요' : '앱처럼 바로 실행'}
@@ -161,20 +161,20 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
       )}
 
       <Sub className="mt-4 text-center">ABSolid v{__APP_VERSION__}</Sub>
-      <div className="mt-2 flex items-center justify-center gap-2.5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
-        <a href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
+      <div className="mt-2 flex items-center justify-center gap-3 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
+        <a className="hit" href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
           LinkedIn
         </a>
         <span aria-hidden="true">·</span>
-        <button className="hover:text-fg hover:underline" onClick={() => setModal('terms')}>
+        <button className="hit hover:text-fg hover:underline" onClick={() => setModal('terms')}>
           이용약관
         </button>
         <span aria-hidden="true">·</span>
-        <button className="hover:text-fg hover:underline" onClick={() => setModal('privacy')}>
+        <button className="hit hover:text-fg hover:underline" onClick={() => setModal('privacy')}>
           개인정보 처리방침
         </button>
         <span aria-hidden="true">·</span>
-        <a href="https://github.com/goneonly/ABSolid" target="_blank" rel="noreferrer">
+        <a className="hit" href="https://github.com/goneonly/ABSolid" target="_blank" rel="noreferrer">
           GitHub
         </a>
       </div>
@@ -202,7 +202,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           <ModalTitle>기록 내보내기</ModalTitle>
           <ModalText>CSV를 다운로드 받겠습니까?</ModalText>
           <Button
-            className="mt-4.5"
+            className="mt-5"
             onClick={() => {
               close()
               downloadRecordsCsv()
@@ -210,7 +210,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           >
             네
           </Button>
-          <Button variant="secondary" className="mt-2.5" onClick={close}>
+          <Button variant="secondary" className="mt-3" onClick={close}>
             아니오
           </Button>
         </Modal>

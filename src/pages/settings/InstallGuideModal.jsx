@@ -12,10 +12,10 @@ export default function InstallGuideModal({ onClose }) {
     <Modal label="홈 화면에 앱 추가" onBackdrop={onClose}>
       <ModalTitle>홈 화면에 앱 추가</ModalTitle>
       <ModalText>앱처럼 바로 실행할 수 있어요.</ModalText>
-      <ol className="mt-4 space-y-2.5 rounded-md bg-surface-2 px-4 py-3.5 text-base">
+      <ol className="mt-4 space-y-3 rounded-md bg-surface-2 px-4 py-4 text-sm">
         {steps.map((step, i) => (
-          <li key={step} className="flex gap-2.5">
-            <span className="flex size-5.5 flex-none items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
+          <li key={step} className="flex gap-3">
+            <span className="flex size-6 flex-none items-center justify-center rounded-full border border-line bg-surface text-xs font-bold text-fg">
               {i + 1}
             </span>
             {step}

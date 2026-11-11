@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { fetchMyBlocks, unblockUser } from '../../api.js'
 import { toast } from '../../toast.js'
-import { Button, Modal, ModalText, ModalTitle, Sub } from '../../components/ui.jsx'
+import { Button, Modal, ModalText, ModalTitle, Skeleton, Sub } from '../../components/ui.jsx'
 
 export default function BlockedUsersModal({ onClose }) {
   const [list, setList] = useState(null) // null = 불러오는 중
@@ -39,9 +39,9 @@ export default function BlockedUsersModal({ onClose }) {
         차단한 멤버는 그룹 화면과 받은 응원에서 보이지 않고, 서로 응원할 수 없어요. 상대에게는 알리지 않아요.
       </ModalText>
       {error ? (
-        <Sub className="mt-4 text-center text-brand">{error}</Sub>
+        <Sub className="mt-4 text-center text-danger">{error}</Sub>
       ) : list === null ? (
-        <Sub className="mt-4 text-center">불러오는 중…</Sub>
+        <Skeleton inCard lines={2} />
       ) : list.length === 0 ? (
         <Sub className="mt-4 text-center">차단한 사용자가 없어요.</Sub>
       ) : (
@@ -51,9 +51,9 @@ export default function BlockedUsersModal({ onClose }) {
               key={u.id}
               className="flex items-center justify-between gap-3 border-b border-line py-3 last:border-b-0"
             >
-              <span className="truncate text-base">{u.nickname}</span>
+              <span className="truncate text-sm">{u.nickname}</span>
               <button
-                className="shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-semibold disabled:opacity-60"
+                className="shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-bold disabled:opacity-60"
                 disabled={busyId === u.id}
                 onClick={() => unblock(u)}
               >

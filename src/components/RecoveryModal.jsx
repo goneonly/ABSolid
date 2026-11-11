@@ -64,7 +64,7 @@ export default function RecoveryModal({ onClose }) {
           if (e.key === 'Enter') submit()
         }}
       />
-      <Button className="mt-3.5" disabled={busy} onClick={submit}>
+      <Button className="mt-4" disabled={busy} onClick={submit}>
         {busy ? '변경 중…' : '비밀번호 변경'}
       </Button>
     </Modal>

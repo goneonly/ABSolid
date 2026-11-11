@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Modal, ModalText, ModalTitle, cx } from './ui.jsx'
 
-const ONB_BTN = 'rounded-md border px-5.5 py-2.75 text-base font-bold active:scale-[.97]'
+const ONB_BTN = 'rounded-md border px-6 py-3 text-sm font-bold active:scale-[.97]'
 
 // 가입 완료 후 첫 진입 시 1회 보여주는 기능 소개 팝업
 const SLIDES = [
@@ -55,23 +55,24 @@ export default function OnboardingModal({ onClose }) {
 
   return (
     <Modal label="ABSolid 기능 소개">
+      {/* 진행 표시: 팝업 맨 위, 둥근 직사각형 막대 (현재 항목은 넓고 브랜드 색) */}
+      <div className="mb-4 flex justify-center gap-2" aria-label={`${i + 1} / ${SLIDES.length}`}>
+        {SLIDES.map((_, d) => (
+          <i key={d} className={cx('h-1.5 rounded-sm transition-all', d === i ? 'w-6 bg-brand' : 'w-3 bg-dot')} />
+        ))}
+      </div>
       <ModalTitle>환영해요!</ModalTitle>
       <ModalText>ABSolid에서 이런 걸 할 수 있어요</ModalText>
 
-      <div className="mt-4.5 rounded-lg border border-line bg-bg px-7 py-4.5 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
+      <div className="mt-5 rounded-lg border border-line bg-bg px-7 py-5 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
         {slide.art}
       </div>
-      <strong className="mt-3.5 block text-center text-lg font-bold">{slide.title}</strong>
-      <p className="mt-1.5 min-h-10 text-center text-sm text-dim">{slide.desc}</p>
+      <strong className="mt-4 block text-center text-base font-bold">{slide.title}</strong>
+      <p className="mt-2 min-h-10 text-center text-sm text-dim">{slide.desc}</p>
 
-      <div className="mt-4.5 flex items-center justify-between">
-        <div className="flex gap-1.5" aria-label={`${i + 1} / ${SLIDES.length}`}>
-          {SLIDES.map((_, d) => (
-            <i key={d} className={cx('size-1.75 rounded-full transition-colors', d === i ? 'bg-brand' : 'bg-dot')} />
-          ))}
-        </div>
+      <div className="mt-5 flex justify-end">
         {last ? (
-          <button className={cx(ONB_BTN, 'border-brand bg-brand text-white')} onClick={onClose}>
+          <button className={cx(ONB_BTN, 'border-brand-strong bg-brand-strong text-white')} onClick={onClose}>
             확인
           </button>
         ) : (

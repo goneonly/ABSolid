@@ -20,8 +20,8 @@ import { toast } from '../toast.js'
 import { useLoad } from '../useLoad.js'
 import { Button, Card, CardTitle, Input, MiniButton, Page, PageTitle, Pill, Sub, cx } from '../components/ui.jsx'
 
-const ADMIN_ROW = 'flex items-center gap-2.5 border-b border-line py-3 last:border-b-0'
-const ROW_TITLE = 'truncate text-base font-semibold'
+const ADMIN_ROW = 'flex items-center gap-3 border-b border-line py-3 last:border-b-0'
+const ROW_TITLE = 'truncate text-sm font-bold'
 const THUMB = 'size-14 flex-none rounded-md border border-line bg-surface-2 object-cover'
 
 // 관리자 작업 실행 — 성공하면 안내 문구를 띄우고 true, 실패하면 사유를 띄우고 false
@@ -40,7 +40,7 @@ async function attempt(work, doneMessage) {
 function ListStatus({ loaded, error, empty, emptyText }) {
   const text = !loaded ? '불러오는 중…' : error || (empty ? emptyText : '')
   if (!text) return null
-  return <Sub className={cx('mt-1.5', loaded && error && 'text-brand')}>{text}</Sub>
+  return <Sub className={cx('mt-2', loaded && error && 'text-danger')}>{text}</Sub>
 }
 
 function fmtBytes(n) {
@@ -90,11 +90,11 @@ function StatsSection() {
       <CardTitle>대시보드</CardTitle>
       <ListStatus loaded={loaded} error={error} />
       {stats && (
-        <div className="mt-3.5 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2">
           {items.map(([label, value]) => (
             <div className="rounded-md border border-line bg-surface-2 p-3 text-center" key={label}>
               <div className="text-xl font-extrabold">{value}</div>
-              <div className="mt-1 text-2xs text-dim">{label}</div>
+              <div className="mt-1 text-xs text-dim">{label}</div>
             </div>
           ))}
         </div>
@@ -128,11 +128,11 @@ function ReportsSection() {
           {r.photoUrl ? (
             <img className={THUMB} src={r.photoUrl} alt="신고된 인증샷" />
           ) : (
-            <div className={cx(THUMB, 'flex items-center justify-center text-2xs text-dim')}>삭제됨</div>
+            <div className={cx(THUMB, 'flex items-center justify-center text-xs text-dim')}>삭제됨</div>
           )}
           <div className="min-w-0 flex-1">
             <div className={ROW_TITLE}>
-              {r.targetName} <span className="text-base text-dim">({r.target_date})</span>
+              {r.targetName} <span className="text-sm text-dim">({r.target_date})</span>
             </div>
             <div className="text-xs text-dim">
               신고자: {r.reporterName}
@@ -276,7 +276,7 @@ function AnnouncementsSection() {
           등록
         </MiniButton>
       </div>
-      {error && <Sub className="mt-1.5 text-brand">{error}</Sub>}
+      {error && <Sub className="mt-2 text-danger">{error}</Sub>}
       {list.map((a) => (
         <div className={ADMIN_ROW} key={a.id}>
           <div className="min-w-0 flex-1">
@@ -310,8 +310,8 @@ function ProgramSection() {
   return (
     <Card>
       <CardTitle>운동 프로그램</CardTitle>
-      <Sub className="mt-1.5">YouTube 플레이리스트 ID (Day 1~30 순서의 30개 영상)</Sub>
-      <div className="mt-2.5 flex gap-2">
+      <Sub className="mt-2">YouTube 플레이리스트 ID (Day 1~30 순서의 30개 영상)</Sub>
+      <div className="mt-3 flex gap-2">
         <Input className="flex-1" value={value} onChange={(e) => setEdited(e.target.value)} />
         <MiniButton onClick={save} disabled={busy || !value.trim()}>
           저장

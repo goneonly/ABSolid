@@ -56,10 +56,10 @@ export default function PasswordConfirmModal({ title, text, confirmLabel = '확�
         }}
       />
       {pwCheck.widget}
-      <Button className="mt-3.5" disabled={busy} onClick={submit}>
+      <Button className="mt-4" disabled={busy} onClick={submit}>
         {busy ? '확인 중…' : confirmLabel}
       </Button>
-      <Button variant="secondary" className="mt-2.5" disabled={busy} onClick={onClose}>
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
         취소
       </Button>
     </Modal>

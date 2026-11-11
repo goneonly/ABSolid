@@ -50,10 +50,10 @@ export function NicknameModal({ session, initial, onSaved, onClose }) {
           if (e.key === 'Enter') submit()
         }}
       />
-      <Button className="mt-3.5" disabled={busy} onClick={submit}>
+      <Button className="mt-4" disabled={busy} onClick={submit}>
         {busy ? '저장 중…' : '저장'}
       </Button>
-      <Button variant="secondary" className="mt-2.5" disabled={busy} onClick={onClose}>
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
         취소
       </Button>
     </Modal>
@@ -108,7 +108,7 @@ export function ProfileInfoModal({ onClose }) {
       <ModalTitle>이름·전화번호 변경</ModalTitle>
       <ModalText>그룹 멤버에게는 보이지 않아요. '회원만 받기' 그룹에 참여하려면 둘 다 필요해요.</ModalText>
       {!loaded ? (
-        <Sub className={cx('mt-4 text-center', loadError && 'text-brand')}>{loadError || '불러오는 중…'}</Sub>
+        <Sub className={cx('mt-4 text-center', loadError && 'text-danger')}>{loadError || '불러오는 중…'}</Sub>
       ) : (
         <>
           <Field
@@ -142,10 +142,10 @@ export function ProfileInfoModal({ onClose }) {
           />
         </>
       )}
-      <Button className="mt-3.5" disabled={busy || !loaded} onClick={submit}>
+      <Button className="mt-4" disabled={busy || !loaded} onClick={submit}>
         {busy ? '저장 중…' : '저장'}
       </Button>
-      <Button variant="secondary" className="mt-2.5" disabled={busy} onClick={onClose}>
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
         취소
       </Button>
     </Modal>
@@ -235,10 +235,10 @@ export function ChangePasswordModal({ email, onClose }) {
         }}
       />
       {pwCheck.widget}
-      <Button className="mt-3.5" disabled={busy} onClick={submit}>
+      <Button className="mt-4" disabled={busy} onClick={submit}>
         {busy ? '변경 중…' : '비밀번호 변경'}
       </Button>
-      <Button variant="secondary" className="mt-2.5" disabled={busy} onClick={onClose}>
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
         취소
       </Button>
     </Modal>
