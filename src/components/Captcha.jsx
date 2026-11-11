@@ -36,7 +36,7 @@ function Widget({ onToken }) {
         if (!alive || !ref.current) return
         id = ts.render(ref.current, {
           sitekey: SITE_KEY,
-          theme: 'dark',
+          theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark', // 앱 화면 테마와 맞춤
           size: 'flexible',
           callback: onToken,
           'expired-callback': () => onToken(''),

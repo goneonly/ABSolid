@@ -70,7 +70,31 @@ export default function OnboardingModal({ onClose }) {
       <strong className="mt-4 block text-center text-base font-bold">{slide.title}</strong>
       <p className="mt-2 min-h-10 text-center text-sm text-dim">{slide.desc}</p>
 
-      <div className="mt-5 flex justify-end">
+      {/* 하단(엄지 영역): 왼쪽 '이전'은 보조 동작이라 테두리 없는 글자 버튼, 오른쪽 '다음·확인'이 주요 동작 */}
+      <div className="mt-5 flex items-center justify-between">
+        <button
+          className={cx(
+            'flex items-center gap-1 rounded-md py-3 pr-4 pl-2 text-sm font-bold text-dim active:scale-[.97]',
+            i === 0 && 'invisible', // 첫 장에선 숨기되 자리는 유지 (버튼 위치가 흔들리지 않게)
+          )}
+          onClick={() => setI(i - 1)}
+          disabled={i === 0}
+          aria-label="이전 소개 보기"
+        >
+          <svg
+            className="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m15 6-6 6 6 6" />
+          </svg>
+          이전
+        </button>
         {last ? (
           <button className={cx(ONB_BTN, 'border-brand-strong bg-brand-strong text-white')} onClick={onClose}>
             확인

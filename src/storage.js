@@ -9,6 +9,8 @@ const KEYS = {
   onboarding: 'absolid.onboarding.v1', // 'pending' | 'done'
   pushConsent: 'absolid.pushconsent.v1', // 푸시 동의 팝업을 이미 보여줬는지
   guest: 'absolid.guest.v1', // 첫 화면에서 '비회원으로 시작하기'를 골랐는지
+  // 화면 테마 — 기기 설정이라 'absolid.' 접두사 밖에 둬서 앱 데이터를 지워도 유지 (index.html 첫 스크립트도 같은 키 사용)
+  theme: 'absolid-theme', // 'system' | 'light' (없으면 기본값 다크)
 }
 
 // 단순 값 읽기·쓰기 (프라이빗 모드 등에서 localStorage 접근이 실패해도 앱이 죽지 않게)
@@ -111,6 +113,14 @@ export const markPushConsentAsked = () => write(KEYS.pushConsent, 'done')
 // 서버 인증샷 정리 (하루 1회)
 export const isServerCleanupDoneToday = () => read(KEYS.serverCleanup) === todayKey()
 export const markServerCleanupDone = () => write(KEYS.serverCleanup, todayKey())
+
+// 화면 테마: 'system' | 'light' | 'dark' — 기본값은 다크 (저장값이 없거나 잘못되면 다크)
+export const getThemeMode = () => {
+  const v = read(KEYS.theme)
+  return v === 'system' || v === 'light' ? v : 'dark'
+}
+export const saveThemeMode = (mode) =>
+  mode === 'system' || mode === 'light' ? write(KEYS.theme, mode) : remove(KEYS.theme)
 
 // 저녁 리마인더 배너 닫기 (하루 1회)
 export const isReminderDismissedToday = () => read(KEYS.remindDismissed) === todayKey()

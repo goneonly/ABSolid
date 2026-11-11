@@ -27,6 +27,7 @@ import PasswordConfirmModal from './settings/PasswordConfirm.jsx'
 import { NicknameModal, ProfileInfoModal, ChangePasswordModal } from './settings/ProfileModals.jsx'
 import BlockedUsersModal from './settings/BlockedUsersModal.jsx'
 import InstallGuideModal from './settings/InstallGuideModal.jsx'
+import ThemePicker from './settings/ThemePicker.jsx'
 
 const RESET_WARNING = {
   member: '모든 운동 기록을 삭제할까요? 서버에 저장된 기록과 인증샷도 함께 삭제되며 되돌릴 수 없어요.',
@@ -119,6 +120,10 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           </RowButton>
         </Card>
       )}
+
+      <Card>
+        <ThemePicker />
+      </Card>
 
       <Card>
         <CardTitle className="mb-2">기타</CardTitle>

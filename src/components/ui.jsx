@@ -163,7 +163,7 @@ export function Field({ id, label, error, className, ...inputProps }) {
 // onBackdrop을 넘기면 바깥 영역 탭으로 닫힘
 export function Modal({ label, onBackdrop, className, children }) {
   return (
-    <div className="fixed inset-0 z-100 flex items-end justify-center bg-black/70" onClick={onBackdrop}>
+    <div className="fixed inset-0 z-100 flex items-end justify-center bg-scrim" onClick={onBackdrop}>
       <div
         className={cx(
           'w-full max-w-120 animate-sheet-up rounded-t-2xl bg-surface px-5 pt-7 pb-[calc(28px+env(safe-area-inset-bottom))]',

@@ -20,6 +20,7 @@
   --color-danger: #ff7a70; /* 오류·위험 동작 (브랜드 빨강과 구분, 어두운 배경에서 대비 6:1) */
   --color-dot: #4a4d55; /* 비활성 점·아이콘 */
   --color-success: #30d158;
+  --color-scrim: rgb(0 0 0 / 0.7); /* 모달 뒤 어둡게 */
 
   --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
@@ -105,9 +106,33 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
-  input[type='date'] {
-    color-scheme: dark;
-  }
+}
+
+/*
+ * 라이트 테마 — 위 @theme 의 색·그림자 변수만 바꿔 끼움 (유틸리티 클래스는 그대로)
+ * <html data-theme="light|dark"> 는 index.html 의 첫 스크립트와 src/theme.js 가 설정
+ * 빨강은 흰 배경에서 글자 대비 4.5:1 이상이 되도록 조금 더 진하게
+ */
+:root {
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f1f4;
+  --color-line: #e2e4e9;
+  --color-fg: #15171c;
+  --color-dim: #626873; /* 흰 카드 대비 5.6:1 */
+  --color-brand: #d0261b; /* 흰 카드 대비 5.3:1 */
+  --color-brand-strong: #c42318;
+  --color-danger: #a8201a;
+  --color-dot: #c5c9d0;
+  --color-success: #18833a;
+  --color-scrim: rgb(21 23 28 / 0.45);
+  /* 그림자는 배경색 계열로 옅게 (검정 그림자는 밝은 화면에서 탁해 보임) */
+  --shadow-float: 0 8px 24px rgb(21 23 28 / 0.12);
+  --shadow-brand: 0 6px 20px rgb(208 38 27 / 0.3);
 }
 
 /* 작은 글자 버튼의 터치 영역을 44px 이상으로 넓힘 (보이는 모양은 그대로) */

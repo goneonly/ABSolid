@@ -39,6 +39,11 @@ export default function App() {
   const [showRecovery, setShowRecovery] = useState(false)
   const [justDone, setJustDone] = useState(false) // 운동 완료 직후 홈 축하 표시
   const endCelebration = useCallback(() => setJustDone(false), [])
+  // 비회원 → 로그인: 비회원 선택을 해제하면 첫 로그인 화면이 다시 표시됨 (설정·그룹 탭의 로그인 버튼)
+  const requestLogin = useCallback(() => {
+    setGuestChosen(false)
+    setGuest(false)
+  }, [])
   const [guest, setGuest] = useState(isGuestChosen)
   const refresh = useCallback(() => setTick((t) => t + 1), [])
   const session = useAuth()
@@ -169,7 +174,7 @@ export default function App() {
         />
       )}
       {/* 계정이 바뀌면 화면 상태(닉네임 입력값·선택한 그룹 등)를 새로 시작 */}
-      {view === 'group' && <Group key={accountKey} records={records} session={session} />}
+      {view === 'group' && <Group key={accountKey} records={records} session={session} onRequestLogin={requestLogin} />}
       {view === 'settings' && (
         <Settings
           key={accountKey}
@@ -177,11 +182,7 @@ export default function App() {
           onChanged={refresh}
           isAdmin={isAdmin}
           onOpenAdmin={() => setView('admin')}
-          onRequestLogin={() => {
-            // 비회원 선택을 해제하면 첫 로그인 화면이 다시 표시됨
-            setGuestChosen(false)
-            setGuest(false)
-          }}
+          onRequestLogin={requestLogin}
         />
       )}
       {view === 'admin' &&

@@ -153,7 +153,7 @@ export default function Login({ onDone, onGuest }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
       <Logo size={48} className="justify-center gap-3 text-3xl" />
-      <Sub className="mt-2 text-center">매일 복근, 같이</Sub>
+      <Sub className="mt-2 text-center">10분의 꾸준함이 만드는 단단함</Sub>
 
       <form
         className="mt-8 w-full rounded-2xl border border-line bg-surface px-5 pt-6 pb-5"

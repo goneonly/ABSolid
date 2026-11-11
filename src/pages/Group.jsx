@@ -9,7 +9,8 @@ import MemberRow from './group/MemberRow.jsx'
 import JoinCreateCard from './group/JoinCreateCard.jsx'
 import GroupDetail from './group/GroupDetail.jsx'
 
-export default function Group({ records, session }) {
+// onRequestLogin: 비회원이 로그인 화면으로 가기 (App 이 비회원 선택을 해제)
+export default function Group({ records, session, onRequestLogin }) {
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -45,7 +46,6 @@ export default function Group({ records, session }) {
       .map((d) => d.key),
   )
   const myNick = getProfile().nickname // 비어 있으면 서버 닉네임을 그대로 사용
-  const myName = myNick || '나'
   const myId = session?.user?.id
 
   // ── 미로그인/서버 미연결 ──
@@ -54,14 +54,18 @@ export default function Group({ records, session }) {
       <Page>
         <PageTitle>그룹</PageTitle>
         <Card>
-          <MemberRow name={myName} isMe dates={myDates} />
+          <MemberRow name={myNick || '나'} isMe={!!myNick} dates={myDates} />
         </Card>
         <Card>
           <EmptyState art={<LockArt />} title="그룹은 로그인 후 이용할 수 있어요">
-            설정 탭에서 로그인/회원가입을 하면
-            <br />
-            초대 코드로 친구들과 함께할 수 있어요.
+            로그인하면 초대 코드로 친구들과 함께할 수 있어요.
           </EmptyState>
+          {/* 서버 연결이 없으면(로컬 개발 등) 로그인 자체가 불가해 버튼을 숨김 */}
+          {supabase && (
+            <Button className="mt-4" onClick={onRequestLogin}>
+              로그인 / 회원가입
+            </Button>
+          )}
         </Card>
       </Page>
     )
