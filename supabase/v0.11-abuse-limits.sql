@@ -1,4 +1,4 @@
--- Absolid v0.11 — 가입·기능 남용 방지
+-- ABSolid v0.11 — 가입·기능 남용 방지
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: v0.10-signup-profile.sql 까지 실행되어 있어야 함
 --

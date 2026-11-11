@@ -63,7 +63,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
   // 홈 화면에 앱 추가: 설치 창을 띄울 수 있으면 바로, 아니면(아이폰 등) 방법 안내
   async function installApp() {
     if (!canPromptInstall()) return setModal('install')
-    if (await promptInstall()) toast('홈 화면에 Absolid를 추가했어요.')
+    if (await promptInstall()) toast('홈 화면에 ABSolid를 추가했어요.')
   }
 
   // 운동 기록 초기화 — 기기 기록을 지우고, 회원이면 서버 기록·인증샷도 삭제
@@ -160,7 +160,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
         </LinkButton>
       )}
 
-      <Sub className="mt-4 text-center">Absolid v{__APP_VERSION__}</Sub>
+      <Sub className="mt-4 text-center">ABSolid v{__APP_VERSION__}</Sub>
       <div className="mt-2 flex items-center justify-center gap-2.5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
         <a href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
           LinkedIn
@@ -174,7 +174,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           개인정보 처리방침
         </button>
         <span aria-hidden="true">·</span>
-        <a href="https://github.com/goneonly/absolid" target="_blank" rel="noreferrer">
+        <a href="https://github.com/goneonly/ABSolid" target="_blank" rel="noreferrer">
           GitHub
         </a>
       </div>

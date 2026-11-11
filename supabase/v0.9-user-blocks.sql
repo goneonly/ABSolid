@@ -1,4 +1,4 @@
--- Absolid v0.9 — 사용자 차단
+-- ABSolid v0.9 — 사용자 차단
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: v0.8-cheers-and-push.sql 까지 실행되어 있어야 함
 --

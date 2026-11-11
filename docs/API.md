@@ -1,6 +1,6 @@
 # API 명세
 
-Absolid 는 별도 백엔드 서버 없이 **Supabase** 를 서버로 씁니다. 앱은 `@supabase/supabase-js` 로 아래 네 가지를 호출합니다.
+ABSolid 는 별도 백엔드 서버 없이 **Supabase** 를 서버로 씁니다. 앱은 `@supabase/supabase-js` 로 아래 네 가지를 호출합니다.
 
 | 종류 | 설명 | 앱 코드 |
 |---|---|---|

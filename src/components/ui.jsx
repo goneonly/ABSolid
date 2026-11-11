@@ -24,7 +24,7 @@ export function Logo({ size = 26, className }) {
         <path d="M10 14.5 H16" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
       </svg>
       <strong className="font-extrabold tracking-tight">
-        Abs<em className="text-brand not-italic">olid</em>
+        ABS<em className="text-brand not-italic">olid</em>
       </strong>
     </span>
   )

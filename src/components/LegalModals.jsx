@@ -4,7 +4,7 @@ import { Button, Modal, ModalTitle } from './ui.jsx'
 // (회원가입 시 동의한 버전이 profiles.terms_version 에 저장됨)
 export const TERMS_VERSION = '2026-10-10'
 const EFFECTIVE_DATE = '2026년 10월 10일'
-const CONTACT_URL = 'https://github.com/goneonly/absolid/issues'
+const CONTACT_URL = 'https://github.com/goneonly/ABSolid/issues'
 
 const BODY =
   'mt-3.5 text-sm text-dim [&_li]:mt-1 [&_strong]:mt-4 [&_strong]:block [&_strong]:text-fg [&_ul]:mt-1.5 [&_ul]:ml-4.5 [&_ul]:list-disc [&_ol]:mt-1.5 [&_ol]:ml-4.5 [&_ol]:list-decimal [&>p]:mt-2 [&_a]:text-fg [&_a]:underline'
@@ -26,7 +26,7 @@ export function PrivacyModal({ onClose, title = '개인정보 처리방침' }) {
   return (
     <LegalModal title={title} onClose={onClose}>
       <p>
-        Absolid(이하 &lsquo;서비스&rsquo;)는 이용자의 개인정보를 소중히 다루며, 개인정보 보호법에 따라 아래와 같이
+        ABSolid(이하 &lsquo;서비스&rsquo;)는 이용자의 개인정보를 소중히 다루며, 개인정보 보호법에 따라 아래와 같이
         처리합니다.
       </p>
 
@@ -110,7 +110,7 @@ export function PrivacyModal({ onClose, title = '개인정보 처리방침' }) {
 
       <strong>10. 개인정보 보호책임자 및 문의</strong>
       <p>
-        개인정보 보호책임자: Absolid 운영자
+        개인정보 보호책임자: ABSolid 운영자
         <br />
         문의:{' '}
         <a href={CONTACT_URL} target="_blank" rel="noreferrer">
@@ -129,7 +129,7 @@ export function TermsModal({ onClose }) {
   return (
     <LegalModal title="이용약관" onClose={onClose}>
       <strong>제1조 (목적)</strong>
-      <p>이 약관은 Absolid(이하 &lsquo;서비스&rsquo;)의 이용 조건과 절차, 이용자와 운영자의 권리·의무를 정합니다.</p>
+      <p>이 약관은 ABSolid(이하 &lsquo;서비스&rsquo;)의 이용 조건과 절차, 이용자와 운영자의 권리·의무를 정합니다.</p>
 
       <strong>제2조 (서비스 내용)</strong>
       <ul>

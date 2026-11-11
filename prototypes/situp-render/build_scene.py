@@ -192,7 +192,7 @@ print("[scene] motion bbox", tuple(round(v, 2) for v in lo), tuple(round(v, 2) f
 bpy.ops.mesh.primitive_plane_add(size=30, location=(0, 0, 0))
 floor = bpy.context.object; floor.name = "Floor"
 fm = bpy.data.materials.new("Floor"); fm.use_nodes = True
-fb = fm.node_tree.nodes["Principled BSDF"]
+fb = next(n for n in fm.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
 fb.inputs["Base Color"].default_value = (0.010, 0.010, 0.012, 1); fb.inputs["Roughness"].default_value = 0.6
 floor.data.materials.append(fm)
 
@@ -203,7 +203,7 @@ yoga.dimensions = (mat_w, mat_len, MAT_Z)
 bpy.ops.object.transform_apply(scale=True)
 bev = yoga.modifiers.new("Bevel", 'BEVEL'); bev.width = 0.004; bev.segments = 3
 ym = bpy.data.materials.new("Mat"); ym.use_nodes = True
-yb = ym.node_tree.nodes["Principled BSDF"]
+yb = next(n for n in ym.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
 yb.inputs["Base Color"].default_value = (0.028, 0.029, 0.034, 1); yb.inputs["Roughness"].default_value = 0.75
 yoga.data.materials.append(ym)
 
@@ -255,7 +255,7 @@ for lt in (area("RimRed", lp(1.4, 0.9, 1.5), 100, 0.5, BRAND, torso),
 area("Fill", tuple(cam.location + Vector((0, 0, 0.4))), 14, 2.0, (0.9, 0.93, 1.0), torso)
 
 world = bpy.data.worlds.new("World"); sc.world = world; world.use_nodes = True
-world.node_tree.nodes["Background"].inputs[0].default_value = (0.0055, 0.0057, 0.0066, 1)
+next(n for n in world.node_tree.nodes if n.type == "BACKGROUND").inputs[0].default_value = (0.0055, 0.0057, 0.0066, 1)
 
 # ───────── 렌더 설정 ─────────
 sc.render.engine = 'CYCLES'

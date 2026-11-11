@@ -1,4 +1,4 @@
--- Absolid v0.6 — 보안·무결성 보강
+-- ABSolid v0.6 — 보안·무결성 보강
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: v0.5-groups-and-fixes.sql 까지 실행되어 있어야 함
 --

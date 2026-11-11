@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       : `${where}${name}님이 응원을 보냈어요. 오늘 운동하러 가볼까요?`
 
   const result = await sendPushToUsers(admin, [cheer.to_user], {
-    title: 'Absolid',
+    title: 'ABSolid',
     body,
     url: '/',
     tag: `absolid-cheer-${cheerId}`,

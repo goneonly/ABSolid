@@ -1,4 +1,4 @@
--- Absolid v0.8 — 그룹 응원 + 알림 마무리
+-- ABSolid v0.8 — 그룹 응원 + 알림 마무리
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: v0.7-workout-verify-and-consent.sql 까지 실행되어 있어야 함
 --

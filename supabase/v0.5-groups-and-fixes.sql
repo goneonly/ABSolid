@@ -1,4 +1,4 @@
--- Absolid v0.5 — 여러 그룹 참여 + 그룹 사진 + 점검 오류 수정
+-- ABSolid v0.5 — 여러 그룹 참여 + 그룹 사진 + 점검 오류 수정
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: schema.sql, storage.sql, avatars.sql, profiles-update.sql, groups-update.sql,
 --       profiles-security-fix.sql, admin.sql, security-and-fixes.sql

@@ -1,4 +1,4 @@
--- Absolid 보안·버그 통합 패치 (v0.4) — Supabase SQL Editor에서 실행 (재실행 안전)
+-- ABSolid 보안·버그 통합 패치 (v0.4) — Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: schema.sql, storage.sql, admin.sql 이 먼저 실행되어 있어야 함 (is_admin() 필요)
 --
 -- 포함:
