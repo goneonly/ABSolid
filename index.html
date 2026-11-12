@@ -7,6 +7,20 @@
     <title>ABSolid — 10분의 꾸준함이 만드는 단단함</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- splash-images:start (scripts/make-splash-images.mjs 가 생성) -->
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1260x2736.png" media="(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <!-- splash-images:end -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -46,9 +60,10 @@
       #splash .sp-mark { width: 72px; height: 72px; animation: sp-breathe 1.6s ease-in-out 1s infinite; }
       #splash .sp-a1 { stroke-dasharray: 30; stroke-dashoffset: 30; animation: sp-draw 0.5s ease forwards; }
       #splash .sp-a2 { stroke-dasharray: 8; stroke-dashoffset: 8; animation: sp-draw 0.2s ease 0.45s forwards; }
-      #splash .sp-word { margin-top: 16px; font-size: 30px; font-weight: 800; letter-spacing: -0.5px; opacity: 0; animation: sp-up 0.35s ease 0.3s forwards; }
+      /* 글자 줄 높이를 고정: 글꼴이 늦게 와도 로고 위치가 그대로 (아이폰 시작 이미지와 같은 자리) */
+      #splash .sp-word { margin-top: 16px; font-size: 30px; line-height: 36px; font-weight: 800; letter-spacing: -0.5px; opacity: 0; animation: sp-up 0.35s ease 0.3s forwards; }
       #splash .sp-word em { font-style: normal; color: var(--brand); }
-      #splash .sp-tag { margin-top: 8px; font-size: 14px; color: var(--dim); opacity: 0; animation: sp-up 0.35s ease 0.45s forwards; }
+      #splash .sp-tag { margin-top: 8px; font-size: 14px; line-height: 20px; color: var(--dim); opacity: 0; animation: sp-up 0.35s ease 0.45s forwards; }
       #splash .sp-msg { margin-top: 24px; min-height: 20px; font-size: 14px; color: var(--dim); text-align: center; padding: 0 24px; }
       #splash .sp-acts { display: none; margin-top: 12px; flex-direction: column; align-items: center; gap: 8px; width: 220px; }
       #splash.splash-stuck .sp-acts { display: flex; }
@@ -70,7 +85,7 @@
     </style>
   </head>
   <body>
-    <!-- 앱 시작 로딩 화면: 로그인 상태 확인이 끝나면 src/splash.js 가 최소 0.6초 뒤 0.2초 동안 흐려지며 제거 -->
+    <!-- 앱 시작 로딩 화면: 로그인 상태 확인이 끝나면 src/splash.js 가 (보이기 시작한 뒤 최소 1.4초) 0.2초 동안 흐려지며 제거 -->
     <div id="splash" data-stage="1" role="status" aria-label="ABSolid 불러오는 중">
       <svg class="sp-mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
         <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--brand)" />
@@ -88,6 +103,7 @@
     </div>
     <script>
       // 3초가 넘으면 안내, 8초가 넘으면 다시 시도·오프라인 시작 버튼 (앱 코드가 늦거나 실패해도 동작하도록 여기서 처리)
+      window.__absolidSplashAt = performance.now() // 로딩 화면이 실제로 보이기 시작한 시각
       ;(function () {
         var splash = document.getElementById('splash')
         var msg = document.getElementById('splash-msg')
