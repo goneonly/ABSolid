@@ -1,6 +1,6 @@
 # 인수인계 안내
 
-ABSolid 를 처음 맡는 개발자가 코드를 읽기 전에 보는 문서입니다. 전체 구조는 [README](../README.md), 서버 함수와 권한은 [API 명세](API.md), 서버 설정은 [Supabase 설정](SUPABASE_SETUP.md)과 [푸시 알림 설정](NOTIFICATIONS_SETUP.md)에 있습니다.
+ABSolid 를 처음 맡는 개발자가 코드를 읽기 전에 보는 문서입니다. 전체 구조는 [README](../README.md), 서버 함수와 권한은 [API 명세](API.md), 서버 설정은 [Supabase 설정](SUPABASE_SETUP.md)과 [푸시 알림 설정](NOTIFICATIONS_SETUP.md)에 있습니다. 앞으로 할 일은 [스프린트 백로그](SPRINT_BACKLOG.md)에 있습니다.
 
 ## 1. 한눈에 보기
 
