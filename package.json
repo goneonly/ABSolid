@@ -4,7 +4,7 @@
   "version": "0.6.0",
   "type": "module",
   "engines": {
-    "node": ">=20.19"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,8 @@
     "format": "prettier --write src supabase/functions scripts",
     "format:check": "prettier --check src supabase/functions scripts",
     "check": "npm run lint && npm run format:check && npm test && npm run build",
-    "splash": "node scripts/make-splash-images.mjs"
+    "splash": "node scripts/make-splash-images.mjs",
+    "icons": "node scripts/make-app-icons.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",

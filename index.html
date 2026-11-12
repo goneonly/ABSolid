@@ -34,8 +34,8 @@
           mode = localStorage.getItem('absolid-theme')
         } catch (e) {}
         var sys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)')
-        // 기본값 다크: 'light' 는 라이트, 'system' 은 휴대폰 설정, 그 외(없음 포함)는 다크
-        var dark = mode !== 'light' && !(mode === 'system' && sys && !sys.matches)
+        // 기본값 시스템: 'light' 는 라이트, 'dark' 는 다크, 그 외(없음 포함)는 휴대폰 설정 (알 수 없으면 다크)
+        var dark = mode === 'dark' || (mode !== 'light' && !(sys && !sys.matches))
         var root = document.documentElement
         root.dataset.theme = dark ? 'dark' : 'light'
         root.style.colorScheme = dark ? 'dark' : 'light'

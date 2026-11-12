@@ -10,6 +10,7 @@ const loaders = {
   OnboardingModal: () => import('./components/OnboardingModal.jsx'),
   PushConsentModal: () => import('./components/PushConsentModal.jsx'),
   RecoveryModal: () => import('./components/RecoveryModal.jsx'),
+  WorkoutPlaceModal: () => import('./components/WorkoutPlaceModal.jsx'),
 }
 
 export const Workout = lazy(loaders.Workout)
@@ -19,6 +20,7 @@ export const Admin = lazy(loaders.Admin)
 export const OnboardingModal = lazy(loaders.OnboardingModal)
 export const PushConsentModal = lazy(loaders.PushConsentModal)
 export const RecoveryModal = lazy(loaders.RecoveryModal)
+export const WorkoutPlaceModal = lazy(loaders.WorkoutPlaceModal)
 
 // 첫 화면 이후 한가할 때 나머지 화면을 미리 받아 둠 (실패해도 무시 — 탭을 열 때 다시 받음)
 export function prefetchPages() {

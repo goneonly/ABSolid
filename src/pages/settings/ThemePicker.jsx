@@ -15,7 +15,7 @@ export default function ThemePicker() {
   return (
     <>
       <CardTitle>화면 테마</CardTitle>
-      <Sub className="mt-1">기본은 다크예요. 시스템을 고르면 휴대폰의 라이트 또는 다크 설정을 따라가요.</Sub>
+      <Sub className="mt-1">시스템을 고르면 휴대폰의 라이트 또는 다크 설정을 따라가요.</Sub>
       <div className="mt-3 flex gap-1 rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="화면 테마">
         {THEME_MODES.map((m) => (
           <button

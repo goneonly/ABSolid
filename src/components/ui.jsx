@@ -269,6 +269,15 @@ export function CloseIcon({ className = 'size-[1em]' }) {
   )
 }
 
+// 집 모양 (속이 찬 모양, 가운데 문은 비워 둠) — 하단 탭 홈 버튼, 운동 장소의 '집에서'
+export function HomeIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M11.3 2.9a1.1 1.1 0 0 1 1.4 0l8 6.7c.2.2.3.5.3.8V20a1 1 0 0 1-1 1h-5.2v-5.6a1 1 0 0 0-1-1h-3.6a1 1 0 0 0-1 1V21H4a1 1 0 0 1-1-1v-9.6c0-.3.1-.6.3-.8Z" />
+    </svg>
+  )
+}
+
 // 목록 줄의 '더 보기'(오른쪽)와 '뒤로'(왼쪽) 꺾쇠
 export function ChevronIcon({ left, className = 'size-5' }) {
   return (

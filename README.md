@@ -79,6 +79,7 @@ npm run dev
 | `npm test` | 단위 테스트 (Vitest) |
 | `npm run test:db` | DB 보안 테스트. SQL을 임시 Postgres에 적용해 권한과 공격 시나리오를 검증합니다. PostgreSQL이 설치돼 있어야 합니다. |
 | `npm run splash` | 아이폰 시작 이미지 다시 만들기 (로딩 화면 디자인을 바꿨을 때) |
+| `npm run icons` | 홈 화면 앱 아이콘 다시 만들기 (로고를 바꿨을 때) |
 
 GitHub에 푸시하면 CI가 린트, 코드 스타일, 단위 테스트, 빌드, DB 보안 테스트를 모두 돌립니다.
 SQL 파일을 새로 만들면 `supabase/tests/run.sh`의 실행 순서 목록에도 추가해 주세요.

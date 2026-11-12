@@ -26,18 +26,28 @@ function loadTurnstile() {
   return loading
 }
 
+// Cloudflare 확인란은 최소 폭이 300px. 안드로이드에 흔한 360px 폭 화면에서는 카드 안쪽이 그보다 좁아
+// 칸 밖으로 삐져나가므로, 좁으면 300px 크기로 그린 뒤 칸 폭에 맞게 비율 그대로 줄여서 보여 줌
+const MIN_WIDTH = 300
+const HEIGHT = 65
+
 function Widget({ onToken }) {
+  const boxRef = useRef(null)
   const ref = useRef(null)
+  const [scale, setScale] = useState(1)
   useEffect(() => {
     let alive = true
     let id
+    const width = boxRef.current?.clientWidth || MIN_WIDTH
+    const narrow = width < MIN_WIDTH
+    setScale(narrow ? width / MIN_WIDTH : 1)
     loadTurnstile()
       .then((ts) => {
         if (!alive || !ref.current) return
         id = ts.render(ref.current, {
           sitekey: SITE_KEY,
           theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark', // 앱 화면 테마와 맞춤
-          size: 'flexible',
+          size: narrow ? 'normal' : 'flexible', // normal = 300x65 고정, flexible = 칸 폭에 맞춤
           callback: onToken,
           'expired-callback': () => onToken(''),
           'error-callback': () => onToken(''),
@@ -49,7 +59,14 @@ function Widget({ onToken }) {
       if (id !== undefined) window.turnstile?.remove(id)
     }
   }, [onToken])
-  return <div ref={ref} className="mt-3 min-h-16.5" />
+  return (
+    <div ref={boxRef} className="mt-3 overflow-hidden" style={{ height: Math.ceil(HEIGHT * scale) }}>
+      <div
+        ref={ref}
+        style={scale < 1 ? { width: MIN_WIDTH, transform: `scale(${scale})`, transformOrigin: '0 0' } : undefined}
+      />
+    </div>
+  )
 }
 
 // 사용: const captcha = useCaptcha() 후 폼 안에 {captcha.widget}

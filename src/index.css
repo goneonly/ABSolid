@@ -49,7 +49,6 @@
 
   /* ── 그림자 ── */
   --shadow-float: 0 8px 24px rgb(0 0 0 / 0.4);
-  --shadow-brand: 0 6px 20px rgb(255 59 48 / 0.45);
 
   /* ── 애니메이션 ── */
   --animate-sheet-up: sheet-up 0.25s ease;
@@ -132,7 +131,6 @@
   --color-scrim: rgb(21 23 28 / 0.45);
   /* 그림자는 배경색 계열로 옅게 (검정 그림자는 밝은 화면에서 탁해 보임) */
   --shadow-float: 0 8px 24px rgb(21 23 28 / 0.12);
-  --shadow-brand: 0 6px 20px rgb(208 38 27 / 0.3);
 }
 
 /* 작은 글자 버튼의 터치 영역을 44px 이상으로 넓힘 (보이는 모양은 그대로) */

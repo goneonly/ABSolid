@@ -11,6 +11,7 @@ import {
   RecoveryModal,
   Settings,
   Workout,
+  WorkoutPlaceModal,
   prefetchPages,
 } from './lazyPages.js'
 import { supabase } from './server/supabase.js'
@@ -41,6 +42,7 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPushConsent, setShowPushConsent] = useState(false)
   const [showRecovery, setShowRecovery] = useState(false)
+  const [showPlace, setShowPlace] = useState(false) // 운동 시작 전 장소(집, 헬스장) 고르기
   const [justDone, setJustDone] = useState(false) // 운동 완료 직후 홈 축하 표시
   const [guest, setGuest] = useState(isGuestChosen)
   // 로딩 화면의 '오프라인으로 시작': 로그인 확인이 12초 넘게 안 끝날 때 기기 기록으로 먼저 시작 (확인되면 그대로 회원 화면으로)
@@ -52,6 +54,8 @@ export default function App() {
   const records = getRecords()
 
   const refresh = useCallback(() => setTick((t) => t + 1), [])
+  // 화면 이동. 운동 화면은 바로 가지 않고 장소부터 고름 (집에서만 영상 운동, 헬스장은 준비 중)
+  const go = useCallback((next) => (next === 'workout' ? setShowPlace(true) : setView(next)), [])
   const endCelebration = useCallback(() => setJustDone(false), [])
   // 비회원이 로그인하려 할 때: 비회원 선택을 해제하면 첫 로그인 화면이 다시 표시됨 (설정, 그룹 탭의 로그인 버튼)
   const requestLogin = useCallback(() => {
@@ -189,7 +193,7 @@ export default function App() {
           <Home
             records={records}
             session={session}
-            onStart={() => setView('workout')}
+            onStart={() => go('workout')}
             celebrate={justDone}
             onCelebrated={endCelebration}
           />
@@ -253,9 +257,18 @@ export default function App() {
         )}
 
         {showRecovery && <RecoveryModal onClose={() => setShowRecovery(false)} />}
+        {showPlace && (
+          <WorkoutPlaceModal
+            onHome={() => {
+              setShowPlace(false)
+              setView('workout')
+            }}
+            onClose={() => setShowPlace(false)}
+          />
+        )}
       </Suspense>
 
-      <BottomNav view={view} onChange={setView} />
+      <BottomNav view={view} onChange={go} />
     </div>
   )
 }
