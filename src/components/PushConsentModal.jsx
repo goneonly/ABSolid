@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { enablePush } from '../push.js'
-import { toast } from '../toast.js'
+import { enablePush } from '../server/push.js'
+import { toast } from '../lib/toast.js'
 import { Button, Modal, ModalText, ModalTitle } from './ui.jsx'
 
 // 가입 완료 후 1회: 푸시 알림을 받을지 묻는 팝업 — 결과는 팝업을 더 띄우지 않고 아래 안내 한 줄(토스트)로
-// - 알림 받기 → 휴대폰 권한 창 → 허용하면 완료 안내, 거부·실패하면 그 이유만 안내
-// - 나중에(또는 바깥 탭) → "설정에서 켤 수 있어요" 안내
+// - 알림 받기: 휴대폰 권한 창이 뜨고, 허용하면 완료 안내, 거부나 실패면 그 이유만 안내
+// - 나중에(또는 바깥 탭): "설정에서 켤 수 있어요" 안내
 export default function PushConsentModal({ onClose }) {
   const [busy, setBusy] = useState(false)
 
@@ -22,7 +22,7 @@ export default function PushConsentModal({ onClose }) {
   }
 
   function later() {
-    toast('알림은 설정 → 기타에서 언제든 켤 수 있어요.')
+    toast('알림은 설정의 기타 메뉴에서 언제든 켤 수 있어요.')
     onClose()
   }
 

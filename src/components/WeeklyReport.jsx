@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { weeklySummary } from '../stats.js'
+import { weeklySummary } from '../lib/stats.js'
 import { Card, CardTitle, CheckIcon, Sub, Trend, cx } from './ui.jsx'
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토']
@@ -39,7 +39,7 @@ export default function WeeklyReport({ records }) {
 
       <Sub className="mt-3">
         지난주 {lastCount}회
-        <Trend delta={delta} className="ml-2 text-xs" /> · {message}
+        <Trend delta={delta} className="ml-2 text-xs" />. {message}
       </Sub>
 
       <div className="mt-5 border-t border-line pt-4">

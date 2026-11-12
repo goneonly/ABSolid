@@ -1,4 +1,4 @@
-// ABSolid 서비스 워커 — 푸시 알림 수신/클릭 처리 (운동 리마인더·응원)
+// ABSolid 서비스 워커 — 푸시 알림 수신/클릭 처리 (운동 리마인더, 응원)
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()))
 

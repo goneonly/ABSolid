@@ -1,27 +1,27 @@
--- ABSolid v0.6 — 보안·무결성 보강
+-- ABSolid v0.6 — 보안, 무결성 보강
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: v0.5-groups-and-fixes.sql 까지 실행되어 있어야 함
 --
 -- 포함:
---   1) 운동 기록 날짜 제한 — 오늘·어제(한국 시간)만 저장, Day 번호는 서버가 날짜로 계산
+--   1) 운동 기록 날짜 제한 — 오늘, 어제(한국 시간)만 저장, Day 번호는 서버가 날짜로 계산
 --   2) 프로필 사진 주소 제한 — 본인 avatars 폴더의 스토리지 주소만 허용
---   3) 사진 업로드 크기·형식 제한 — 버킷별 5MB, 이미지 파일만
+--   3) 사진 업로드 크기, 형식 제한 — 버킷별 5MB, 이미지 파일만
 --   4) 쓰지 않는 공개 함수 삭제 — find_group_by_invite_code, group_member_count
 --
--- 운영자 작업(SQL Editor·service_role, auth.uid() 없음)과 관리자는 1)·2) 제한에서 제외
+-- 운영자 작업(SQL Editor, service_role, auth.uid() 없음)과 관리자는 1), 2) 제한에서 제외
 
 -- ══════════════════════════════════════════════
 -- 1) 운동 기록 날짜 제한
 -- ══════════════════════════════════════════════
--- 문제: API 를 직접 호출하면 본인 계정에 과거 날짜 기록을 마음대로 추가해 streak·리더보드를 부풀릴 수 있었음.
--- 해결: 새 기록(또는 날짜를 바꾸는 수정)은 한국 시간 기준 오늘·어제만 허용.
---       날짜가 그대로인 수정(인증샷 연결·정리 등)은 과거 기록이어도 허용.
+-- 문제: API 를 직접 호출하면 본인 계정에 과거 날짜 기록을 마음대로 추가해 streak, 리더보드를 부풀릴 수 있었음.
+-- 해결: 새 기록(또는 날짜를 바꾸는 수정)은 한국 시간 기준 오늘, 어제만 허용.
+--       날짜가 그대로인 수정(인증샷 연결, 정리 등)은 과거 기록이어도 허용.
 create or replace function public.guard_workout_date()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
   today date := (now() at time zone 'Asia/Seoul')::date;
 begin
-  -- Day 번호는 클라이언트 값 대신 날짜로 계산 (31일 → Day 30)
+  -- Day 번호는 클라이언트 값 대신 날짜로 계산 (31일은 Day 30)
   new.day := least(extract(day from new.date)::int, 30);
 
   if auth.uid() is null or public.is_admin() then
@@ -64,7 +64,7 @@ create trigger trg_guard_profile_avatar
   for each row execute function public.guard_profile_avatar();
 
 -- ══════════════════════════════════════════════
--- 3) 사진 업로드 크기·형식 제한
+-- 3) 사진 업로드 크기, 형식 제한
 -- ══════════════════════════════════════════════
 -- 앱은 사진을 압축(긴 변 512~720px JPEG, 보통 수백 KB)해서 올리므로 5MB 면 넉넉함.
 update storage.buckets

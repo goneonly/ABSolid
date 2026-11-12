@@ -2,8 +2,8 @@
 // 실행: node scripts/make-splash-images.mjs   (macOS 의 Google Chrome 필요)
 //
 // index.html 의 로딩 화면(#splash)을 헤드리스 Chrome 으로 기기 크기마다 그대로 찍음.
-// 애니메이션 첫 장면(빨간 사각형만, "A"·글자는 아직 안 보임)으로 고정해서 찍기 때문에
-// iOS 가 시작 이미지 → 실제 로딩 화면으로 바꿀 때 같은 자리에서 "A"가 그려지기 시작함 (튀는 장면 없음).
+// 애니메이션 첫 장면(빨간 사각형만, "A", 글자는 아직 안 보임)으로 고정해서 찍기 때문에
+// iOS 가 시작 이미지에서 실제 로딩 화면으로 바꿀 때 같은 자리에서 "A"가 그려지기 시작함 (튀는 장면 없음).
 // 로딩 화면 디자인을 바꾸면 이 스크립트를 다시 실행하면 됨 — 이미지와 index.html 의 <link> 목록을 함께 갱신.
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -15,27 +15,27 @@ const ROOT = new URL('..', import.meta.url).pathname
 const OUT_DIR = join(ROOT, 'public/splash')
 const INDEX = join(ROOT, 'index.html')
 
-// 세로 화면 기준 CSS 크기 · 배율 · 하단 안전 영역(홈 인디케이터)
+// 세로 화면 기준 CSS 크기, 배율, 하단 안전 영역(홈 인디케이터)
 const DEVICES = [
-  { w: 440, h: 956, dpr: 3, safe: 34, name: 'iPhone 16·17 Pro Max' },
-  { w: 430, h: 932, dpr: 3, safe: 34, name: 'iPhone 14·15 Pro Max, 15·16 Plus' },
-  { w: 428, h: 926, dpr: 3, safe: 34, name: 'iPhone 12·13 Pro Max, 14 Plus' },
+  { w: 440, h: 956, dpr: 3, safe: 34, name: 'iPhone 16, 17 Pro Max' },
+  { w: 430, h: 932, dpr: 3, safe: 34, name: 'iPhone 14, 15 Pro Max, 15, 16 Plus' },
+  { w: 428, h: 926, dpr: 3, safe: 34, name: 'iPhone 12, 13 Pro Max, 14 Plus' },
   { w: 420, h: 912, dpr: 3, safe: 34, name: 'iPhone Air' },
-  { w: 402, h: 874, dpr: 3, safe: 34, name: 'iPhone 16·17 Pro, 17' },
+  { w: 402, h: 874, dpr: 3, safe: 34, name: 'iPhone 16, 17 Pro, 17' },
   { w: 393, h: 852, dpr: 3, safe: 34, name: 'iPhone 14 Pro, 15, 15 Pro, 16' },
   { w: 390, h: 844, dpr: 3, safe: 34, name: 'iPhone 12, 13, 14, 16e' },
-  { w: 375, h: 812, dpr: 3, safe: 34, name: 'iPhone X, XS, 11 Pro, 12·13 mini' },
+  { w: 375, h: 812, dpr: 3, safe: 34, name: 'iPhone X, XS, 11 Pro, 12, 13 mini' },
   { w: 414, h: 896, dpr: 3, safe: 34, name: 'iPhone XS Max, 11 Pro Max' },
   { w: 414, h: 896, dpr: 2, safe: 34, name: 'iPhone XR, 11' },
-  { w: 414, h: 736, dpr: 3, safe: 0, name: 'iPhone 6·7·8 Plus' },
-  { w: 375, h: 667, dpr: 2, safe: 0, name: 'iPhone SE 2·3, 6·7·8' },
+  { w: 414, h: 736, dpr: 3, safe: 0, name: 'iPhone 6, 7, 8 Plus' },
+  { w: 375, h: 667, dpr: 2, safe: 0, name: 'iPhone SE 2, 3, 6, 7, 8' },
 ]
 
 const html = readFileSync(INDEX, 'utf8')
 const style = html.match(/<style>[\s\S]*?#splash[\s\S]*?<\/style>/)?.[0]
 const markup = html.match(/<div id="splash"[\s\S]*?<div class="sp-bars"[\s\S]*?<\/div>\s*<\/div>/)?.[0]
-const font = html.match(/<link rel="stylesheet" href="[^"]*pretendard[^"]*" \/>/)?.[0] || ''
-if (!style || !markup) throw new Error('index.html 에서 #splash 스타일·마크업을 찾지 못했어요.')
+const font = html.match(/<link\s+rel="stylesheet"[^>]*pretendard[^>]*>/)?.[0] || ''
+if (!style || !markup) throw new Error('index.html 에서 #splash 스타일, 마크업을 찾지 못했어요.')
 
 const page = (d) => `<!doctype html><html lang="ko" data-theme="dark"><head><meta charset="utf-8">
 ${font}${style}
@@ -55,16 +55,20 @@ try {
     const file = `apple-splash-${d.w * d.dpr}x${d.h * d.dpr}.png`
     const src = join(tmp, `${d.w}x${d.h}@${d.dpr}.html`)
     writeFileSync(src, page(d))
-    execFileSync(CHROME, [
-      '--headless=new',
-      '--disable-gpu',
-      '--hide-scrollbars',
-      `--force-device-scale-factor=${d.dpr}`,
-      `--window-size=${d.w},${d.h}`,
-      '--virtual-time-budget=3000', // 글꼴 로딩 대기
-      `--screenshot=${join(OUT_DIR, file)}`,
-      `file://${src}`,
-    ], { stdio: 'ignore' })
+    execFileSync(
+      CHROME,
+      [
+        '--headless=new',
+        '--disable-gpu',
+        '--hide-scrollbars',
+        `--force-device-scale-factor=${d.dpr}`,
+        `--window-size=${d.w},${d.h}`,
+        '--virtual-time-budget=3000', // 글꼴 로딩 대기
+        `--screenshot=${join(OUT_DIR, file)}`,
+        `file://${src}`,
+      ],
+      { stdio: 'ignore' },
+    )
     links.push(
       `    <link rel="apple-touch-startup-image" href="/splash/${file}" media="(device-width: ${d.w}px) and (device-height: ${d.h}px) and (-webkit-device-pixel-ratio: ${d.dpr}) and (orientation: portrait)" />`,
     )

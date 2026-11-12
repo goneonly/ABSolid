@@ -1,5 +1,5 @@
 -- 매일 저녁 8시(KST) 미운동 리마인더 자동 발송 — Supabase SQL Editor에서 실행 (재실행 안전)
--- 선행: Dashboard → Database → Extensions 에서 pg_cron, pg_net 켜기
+-- 선행: 대시보드의 Database / Extensions 에서 pg_cron, pg_net 켜기
 --       send-reminders 함수 배포 + CRON_SECRET 시크릿 등록 (docs/NOTIFICATIONS_SETUP.md)
 -- 아래 <CRON_SECRET> 한 곳을 시크릿으로 등록한 값과 똑같이 바꿔서 실행하세요.
 

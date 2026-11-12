@@ -1,9 +1,9 @@
--- ABSolid 보안·버그 통합 패치 (v0.4) — Supabase SQL Editor에서 실행 (재실행 안전)
+-- ABSolid 보안, 버그 통합 패치 (v0.4) — Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: schema.sql, storage.sql, admin.sql 이 먼저 실행되어 있어야 함 (is_admin() 필요)
 --
 -- 포함:
 --   1) 권한 상승 차단  — 일반 사용자가 자기 role/is_active 를 바꾸지 못하게 막음 + 지정 이메일 자동 관리자
---   2) 관리자 profiles 조회 정책 — 관리자 회원 관리·신고자 이름 조회 복구
+--   2) 관리자 profiles 조회 정책 — 관리자 회원 관리, 신고자 이름 조회 복구
 --   3) 인증샷 비공개 버킷 전환 — signed URL 로만 열람 (프론트 배포 후 실행 권장, 아래 주의 참고)
 --   4) 그룹 참여 원자적 처리 — 정원 초과 경합 방지
 --   5) 회원 탈퇴용 본인 프로필 삭제 정책
@@ -26,12 +26,12 @@ begin
   ) into is_special;
 
   if tg_op = 'INSERT' then
-    -- 신규 가입은 항상 일반·활성으로 시작 (admin 으로 위장한 insert 차단)
+    -- 신규 가입은 항상 일반, 활성으로 시작 (admin 으로 위장한 insert 차단)
     new.role := case when is_special then 'admin' else 'user' end;
     new.is_active := true;
   else -- UPDATE
     if auth.uid() is null or public.is_admin() then
-      null;                       -- 운영자(SQL Editor)·관리자는 자유롭게 변경 (회원 비활성 처리 등)
+      null;                       -- 운영자(SQL Editor), 관리자는 자유롭게 변경 (회원 비활성 처리 등)
     elsif is_special then
       new.role := 'admin';        -- 지정 이메일은 admin 유지
       new.is_active := old.is_active;
@@ -88,7 +88,7 @@ declare
 begin
   if uid is null then raise exception '로그인이 필요해요.'; end if;
 
-  -- 그룹 행을 잠근 채 조회 → 동시 참여 경합 방지
+  -- 그룹 행을 잠근 채 조회해 동시 참여 경합 방지
   select * into g from public.groups gr where gr.invite_code = upper(btrim(code)) for update;
   if g.id is null then raise exception '초대 코드를 찾을 수 없어요. 다시 확인해 주세요.'; end if;
 
@@ -103,11 +103,11 @@ begin
     raise exception '이 그룹은 정원(%명)이 가득 찼어요.', g.max_members;
   end if;
 
-  -- 회원만 받기: 이름·전화번호 등록 필수
+  -- 회원만 받기: 이름, 전화번호 등록 필수
   if g.members_only then
     select * into me from public.profiles p where p.id = uid;
     if coalesce(me.full_name, '') = '' or coalesce(me.phone, '') = '' then
-      raise exception '이 그룹은 이름·전화번호를 등록한 회원만 참여할 수 있어요. 설정에서 회원가입을 완료해 주세요.';
+      raise exception '이 그룹은 이름과 전화번호를 등록한 회원만 참여할 수 있어요. 설정에서 회원가입을 완료해 주세요.';
     end if;
   end if;
 
@@ -134,7 +134,7 @@ create policy "photos: 본인 폴더 업로드" on storage.objects
 drop policy if exists "photos: 본인 폴더 덮어쓰기" on storage.objects;
 create policy "photos: 본인 폴더 덮어쓰기" on storage.objects
   for update using (bucket_id = 'photos' and auth.uid()::text = (storage.foldername(name))[1]);
--- 조회 정책은 v0.5-groups-and-fixes.sql 의 "photos: 본인·그룹·관리자 조회" 로 대체
+-- 조회 정책은 v0.5-groups-and-fixes.sql 의 "photos: 본인, 그룹, 관리자 조회" 로 대체
 drop policy if exists "photos: 누구나 조회" on storage.objects;
 drop policy if exists "photos: 인증된 사용자 조회" on storage.objects;
 drop policy if exists "photos: 본인 폴더 삭제" on storage.objects;

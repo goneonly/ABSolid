@@ -1,10 +1,10 @@
 // 사진 고르기 공통 부품 — 프로필 사진(설정)과 그룹 사진(그룹 상세)에서 함께 사용
-import { compressImage } from '../image.js'
+import { compressImage } from '../lib/image.js'
 import { Button, Modal, ModalTitle, cx } from './ui.jsx'
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024
 
-// <input type="file"> 의 onChange 이벤트 → 압축된 사진(dataURL)
+// <input type="file"> 의 onChange 이벤트에서 압축된 사진(dataURL)을 얻음
 // 아무것도 고르지 않았으면 null, 쓸 수 없는 파일이면 한국어 문구를 담은 Error
 export async function readPickedImage(event, { max = 512, quality = 0.85 } = {}) {
   const file = event.target.files?.[0]

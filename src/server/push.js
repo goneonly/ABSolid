@@ -4,7 +4,7 @@ import { supabase, currentUserId } from './supabase.js'
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
 
-// 서버·키 설정상 알림 기능이 켜진 배포인지 (브라우저 지원과 별개)
+// 서버, 키 설정상 알림 기능이 켜진 배포인지 (브라우저 지원과 별개)
 export function isPushConfigured() {
   return !!(supabase && VAPID_PUBLIC_KEY)
 }
@@ -14,7 +14,7 @@ export function isPushSupported() {
   return isPushConfigured() && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 }
 
-// base64url → Uint8Array (pushManager.subscribe가 요구하는 형식)
+// base64url 문자열을 Uint8Array 로 (pushManager.subscribe 가 요구하는 형식)
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
@@ -33,7 +33,7 @@ export async function getPushEnabled() {
   }
 }
 
-// 푸시 켜기: 권한 요청 → 구독 → 서버 저장
+// 푸시 켜기: 권한 요청, 구독, 서버 저장 순서
 export async function enablePush() {
   if (!isPushSupported()) throw new Error('이 브라우저는 푸시 알림을 지원하지 않아요.')
   if (!(await currentUserId())) throw new Error('로그인 후 사용할 수 있어요.')

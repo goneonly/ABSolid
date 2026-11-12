@@ -1,8 +1,8 @@
-// 설정 > 기타의 알림 켜기/끄기 줄 (회원 전용)
+// 설정의 기타 메뉴에 있는 알림 켜기/끄기 줄 (회원 전용)
 import { useEffect, useState } from 'react'
-import { isPushSupported, isPushConfigured, getPushEnabled, enablePush, disablePush } from '../../push.js'
-import { isStandalone, isIOS } from '../../install.js'
-import { toast } from '../../toast.js'
+import { isPushSupported, isPushConfigured, getPushEnabled, enablePush, disablePush } from '../../server/push.js'
+import { isStandalone, isIOS } from '../../lib/install.js'
+import { toast } from '../../lib/toast.js'
 import { RowButton } from '../../components/ui.jsx'
 
 // 오늘 운동 기록이 없으면 매일 저녁 브라우저 푸시로 알려줍니다 (회원 전용)
@@ -18,11 +18,11 @@ export default function PushToggleRow({ session, onNeedInstall }) {
 
   if (!session || !isPushConfigured()) return null // 비회원 또는 알림이 꺼진 배포
   if (!supported) {
-    // 아이폰은 홈 화면에 추가한 앱에서만 알림 API 가 열림 → 방법 안내
+    // 아이폰은 홈 화면에 추가한 앱에서만 알림 API 가 열려서 방법을 안내
     if (!isIOS() || isStandalone()) return null
     return (
       <RowButton hint="홈 화면에 추가하면 켤 수 있어요" onClick={onNeedInstall}>
-        알림 (리마인더·응원)
+        알림 (리마인더, 응원)
       </RowButton>
     )
   }
@@ -47,7 +47,7 @@ export default function PushToggleRow({ session, onNeedInstall }) {
 
   return (
     <RowButton disabled={busy} hint={busy ? '처리 중…' : enabled ? '켜짐' : '꺼짐'} onClick={toggle}>
-      알림 (리마인더·응원)
+      알림 (리마인더, 응원)
     </RowButton>
   )
 }

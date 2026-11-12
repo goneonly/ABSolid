@@ -1,11 +1,11 @@
--- 사진 저장소·관리자 기능 — 남의 인증샷 열람·덮어쓰기, 관리자 기능 무단 사용
+-- 사진 저장소, 관리자 기능 — 남의 인증샷 열람, 덮어쓰기, 관리자 기능 무단 사용
 begin;
 
 -- ── 버킷 설정 ──
 select tests.eq((select public from storage.buckets where id = 'photos'), false, '인증샷 버킷은 비공개 (signed URL 로만 열람)');
 select tests.eq((select count(*) from storage.buckets where id in ('photos', 'avatars', 'group-photos')
     and file_size_limit = 5 * 1024 * 1024 and allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp']), 3::bigint,
-  '사진 버킷 3개: 5MB·이미지 형식 제한');
+  '사진 버킷 3개: 5MB, 이미지 형식 제한');
 
 -- ── 인증샷 열람 ──
 select tests.logout();
@@ -21,14 +21,14 @@ select tests.eq(tests.count($$select * from storage.objects where bucket_id = 'p
 select tests.login('M');
 select tests.eq(tests.count($$select * from storage.objects where bucket_id = 'photos'$$), 2, 'M(관리자): 신고 처리용 전체 인증샷 열람');
 
--- ── 업로드·덮어쓰기·삭제 ──
+-- ── 업로드, 덮어쓰기, 삭제 ──
 select tests.login('B');
 select tests.throws(format($$insert into storage.objects (bucket_id, name) values ('photos', '%s/2026-10-02.jpg')$$, tests.uid('A')),
   'row-level security', 'B: 남의 폴더에 인증샷 업로드 불가');
 select tests.lives(format($$insert into storage.objects (bucket_id, name) values ('photos', '%s/2026-10-02.jpg')$$, tests.uid('B')),
   'B: 본인 폴더 업로드 가능');
 select tests.affects(format($$update storage.objects set metadata = '{}' where name like '%s/%%'$$, tests.uid('A')), 0, 'B: 남의 사진 덮어쓰기 0건');
-select tests.affects(format($$delete from storage.objects where name like '%s/%%'$$, tests.uid('A')), 0, 'B: 남의 사진·프로필 사진 삭제 0건');
+select tests.affects(format($$delete from storage.objects where name like '%s/%%'$$, tests.uid('A')), 0, 'B: 남의 사진, 프로필 사진 삭제 0건');
 select tests.throws(format($$insert into storage.objects (bucket_id, name) values ('avatars', '%s/avatar.jpg')$$, tests.uid('A')),
   'row-level security', 'B: 남의 프로필 사진 폴더 업로드 불가');
 select tests.throws(format($$insert into storage.objects (bucket_id, name) values ('group-photos', '%s/new.jpg')$$, tests.gid('응원반')),

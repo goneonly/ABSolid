@@ -1,11 +1,11 @@
-// 서버 통신 (회원 기능) — 운동 기록·사진·프로필·그룹·응원·차단·신고
-// 명세: docs/API.md / 관리자 전용 기능은 admin.js / 가입·로그인은 auth.js
+// 서버 통신 (회원 기능) — 운동 기록, 사진, 프로필, 그룹, 응원, 차단, 신고
+// 명세: docs/API.md / 관리자 전용 기능은 admin.js / 가입, 로그인은 auth.js
 //
 // 규칙
-// - 비회원(또는 서버 미연결)이면 조회 함수는 빈 값(null·[]·{})을 돌려주고 조용히 넘어감
-// - 사용자가 직접 누른 동작(그룹 참여·차단 등)이 실패하면 한국어 문구를 담은 Error 를 던짐 → 화면에서 toast(e.message)
+// - 비회원(또는 서버 미연결)이면 조회 함수는 빈 값(null, [], {})을 돌려주고 조용히 넘어감
+// - 사용자가 직접 누른 동작(그룹 참여, 차단 등)이 실패하면 한국어 문구를 담은 Error 를 던짐. 화면에서는 toast(e.message) 로 보여 줌
 import { supabase, currentUserId as uid } from './supabase.js'
-import { getRecords, saveRecord, todayKey } from './storage.js'
+import { getRecords, saveRecord, todayKey } from '../lib/storage.js'
 import {
   BUCKET,
   workoutPhotoPath,
@@ -15,12 +15,12 @@ import {
   inFolder,
   photoObjectPath,
 } from './storagePaths.js'
-import { PLAYLIST_ID } from './youtube.js'
+import { PLAYLIST_ID } from '../lib/youtube.js'
 
 const LOGIN_REQUIRED = '로그인이 필요해요.'
 const NO_NAME = '이름 없음'
 
-// 서버 함수가 직접 알려준 거절 사유(raise exception → 코드 P0001)는 그대로 보여주고, 그 외 오류는 일반 안내
+// 서버 함수가 직접 알려준 거절 사유(raise exception, 코드 P0001)는 그대로 보여주고, 그 외 오류는 일반 안내
 const reasonOf = (error, fallback) => (error.code === 'P0001' && error.message ? error.message : fallback)
 
 async function requireUid() {
@@ -35,7 +35,7 @@ const firstRow = (data) => (Array.isArray(data) ? data[0] : data)
 // ── 사진 저장소 도우미 ───────────────────────
 const PHOTO_TTL = 60 * 60 * 8 // 인증샷 열람 주소 유효 시간 (8시간)
 
-// 압축된 사진(dataURL)을 JPEG 로 업로드 → 실패하면 error 반환
+// 압축된 사진(dataURL)을 JPEG 로 업로드. 실패하면 error 반환
 async function uploadJpeg(bucket, path, dataUrl) {
   const blob = await (await fetch(dataUrl)).blob()
   const { error } = await supabase.storage.from(bucket).upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
@@ -48,7 +48,7 @@ function publicUrl(bucket, path) {
   return `${data.publicUrl}?t=${Date.now()}`
 }
 
-// 인증샷은 비공개 버킷이라 볼 때마다 서명된 주소가 필요 — 여러 경로를 한 번에 서명 → { 경로: 주소 }
+// 인증샷은 비공개 버킷이라 볼 때마다 서명된 주소가 필요 — 여러 경로를 한 번에 서명해 { 경로: 주소 } 로 돌려줌
 export async function signPhotoPaths(photoUrls) {
   const paths = [...new Set(photoUrls.filter(Boolean).map(photoObjectPath))]
   if (!paths.length) return {}
@@ -92,7 +92,7 @@ export async function completeWorkout(sessionId) {
   const { data, error } = res
   if (error) {
     const e = new Error(error.message || '운동 기록에 실패했어요.')
-    e.retryable = error.code !== 'P0001' // P0001 = 서버가 판단해 거절 (시청 시간 부족 등) → 다시 시도해도 같음
+    e.retryable = error.code !== 'P0001' // P0001 = 서버가 판단해 거절 (시청 시간 부족 등)이라 다시 시도해도 같음
     throw e
   }
   return data
@@ -108,12 +108,12 @@ export async function retryPendingCompletions() {
       saveRecord(date, { pendingSession: null })
       if (rec.photo) await uploadPhoto(saved || date, rec.photo)
     } catch (e) {
-      if (!e.retryable) saveRecord(date, { pendingSession: null }) // 서버가 거절(만료 등) → 더 시도하지 않음
+      if (!e.retryable) saveRecord(date, { pendingSession: null }) // 서버가 거절(만료 등)하면 더 시도하지 않음
     }
   }
 }
 
-// 서버의 내 기록 전체 → 기기 기록과 같은 모양 { 'YYYY-MM-DD': { completed, day, completedAt, photoUrl } }
+// 서버의 내 기록 전체를 기기 기록과 같은 모양으로: { 'YYYY-MM-DD': { completed, day, completedAt, photoUrl } }
 export async function fetchServerRecords() {
   const userId = await uid()
   if (!userId) return null
@@ -130,7 +130,7 @@ export async function fetchServerRecords() {
   return out
 }
 
-// 서버의 내 운동 기록과 인증샷을 모두 삭제 → true = 성공 (비회원은 지울 것이 없어 true)
+// 서버의 내 운동 기록과 인증샷을 모두 삭제. 성공하면 true (비회원은 지울 것이 없어 true)
 export async function resetServerWorkouts() {
   const userId = await uid()
   if (!userId) return true
@@ -142,13 +142,13 @@ export async function resetServerWorkouts() {
   }
   const { error } = await supabase.from('workouts').delete().eq('user_id', userId)
   if (error) return false
-  // 삭제 권한(RLS)이 없으면 오류 없이 0건만 지워짐 → 실제로 비워졌는지 확인
+  // 삭제 권한(RLS)이 없으면 오류 없이 0건만 지워지므로 실제로 비워졌는지 확인
   const { count } = await supabase.from('workouts').select('*', { count: 'exact', head: true }).eq('user_id', userId)
   return !count
 }
 
 // ── 인증샷 ───────────────────────────────────
-// 인증샷을 올리고 그 날짜 기록에 연결 → 바로 보여줄 수 있는 주소 (실패하면 null)
+// 인증샷을 올리고 그 날짜 기록에 연결하고, 바로 보여줄 수 있는 주소를 돌려줌 (실패하면 null)
 export async function uploadPhoto(dateKey, dataUrl) {
   const userId = await uid()
   if (!userId || !dataUrl) return null
@@ -192,7 +192,7 @@ export async function cleanupOldServerPhotos(keepDays = 30) {
 }
 
 // ── 내 프로필 ────────────────────────────────
-// 역할·활성 여부 (관리자 메뉴 노출, 이용 제한 계정 확인) — 비회원은 일반 사용자로 취급
+// 역할, 활성 여부 (관리자 메뉴 노출, 이용 제한 계정 확인) — 비회원은 일반 사용자로 취급
 export async function fetchMyRole() {
   const userId = await uid()
   if (!userId) return { role: 'user', isActive: true }
@@ -207,7 +207,7 @@ export async function saveNickname(nickname) {
   await supabase.from('profiles').upsert({ id: userId, nickname: nickname || '' })
 }
 
-// 이름·전화번호 (가입 때 입력한 값 — '회원만 받기' 그룹 참여 조건)
+// 이름, 전화번호 (가입 때 입력한 값 — '회원만 받기' 그룹 참여 조건)
 export async function fetchMyProfileInfo() {
   const userId = await uid()
   if (!userId) return null
@@ -222,7 +222,7 @@ export async function updateMyProfileInfo({ fullName, phone }) {
   if (error) throw new Error('회원 정보 저장에 실패했어요.')
 }
 
-// 프로필 사진 올리기 → 새 사진 주소 (실패하면 null)
+// 프로필 사진 올리기. 새 사진 주소를 돌려줌 (실패하면 null)
 export async function uploadAvatar(dataUrl) {
   const userId = await uid()
   if (!userId || !dataUrl) return null
@@ -277,7 +277,7 @@ export async function fetchMyGroups() {
   return (data || []).map((g) => ({ ...g, memberCount: g.group_members?.[0]?.count ?? 0 }))
 }
 
-// 그룹 만들기 — 그룹·내 멤버십·초대 코드를 서버 함수가 한 번에 처리 (v0.5 SQL, 하루 5개 제한은 v0.11)
+// 그룹 만들기 — 그룹, 내 멤버십, 초대 코드를 서버 함수가 한 번에 처리 (v0.5 SQL, 하루 5개 제한은 v0.11)
 export async function createGroup(name, nickname, { maxMembers, membersOnly } = {}) {
   await requireUid()
   await saveNickname(nickname) // 그룹에서 이름이 보이도록 먼저 반영
@@ -293,7 +293,7 @@ export async function createGroup(name, nickname, { maxMembers, membersOnly } = 
   return group
 }
 
-// 초대 코드로 참여 — 정원·회원 제한·중복 참여는 서버 함수가 확인 (v0.5 SQL)
+// 초대 코드로 참여 — 정원, 회원 제한, 중복 참여는 서버 함수가 확인 (v0.5 SQL)
 export async function joinGroup(code, nickname) {
   await requireUid()
   const clean = (code || '').trim().toUpperCase()
@@ -315,7 +315,7 @@ export async function leaveGroup(group) {
   if (error) throw new Error('그룹 나가기에 실패했어요. 잠시 후 다시 시도해 주세요.')
 }
 
-// 그룹 사진 (그룹장만) → 새 사진 주소
+// 그룹 사진 (그룹장만). 새 사진 주소를 돌려줌
 export async function uploadGroupPhoto(groupId, dataUrl) {
   const path = groupPhotoPath(groupId)
   if (await uploadJpeg(BUCKET.groupPhotos, path, dataUrl)) throw new Error('그룹 사진 업로드에 실패했어요.')
@@ -356,7 +356,7 @@ export async function fetchGroupStatus(groupId) {
   const profileOf = Object.fromEntries((profiles || []).map((p) => [p.id, p]))
   const nameOf = (id) => profileOf[id]?.nickname || NO_NAME
 
-  const datesOf = {} // 멤버 id → 운동한 날짜 Set
+  const datesOf = {} // 멤버 id 별 운동한 날짜 Set
   const todayPhotos = []
   for (const w of workouts || []) {
     if (blocked.has(w.user_id)) continue
@@ -379,7 +379,7 @@ export async function fetchGroupStatus(groupId) {
   return { members, photos, hiddenCount: ids.length - members.length }
 }
 
-// 리더보드용: 기간 안에 멤버별로 운동한 날짜 → { 멤버 id: Set(날짜) }
+// 리더보드용: 기간 안에 멤버별로 운동한 날짜: { 멤버 id: Set(날짜) }
 export async function fetchGroupWorkoutDates(memberIds, startKey, endKey) {
   if (!memberIds?.length) return {}
   const { data } = await supabase
@@ -394,7 +394,7 @@ export async function fetchGroupWorkoutDates(memberIds, startKey, endKey) {
 }
 
 // ── 응원 (v0.8 SQL) ──────────────────────────
-// 같은 그룹 멤버에게 하루 한 번 → 새 응원 id (오늘 이미 응원했으면 null)
+// 같은 그룹 멤버에게 하루 한 번. 새 응원 id 를 돌려줌 (오늘 이미 응원했으면 null)
 export async function sendCheer(groupId, toUserId) {
   const { data, error } = await supabase.rpc('send_cheer', { p_group: groupId, p_to: toUserId })
   if (error) throw new Error(reasonOf(error, '응원을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'))
@@ -410,7 +410,7 @@ export async function notifyCheer(cheerId) {
   }
 }
 
-// 오늘 멤버들이 받은 응원 → { counts: { 멤버 id: 받은 수 }, byMe: Set(내가 응원한 멤버 id) }
+// 오늘 멤버들이 받은 응원: { counts: { 멤버 id: 받은 수 }, byMe: Set(내가 응원한 멤버 id) }
 export async function fetchTodayCheers(memberIds) {
   const userId = await uid()
   const out = { counts: {}, byMe: new Set() }
@@ -439,7 +439,7 @@ export async function fetchReceivedCheers() {
 // 차단한 사람은 그룹 화면과 받은 응원에서 숨기고 서로 응원할 수 없음. 상대에게는 알리지 않음.
 const BLOCK_FAILED = '차단 기능을 쓸 수 없어요. 잠시 후 다시 시도해 주세요.'
 
-// 내가 차단한 사용자 id Set (비회원·오류면 빈 Set → 아무도 숨기지 않음)
+// 내가 차단한 사용자 id Set (비회원, 오류면 빈 Set 이라 아무도 숨기지 않음)
 export async function fetchBlockedIds() {
   if (!(await uid())) return new Set()
   const { data, error } = await supabase.from('user_blocks').select('blocked')
@@ -479,7 +479,7 @@ export async function submitReport(targetUserId, targetDate, reason) {
   if (error) throw new Error(reasonOf(error, '신고 접수에 실패했어요.'))
 }
 
-// ── 공지·앱 설정 (누구나 조회) ────────────────
+// ── 공지, 앱 설정 (누구나 조회) ────────────────
 // 홈 배너에 띄울 공지 1건 (없으면 null)
 export async function fetchActiveAnnouncement() {
   if (!supabase) return null

@@ -1,19 +1,19 @@
-// 계정 — 가입·로그인·비밀번호·탈퇴
+// 계정 — 가입, 로그인, 비밀번호, 탈퇴
 // 모든 함수는 { data } 또는 { error: '사용자에게 보여줄 한국어 문구' } 를 돌려줌 (예외를 던지지 않음)
 import { supabase } from './supabase.js'
-import { clearLocalUserData, clearAllAppData } from './storage.js'
+import { clearLocalUserData, clearAllAppData } from '../lib/storage.js'
 import { authErrorMessage } from './authErrors.js'
 import { disablePush } from './push.js'
 
 const NO_SERVER = { error: '서버가 연결되어 있지 않아요.' }
-// Supabase 응답 → { data } | { error }
+// Supabase 응답을 { data } | { error } 로 통일
 const result = ({ data, error }) => (error ? { error: authErrorMessage(error) } : { data: data ?? true })
 // 메일 링크를 누르면 앱으로 돌아오게
 const backToApp = () => window.location.origin
-// 캡차를 안 쓰는 배포에서는 토큰이 빈 문자열 → 아예 보내지 않음
+// 캡차를 안 쓰는 배포에서는 토큰이 빈 문자열이라 아예 보내지 않음
 const captcha = (token) => token || undefined
 
-// 가입 — 이름·전화번호·동의는 요청에 함께 보내고, 서버 가입 트리거(v0.10 SQL)가 검증해 프로필에 저장
+// 가입 — 이름, 전화번호, 동의는 요청에 함께 보내고, 서버 가입 트리거(v0.10 SQL)가 검증해 프로필에 저장
 // captchaToken: 봇 방지 토큰 (components/Captcha.jsx) — 서버 캡차가 꺼져 있으면 없어도 됨
 export async function signUp({ email, password, nickname, fullName, phone, termsVersion, captchaToken }) {
   if (!supabase) return NO_SERVER

@@ -27,7 +27,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ABSolid" />
     <script>
-      // 화면 테마를 첫 그림 전에 적용 (깜빡임 방지). 키·규칙은 src/storage.js, src/theme.js 와 같게 유지
+      // 화면 테마를 첫 그림 전에 적용 (깜빡임 방지). 키, 규칙은 src/lib/storage.js, src/lib/theme.js 와 같게 유지
       ;(function () {
         var mode = null
         try {
@@ -45,7 +45,15 @@
           : 'default'
       })()
     </script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <!-- 글꼴(Pretendard). integrity: 파일이 한 글자라도 바뀌면 브라우저가 거부함. 글꼴 버전을 올리면 해시도 새로 계산해야 함
+         (계산: curl -sL <주소> | openssl dgst -sha384 -binary | openssl base64 -A) -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+      integrity="sha384-GIdEBaqGN9mNkDkMkzMHW8EKUqtpPIe/sLj1X7DIrnc9uPtLROJgmuDlh+3rBw0j"
+      crossorigin="anonymous"
+    />
     <style>
       /* 앱 시작 로딩 화면 — JS 보다 먼저 보이도록 여기에 둠 (색은 src/index.css 토큰과 같은 값) */
       #splash {
@@ -85,7 +93,7 @@
     </style>
   </head>
   <body>
-    <!-- 앱 시작 로딩 화면: 로그인 상태 확인이 끝나면 src/splash.js 가 (보이기 시작한 뒤 최소 1.4초) 0.2초 동안 흐려지며 제거 -->
+    <!-- 앱 시작 로딩 화면: 로그인 상태 확인이 끝나면 src/lib/splash.js 가 (보이기 시작한 뒤 최소 1.4초) 0.2초 동안 흐려지며 제거 -->
     <div id="splash" data-stage="1" role="status" aria-label="ABSolid 불러오는 중">
       <svg class="sp-mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
         <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--brand)" />
@@ -102,7 +110,7 @@
       <div class="sp-bars" aria-hidden="true"><i></i><i></i><i></i></div>
     </div>
     <script>
-      // 5초가 넘으면 안내, 12초가 넘으면 다시 시도·오프라인 시작 버튼 (느린 회선에서 너무 일찍 겁주지 않게) (앱 코드가 늦거나 실패해도 동작하도록 여기서 처리)
+      // 5초가 넘으면 안내, 12초가 넘으면 다시 시도, 오프라인 시작 버튼 (느린 회선에서 너무 일찍 겁주지 않게) (앱 코드가 늦거나 실패해도 동작하도록 여기서 처리)
       window.__absolidSplashAt = performance.now() // 로딩 화면이 실제로 보이기 시작한 시각
       ;(function () {
         var splash = document.getElementById('splash')

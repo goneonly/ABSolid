@@ -25,8 +25,8 @@ create table if not exists public.cheers (
 create index if not exists cheers_to_date on public.cheers (to_user, date);
 alter table public.cheers enable row level security;
 
--- 조회: 보낸 사람·받은 사람, 그리고 받은 사람과 같은 그룹인 멤버 (그룹 화면의 응원 수 표시)
--- 쓰기 정책은 두지 않음 → send_cheer() 로만 생성
+-- 조회: 보낸 사람, 받은 사람, 그리고 받은 사람과 같은 그룹인 멤버 (그룹 화면의 응원 수 표시)
+-- 쓰기 정책은 두지 않아 send_cheer() 로만 생성
 drop policy if exists "cheers: 관련 멤버 조회" on public.cheers;
 create policy "cheers: 관련 멤버 조회" on public.cheers
   for select using (
@@ -64,7 +64,7 @@ begin
   return v_id;
 end $$;
 
--- 오늘 내가 받은 응원 (보낸 사람 닉네임 포함 — 이름·전화번호는 노출 안 함)
+-- 오늘 내가 받은 응원 (보낸 사람 닉네임 포함 — 이름, 전화번호는 노출 안 함)
 create or replace function public.my_received_cheers()
 returns table(from_nickname text, kind text, group_name text, created_at timestamptz)
 language sql stable security definer set search_path = public as $$

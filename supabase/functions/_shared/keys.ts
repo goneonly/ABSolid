@@ -16,6 +16,6 @@ function pick(jsonEnv: string, prefix: string, legacyEnv: string): string {
 }
 export const serviceKey = () => pick('SUPABASE_SECRET_KEYS', 'sb_secret_', 'SUPABASE_SERVICE_ROLE_KEY')
 export const publishableKey = () => pick('SUPABASE_PUBLISHABLE_KEYS', 'sb_publishable_', 'SUPABASE_ANON_KEY')
-// 예전 크론 설정 호환: Authorization 에 넣어 보낸 키가 새 키·예전 키 중 하나와 같으면 인정
+// 예전 크론 설정 호환: Authorization 에 넣어 보낸 키가 새 키, 예전 키 중 하나와 같으면 인정
 export const isServiceKey = (bearer: string) =>
   bearer === serviceKey() || bearer === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')

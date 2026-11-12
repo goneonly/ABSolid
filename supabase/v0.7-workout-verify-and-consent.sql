@@ -7,7 +7,7 @@
 --   1) 시청 세션 — 영상 재생을 시작하면 서버가 시작 시각을 기록
 --   2) 완료 처리 — 시작 후 영상 길이의 80% 이상 시간이 지나야 운동 기록 생성
 --   3) 운동 기록 직접 생성 차단 — 기록은 2) 함수로만 만들어짐
---   4) 가입 동의 기록 — 만 14세 이상 확인, 약관 버전·동의 시각
+--   4) 가입 동의 기록 — 만 14세 이상 확인, 약관 버전, 동의 시각
 
 -- ══════════════════════════════════════════════
 -- 1) 시청 세션
@@ -21,7 +21,7 @@ create table if not exists public.workout_sessions (
   completed_at timestamptz
 );
 create index if not exists workout_sessions_user_started on public.workout_sessions (user_id, started_at desc);
--- RLS 를 켜고 정책을 두지 않음 → 사용자는 아래 함수로만 접근
+-- RLS 를 켜고 정책을 두지 않아 사용자는 아래 함수로만 접근
 alter table public.workout_sessions enable row level security;
 
 create or replace function public.start_workout(p_video_seconds int)
@@ -86,8 +86,8 @@ end $$;
 -- 3) 운동 기록 직접 생성 차단
 -- ══════════════════════════════════════════════
 -- 문제: API 로 직접 기록을 넣으면 영상을 보지 않고도 완료 처리할 수 있었음.
--- 해결: insert 정책 삭제 → complete_workout() 만 기록을 만들 수 있음.
---       (인증샷 연결·정리용 update, 초기화용 delete 정책은 유지)
+-- 해결: insert 정책을 삭제해 complete_workout() 만 기록을 만들 수 있음.
+--       (인증샷 연결, 정리용 update, 초기화용 delete 정책은 유지)
 drop policy if exists "workouts: 본인 기록" on public.workouts;
 
 -- ══════════════════════════════════════════════

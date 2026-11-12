@@ -1,5 +1,5 @@
 // 화면 테마 (시스템 설정 따름 / 라이트 / 다크)
-// 첫 그림 전 적용은 index.html 의 인라인 스크립트가 하고(깜빡임 방지), 여기서는 설정 변경·시스템 변경을 반영
+// 첫 그림 전 적용은 index.html 의 인라인 스크립트가 하고(깜빡임 방지), 여기서는 설정 변경, 시스템 변경을 반영
 import { getThemeMode, saveThemeMode } from './storage.js'
 
 export const THEME_MODES = [
@@ -8,7 +8,7 @@ export const THEME_MODES = [
   { key: 'dark', label: '다크' },
 ]
 
-// 상태표시줄·브라우저 주소창 색 (index.css 의 --color-bg 와 같은 값)
+// 상태표시줄, 브라우저 주소창 색 (index.css 의 --color-bg 와 같은 값)
 const BAR_COLOR = { dark: '#141519', light: '#f5f6f8' }
 
 const systemQuery = () => (typeof window !== 'undefined' ? window.matchMedia?.('(prefers-color-scheme: dark)') : null)
@@ -19,7 +19,7 @@ export function resolveTheme(mode, systemDark) {
   return systemDark === false ? 'light' : 'dark'
 }
 
-export function applyTheme(mode = getThemeMode()) {
+function applyTheme(mode = getThemeMode()) {
   const theme = resolveTheme(mode, systemQuery()?.matches)
   if (typeof document === 'undefined') return theme
   const root = document.documentElement

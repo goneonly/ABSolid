@@ -1,4 +1,4 @@
-// Supabase 인증 오류 → 사용자에게 보여줄 한국어 메시지
+// Supabase 인증 오류를 사용자에게 보여줄 한국어 메시지로 바꿈
 // 영문 메시지 문장은 바뀔 수 있어 고정값인 error_code 와 HTTP 상태로 먼저 구분하고,
 // error_code 가 없는 예전 서버 응답만 메시지 문장으로 보조 판단
 const BY_CODE = {
@@ -15,8 +15,8 @@ const BY_CODE = {
   captcha_failed: '자동 가입 방지 확인에 실패했어요. 확인란을 다시 완료해 주세요.',
 }
 
-// 가입 트리거(v0.10·v0.11 SQL)가 이름·전화번호·동의·일회용 메일 검증에 실패하면 인증 서버가 이 문장으로 알려줌
-const SIGNUP_PROFILE_ERROR = '가입 정보를 저장하지 못했어요. 이름·전화번호·이메일을 다시 확인해 주세요.'
+// 가입 트리거(v0.10, v0.11 SQL)가 이름, 전화번호, 동의, 일회용 메일 검증에 실패하면 인증 서버가 이 문장으로 알려줌
+const SIGNUP_PROFILE_ERROR = '가입 정보를 저장하지 못했어요. 이름, 전화번호, 이메일을 다시 확인해 주세요.'
 
 const BY_MESSAGE = {
   'Invalid login credentials': BY_CODE.invalid_credentials,
@@ -33,7 +33,7 @@ export const NETWORK_ERROR = '서버에 연결할 수 없어요. 광고 차단 �
 const RATE_LIMIT_ERROR = BY_CODE.over_request_rate_limit
 const UNKNOWN_ERROR = '일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'
 
-// 브라우저가 서버에 닿지 못했을 때 (요청 차단·오프라인 등) — 브라우저마다 문구가 다름
+// 브라우저가 서버에 닿지 못했을 때 (요청 차단, 오프라인 등) — 브라우저마다 문구가 다름
 function isNetworkError(error) {
   const msg = String(error?.message || '')
   return (

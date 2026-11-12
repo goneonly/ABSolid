@@ -1,11 +1,11 @@
-# 관절 각도로 정의한 운동 동작(exercises/*.py) → MetaHuman 리그 키프레임 → .blend
+# 관절 각도로 정의한 운동 동작(exercises/*.py)를 MetaHuman 리그 키프레임으로 만들어 .blend 로 저장
 # 실행: Blender -b --factory-startup --python procedural.py -- <model.fbx> <exercise> <out.blend> [seconds] [fps]
 #
 #  포즈는 '서 있는 rest 포즈 기준 해부학 각도'(도)로 적는다. 몸 전체 방향(누움 등)은 마지막에 돌린다.
-#    굴곡(flex)·신전(ext)은 좌우축(X), 외전(abd)은 앞뒤축(Z) 회전.
+#    굴곡(flex), 신전(ext)은 좌우축(X), 외전(abd)은 앞뒤축(Z) 회전.
 #  누운 운동(contact='supine')은 프레임마다 다음을 풀어 바닥에 자연스럽게 눕힌다.
 #    ① 요추: 흉곽은 바닥에 평평하게 둔 채 등 아랫부분(천골~허리)과 등 윗부분이 함께 닿게  ② 목: 뒤통수가 바닥에 닿게
-#    ③ 어깨·손목: 아래팔과 손바닥이 바닥에 닿게
+#    ③ 어깨, 손목: 아래팔과 손바닥이 바닥에 닿게
 import bpy, sys, os, math, importlib
 from mathutils import Vector, Quaternion
 
@@ -51,7 +51,7 @@ def signed_angle(v, want, axis):
 
 
 def build(p):
-    """해부학 각도 dict → 뼈별 월드 회전 Q. 회전량은 모두 rest 기준 '변화량'(D)으로 계산"""
+    """해부학 각도 dict 로 뼈별 월드 회전 Q 계산. 회전량은 모두 rest 기준 '변화량'(D)으로 계산"""
     g = lambda k, d=0.0: p.get(k, d)
     side = lambda k, s, d=0.0: p.get(f"{k}_{s}", p.get(k, d))
     D = {PELVIS: BODY[g("body", "supine")] @ rx(-g("pelvic_tilt"))}  # +면 후방경사(허리가 바닥에 붙음)
@@ -65,7 +65,7 @@ def build(p):
     chest = D[T("spine_05")]
     for s in SIDES:
         r = REST_DIR[s]
-        # 다리: 허벅지·종아리를 목표 방향으로 (외전 → 고관절 굴곡, 무릎은 뒤로 접힘), 발목은 종아리 기준
+        # 다리: 허벅지, 종아리를 목표 방향으로 (외전 다음 고관절 굴곡, 무릎은 뒤로 접힘), 발목은 종아리 기준
         th = rx(-side("hip_flex", s)) @ rz(SIGN[s] * side("leg_abd", s)) @ DOWN
         ca = rx(-side("hip_flex", s) + side("knee", s)) @ rz(SIGN[s] * side("leg_abd", s)) @ DOWN
         R_th, R_ca = r["thigh"].rotation_difference(th), r["calf"].rotation_difference(ca)
@@ -73,7 +73,7 @@ def build(p):
         D[T(f"calf_{s}")] = D[PELVIS] @ R_ca
         D[T(f"foot_{s}")] = D[PELVIS] @ R_ca @ rx(side("ankle", s))  # +면 발끝을 뻗음
         D[T(f"ball_{s}")] = D[T(f"foot_{s}")]
-        # 팔: 위팔(외전 → 어깨 신전, +면 손이 등 쪽), 아래팔(팔꿈치는 앞으로 굽힘)
+        # 팔: 위팔(외전 다음 어깨 신전, +면 손이 등 쪽), 아래팔(팔꿈치는 앞으로 굽힘)
         up = rx(side("shoulder_ext", s)) @ rz(SIGN[s] * side("arm_abd", s)) @ DOWN
         fo = rx(side("shoulder_ext", s) - side("elbow", s)) @ rz(SIGN[s] * side("arm_abd", s)) @ DOWN
         R_up, R_fo = r["upper"].rotation_difference(up), r["fore"].rotation_difference(fo)
@@ -83,11 +83,11 @@ def build(p):
         D[T(f"upperarm_{s}")] = chest @ R_up
         D[T(f"lowerarm_{s}")] = chest @ R_fo
         R_hand = Quaternion(fo, ang) @ R_fo
-        # 손목 신전(+면 손등 쪽으로 젖힘): 손바닥이 뒤를 볼 때 손등은 앞(+Z) → 축 = 아래팔 × 앞
+        # 손목 신전(+면 손등 쪽으로 젖힘): 손바닥이 뒤를 볼 때 손등은 앞(+Z)이라 축 = 아래팔 × 앞
         wrist_axis = fo.cross(Vector((0, 0, 1))).normalized()
         R_hand = Quaternion(wrist_axis, rad(side("wrist_ext", s))) @ R_hand
         D[T(f"hand_{s}")] = chest @ R_hand
-        # 손가락 펴기: 마디 방향을 손 방향(손목→가운데 손가락 뿌리) 쪽으로 straighten 비율만큼
+        # 손가락 펴기: 마디 방향을 손 방향(손목에서 가운데 손가락 뿌리) 쪽으로 straighten 비율만큼
         k = side("finger_straight", s)
         if k:
             hdir = r["hand"]
@@ -103,7 +103,7 @@ HIPC = Vector((0, 60, 0))  # 고관절 중심을 원점 위에 두고 바닥 높
 
 
 def pose_at(p, tilt=0.0):
-    """각도 + 몸 기울기 → (Q, 골반 위치). 기울기는 고관절 중심을 지나는 좌우축 회전"""
+    """각도와 몸 기울기로 (Q, 골반 위치) 계산. 기울기는 고관절 중심을 지나는 좌우축 회전"""
     Q = build(p)
     R = rx(tilt)
     Q = {n: R @ q for n, q in Q.items()}
@@ -115,13 +115,13 @@ HEAD_GAP = 1.0    # 뒤통수는 바닥 위 1cm (목을 과하게 젖히지 않�
 
 
 def back_contact(P):
-    """누운 자세의 등 아래쪽 접점 높이: 천골·허리 또는 (눌림을 감안한) 엉덩이 중 낮은 쪽"""
+    """누운 자세의 등 아래쪽 접점 높이: 천골, 허리 또는 (눌림을 감안한) 엉덩이 중 낮은 쪽"""
     m = rig.region_min_y(P, "lowback", "butt", "upperback")
     return min(m["lowback"], m["butt"] + BUTT_SINK), m["upperback"]
 
 
 def lowered(Q, ppos):
-    """등 아래·위 접점 중 낮은 쪽이 바닥(y=0)에 오도록 내린 골반 위치"""
+    """등 아래, 위 접점 중 낮은 쪽이 바닥(y=0)에 오도록 내린 골반 위치"""
     lo, up = back_contact(rig.fk(Q, ppos))
     return ppos + Vector((0, -min(lo, up), 0))
 
@@ -140,7 +140,7 @@ def bisect(f, lo, hi, iters=18):
 
 
 def solve_supine(p, tilt0):
-    # ① 엉덩이·등 윗부분 동시 접지: 가슴(흉곽)은 바닥에 평평하게 둔 채 요추 굴곡으로 흡수
+    # ① 엉덩이, 등 윗부분 동시 접지: 가슴(흉곽)은 바닥에 평평하게 둔 채 요추 굴곡으로 흡수
     #    (요추를 λ 만큼 굽히고 몸 전체를 -λ 돌리면 흉곽 방향은 그대로)
     def g(lam):
         Q, pp = pose_at(dict(p, lumbar=p.get("lumbar", 0) + lam), tilt0 - lam)
@@ -155,7 +155,7 @@ def solve_supine(p, tilt0):
         pp = lowered(Q, pp)
         return rig.region_min_y(rig.fk(Q, pp), "head")["head"] - HEAD_GAP
     neck = bisect(h, -45, 30)
-    # ③ 아래팔 접지(어깨 신전 보정) → 손바닥 접지(손목 신전 보정), 좌우 따로
+    # ③ 아래팔 접지(어깨 신전 보정) 다음 손바닥 접지(손목 신전 보정), 좌우 따로
     arms, wrists = {}, {}
     for s in SIDES:
         def with_arm(b, w=None, s=s):
@@ -170,7 +170,7 @@ def solve_supine(p, tilt0):
 
 
 def initial_tilt(p):
-    """첫 프레임 기준으로 엉덩이·등이 함께 닿는 몸 기울기 (이후 프레임은 흉곽 방향을 이 값으로 고정)"""
+    """첫 프레임 기준으로 엉덩이, 등이 함께 닿는 몸 기울기 (이후 프레임은 흉곽 방향을 이 값으로 고정)"""
     def g(th):
         Q, pp = pose_at(p, th)
         lo, up = back_contact(rig.fk(Q, pp))

@@ -1,8 +1,8 @@
 // 그룹 목록 아래의 카드: 초대 코드로 참여 / 새 그룹 만들기
 import { useState } from 'react'
-import { getProfile } from '../../storage.js'
-import { createGroup, joinGroup } from '../../api.js'
-import { toast } from '../../toast.js'
+import { getProfile } from '../../lib/storage.js'
+import { createGroup, joinGroup } from '../../server/api.js'
+import { toast } from '../../lib/toast.js'
 import { Button, Card, Input, Sub, cx } from '../../components/ui.jsx'
 
 const OPTION_ROW = 'flex items-center justify-between gap-3 border-b border-line py-3 text-sm last:border-b-0'
@@ -93,7 +93,7 @@ export default function JoinCreateCard({ onDone }) {
           <label className={cx(OPTION_ROW, 'cursor-pointer')}>
             <span className="flex flex-col gap-1">
               회원만 받기
-              <small className="text-xs text-dim">이름·전화번호를 등록한 회원만 참여할 수 있어요</small>
+              <small className="text-xs text-dim">이름과 전화번호를 등록한 회원만 참여할 수 있어요</small>
             </span>
             <input
               type="checkbox"

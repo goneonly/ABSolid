@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import pkg from './package.json'
+import pkg from './package.json' with { type: 'json' }
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // package.json의 version을 앱 전역 상수로 주입 → 설정 화면에 자동 표시
+  // package.json의 version을 앱 전역 상수로 주입해 설정 화면에 자동 표시
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
-  // 라이브러리(React·Supabase)는 따로 묶음: 앱 코드만 바뀐 배포에서는 이 파일을 브라우저 캐시에서 그대로 씀
+  // 라이브러리(React, Supabase)는 따로 묶음: 앱 코드만 바뀐 배포에서는 이 파일을 브라우저 캐시에서 그대로 씀
   build: {
     rollupOptions: {
       output: {

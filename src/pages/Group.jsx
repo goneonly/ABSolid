@@ -1,9 +1,9 @@
-// 그룹 탭: 내 그룹 목록 → 그룹을 누르면 상세 화면 (비회원에게는 로그인 안내)
+// 그룹 탭: 내 그룹 목록, 그룹을 누르면 상세 화면 (비회원에게는 로그인 안내)
 import { useEffect, useState, useCallback } from 'react'
-import { lastNDays, getProfile } from '../storage.js'
-import { supabase } from '../supabase.js'
-import { fetchMyGroups } from '../api.js'
-import { Button, Card, EmptyState, GroupPhoto, Page, PageTitle, Skeleton, Sub } from '../components/ui.jsx'
+import { lastNDays, getProfile } from '../lib/storage.js'
+import { supabase } from '../server/supabase.js'
+import { fetchMyGroups } from '../server/api.js'
+import { Button, Card, EmptyState, GroupPhoto, Page, PageTitle, Skeleton, Sub, ChevronIcon } from '../components/ui.jsx'
 import { GroupArt, LockArt } from '../components/EmptyArt.jsx'
 import MemberRow from './group/MemberRow.jsx'
 import JoinCreateCard from './group/JoinCreateCard.jsx'
@@ -97,7 +97,7 @@ export default function Group({ records, session, onRequestLogin }) {
       <PageTitle>그룹</PageTitle>
       <Sub>
         {groups.length
-          ? `참여 중인 그룹 ${groups.length}개 · 그룹을 눌러 현황을 확인하세요.`
+          ? `참여 중인 그룹이 ${groups.length}개 있어요. 그룹을 눌러 현황을 확인하세요.`
           : '초대 코드로 참여하거나 새 그룹을 만들어 보세요.'}
       </Sub>
 
@@ -131,18 +131,7 @@ export default function Group({ records, session, onRequestLogin }) {
                   멤버 {g.memberCount}/{g.max_members}명{g.created_by === myId && ' · 그룹장'}
                 </div>
               </div>
-              <svg
-                className="size-5 flex-none text-dim"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m9 6 6 6-6 6" />
-              </svg>
+              <ChevronIcon className="size-5 text-dim" />
             </button>
           ))}
         </div>

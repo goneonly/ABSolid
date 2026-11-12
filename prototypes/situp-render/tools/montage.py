@@ -15,7 +15,7 @@ rows = (len(imgs) + cols - 1) // cols
 sheet = np.zeros((rows * h, cols * w, 4), dtype=np.float32); sheet[..., 3] = 1
 for i, a in enumerate(imgs):
     r, c = i // cols, i % cols
-    rr = rows - 1 - r  # Blender 픽셀은 아래쪽부터 → 위 행부터 채우도록 뒤집어 배치
+    rr = rows - 1 - r  # Blender 픽셀은 아래쪽부터라서 위 행부터 채우도록 뒤집어 배치
     sheet[rr * h:(rr + 1) * h, c * w:(c + 1) * w] = a[:h, :w]
 o = bpy.data.images.new("sheet", cols * w, rows * h, alpha=True)
 o.pixels = sheet.ravel()

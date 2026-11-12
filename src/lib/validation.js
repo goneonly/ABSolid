@@ -1,6 +1,6 @@
 // 입력 검증 헬퍼 — 오류 메시지를 반환하고, 통과하면 빈 문자열('') 반환
 
-// 이메일: 아이디@도메인.TLD(2자 이상) 형식 강제 → "test@gmail" 같은 입력 차단
+// 이메일: 아이디@도메인.TLD(2자 이상) 형식 강제. "test@gmail" 같은 입력 차단
 export function validateEmail(email) {
   const v = (email || '').trim()
   if (!v) return '이메일을 입력해 주세요.'
@@ -11,7 +11,7 @@ export function validateEmail(email) {
   return ''
 }
 
-// 이름: 한글(완성형) 또는 영문 2~20자, 자음/모음만 입력·숫자·특수문자 차단
+// 이름: 한글(완성형) 또는 영문 2~20자, 자음/모음만 입력, 숫자, 특수문자 차단
 export function validateName(name) {
   const v = (name || '').trim()
   if (!v) return '이름을 입력해 주세요.'
@@ -38,7 +38,7 @@ export function formatPhone(raw) {
   return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
 }
 
-// 비밀번호(가입·변경): 8자 이상, 공백 금지, 영문+숫자 조합 (기존 6~7자 비밀번호도 로그인은 그대로 가능)
+// 비밀번호(가입, 변경): 8자 이상, 공백 금지, 영문+숫자 조합 (기존 6~7자 비밀번호도 로그인은 그대로 가능)
 export function validatePassword(pw) {
   if (!pw || pw.length < 8) return '비밀번호는 8자 이상이어야 해요.'
   if (pw.length > 72) return '비밀번호는 72자 이하로 입력해 주세요.'

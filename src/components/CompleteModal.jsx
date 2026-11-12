@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button, CheckIcon, Modal, ModalTitle } from './ui.jsx'
-import { compressImage } from '../image.js'
-import { cheerMessage } from '../stats.js'
+import { compressImage } from '../lib/image.js'
+import { cheerMessage } from '../lib/stats.js'
 
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-// from → to 로 숫자가 올라가는 애니메이션 (움직임 줄이기 설정이면 바로 최종값)
+// from 에서 to 로 숫자가 올라가는 애니메이션 (움직임 줄이기 설정이면 바로 최종값)
 function CountUp({ from, to }) {
   const [n, setN] = useState(from)
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function CompleteModal({ day, streak, busy, onSave, onSkip }) {
         <strong className="inline-block text-xl font-extrabold text-brand tabular-nums motion-safe:animate-pop">
           <CountUp from={streak.from} to={streak.to} />
         </strong>
-        일째 · {cheerMessage(day, streak.to)}
+        일째, {cheerMessage(day, streak.to)}
       </p>
 
       <button

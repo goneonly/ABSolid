@@ -19,7 +19,7 @@ vi.mock('./supabase.js', () => {
 })
 
 const { completeWorkout, retryPendingCompletions, fetchBlockedIds, blockUser } = await import('./api.js')
-const { getRecords, saveRecord } = await import('./storage.js')
+const { getRecords, saveRecord } = await import('../lib/storage.js')
 
 const UID = 'u-1'
 const signedIn = () => client.auth.getSession.mockResolvedValue({ data: { session: { user: { id: UID } } } })

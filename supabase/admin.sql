@@ -1,7 +1,7 @@
 -- ABSolid 관리자 모드 v1 — Supabase SQL Editor에서 실행
 -- 포함: 역할/활성 컬럼, 관리자 정책, 신고, 공지, 앱 설정, 통계 함수
 
--- ── 1) 역할·활성 컬럼 ────────────────────────
+-- ── 1) 역할, 활성 컬럼 ────────────────────────
 alter table public.profiles
   add column if not exists role text not null default 'user' check (role in ('user', 'admin')),
   add column if not exists is_active boolean not null default true;

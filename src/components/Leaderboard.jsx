@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { todayKey } from '../storage.js'
-import { fetchGroupWorkoutDates } from '../api.js'
-import { daysInRange, getPrevRange, getRange, rankRows, shortDate, withRankDelta } from '../stats.js'
+import { todayKey } from '../lib/storage.js'
+import { fetchGroupWorkoutDates } from '../server/api.js'
+import { daysInRange, getPrevRange, getRange, rankRows, shortDate, withRankDelta } from '../lib/stats.js'
 import { Card, CardTitle, Input, MemberAvatar, Sub, Trend, cx } from './ui.jsx'
 
 const PERIODS = [
@@ -154,7 +154,9 @@ export default function Leaderboard({ members, myId, myName, records }) {
             })}
           </div>
 
-          <Sub className="mt-3 text-xs">기간 내 인증 횟수 기준 · 화살표는 직전 {totalDays}일 대비 순위 변동</Sub>
+          <Sub className="mt-3 text-xs">
+            기간 내 인증 횟수 기준이에요. 삼각형은 직전 {totalDays}일 대비 순위 변동이에요.
+          </Sub>
         </>
       )}
     </Card>

@@ -1,4 +1,4 @@
-// 사진을 긴 변 max px 이하 JPEG dataURL로 압축 (업로드·localStorage 용량 보호)
+// 사진을 긴 변 max px 이하 JPEG dataURL로 압축 (업로드, localStorage 용량 보호)
 export function compressImage(file, { max = 720, quality = 0.8 } = {}) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)

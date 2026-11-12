@@ -1,4 +1,4 @@
--- 사용자 차단 — 차단 목록 엿보기·위조, 차단 우회 응원, 받은 응원 노출
+-- 사용자 차단 — 차단 목록 엿보기, 위조, 차단 우회 응원, 받은 응원 노출
 begin;
 
 -- ── 차단하기 ──
@@ -14,7 +14,7 @@ select tests.logout();
 select tests.throws(format('select public.block_user(%L)', tests.uid('A')), 'permission denied', '비로그인: 차단 함수 실행 권한 없음');
 select tests.eq(tests.count('select * from public.user_blocks'), 0, '비로그인: 차단 목록 조회 불가');
 
--- ── 상대·제3자는 차단 사실을 볼 수 없고 조작할 수 없음 ──
+-- ── 상대, 제3자는 차단 사실을 볼 수 없고 조작할 수 없음 ──
 select tests.login('B');
 select tests.eq(tests.count('select * from public.user_blocks'), 0, 'B: 자신이 차단당한 사실 조회 불가');
 select tests.eq((select count(*) from public.my_blocks()), 0::bigint, 'B: 내 차단 목록 비어 있음');
@@ -31,10 +31,10 @@ select tests.eq((select count(*) from public.user_blocks), 1::bigint, 'B 의 해
 -- ── 응원: 차단 관계에서는 양쪽 모두 불가 ──
 select tests.login('B');
 select tests.throws(format('select public.send_cheer(%L, %L)', tests.gid('응원반'), tests.uid('A')), '응원을 보낼 수 없어요',
-  'B(차단당함) → A 응원 불가');
+  'B(차단당함)는 A 응원 불가');
 select tests.login('A');
 select tests.throws(format('select public.send_cheer(%L, %L)', tests.gid('응원반'), tests.uid('B')), '응원을 보낼 수 없어요',
-  'A(차단함) → B 응원 불가');
+  'A(차단함)는 B 응원 불가');
 
 -- ── 받은 응원: 차단 전에 온 응원도 숨김 ──
 select tests.as_operator();

@@ -32,6 +32,19 @@ export async function setUserActive(id, active) {
   if (error) throw new Error('변경에 실패했어요.')
 }
 
+// 계정 완전 삭제 (테스트 계정 정리 등) — 되돌릴 수 없음. 서버(Edge Function)가 관리자인지 다시 확인하고,
+// 본인, 다른 관리자 계정은 거절함. 삭제 과정은 회원 탈퇴와 같음 (그룹장 위임, 계정, 기록 삭제, 사진 정리 순서)
+export async function deleteUserAdmin(id) {
+  const { error } = await supabase.functions.invoke('admin-delete-user', { body: { userId: id } })
+  if (!error) return
+  // 서버가 돌려준 이유(예: "관리자 계정은 삭제할 수 없어요.")가 있으면 그대로 보여 줌
+  const reason = await error.context
+    ?.json?.()
+    .then((b) => b?.error)
+    .catch(() => null)
+  throw new Error(reason || '계정 삭제에 실패했어요. 함수가 배포됐는지 확인해 주세요.')
+}
+
 // ── 그룹 관리 ────────────────────────────────
 export async function fetchGroupsAdmin() {
   const { data, error } = await supabase
@@ -52,7 +65,7 @@ export async function deleteGroupAdmin(id) {
 }
 
 // ── 신고 처리 ────────────────────────────────
-// 관리자: 미처리 신고 목록 (신고 대상 사진·닉네임 포함)
+// 관리자: 미처리 신고 목록 (신고 대상 사진, 닉네임 포함)
 export async function fetchReports() {
   const { data: reports, error } = await supabase
     .from('reports')
@@ -79,7 +92,7 @@ export async function fetchReports() {
   ])
   const names = Object.fromEntries((profs || []).map((p) => [p.id, p.nickname]))
   const signed = await signPhotoPaths((works || []).map((w) => w.photo_url))
-  const photoOf = {} // '회원id|날짜' → 인증샷 주소
+  const photoOf = {} // '회원id|날짜'별 인증샷 주소
   for (const w of works || []) {
     if (w.photo_url) photoOf[`${w.user_id}|${w.date}`] = signed[photoObjectPath(w.photo_url)] || null
   }

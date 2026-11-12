@@ -1,4 +1,4 @@
--- 응원·푸시 구독 — 그룹 밖 응원, 응원 위조·도배, 남의 알림 구독 가로채기
+-- 응원, 푸시 구독 — 그룹 밖 응원, 응원 위조, 도배, 남의 알림 구독 가로채기
 begin;
 
 create temp table ctx (k text primary key, v uuid);
@@ -14,11 +14,11 @@ select tests.lives(format('select public.complete_workout(%L)', (select v from c
 
 -- ── 응원 보내기 ──
 select tests.login('A');
-select tests.ok(public.send_cheer(tests.gid('응원반'), tests.uid('B')) is not null, 'A → B 응원');
+select tests.ok(public.send_cheer(tests.gid('응원반'), tests.uid('B')) is not null, 'A 가 B 응원');
 select tests.eq((select kind from public.cheers where from_user = tests.uid('A')), 'done', '운동한 사람에게는 👏(done) — 서버가 판단');
 select tests.ok(public.send_cheer(tests.gid('응원반'), tests.uid('B')) is null, '같은 사람에게 하루 두 번 응원 불가 (알림 도배 방지)');
 select tests.login('B');
-select tests.ok(public.send_cheer(tests.gid('응원반'), tests.uid('A')) is not null, 'B → A 응원');
+select tests.ok(public.send_cheer(tests.gid('응원반'), tests.uid('A')) is not null, 'B 가 A 응원');
 select tests.eq((select kind from public.cheers where from_user = tests.uid('B')), 'nudge', '아직 안 한 사람에게는 💪(nudge)');
 select tests.throws(format('select public.send_cheer(%L, %L)', tests.gid('응원반'), tests.uid('B')), '자기 자신', '자기 자신 응원 불가');
 select tests.throws(format('select public.send_cheer(%L, %L)', tests.gid('응원반'), tests.uid('C')), '같은 그룹 멤버만', '그룹 밖 사람에게 응원 불가');
@@ -40,7 +40,7 @@ select tests.eq(tests.count('select * from public.cheers'), 0, '비로그인: �
 select tests.login('A');
 select tests.eq(tests.count('select * from public.cheers'), 2, 'A: 같은 그룹 응원 2건 조회 (그룹 화면 응원 수)');
 select tests.eq((select from_nickname || '/' || kind || '/' || group_name from public.my_received_cheers()), '서연/nudge/응원반',
-  'A: 오늘 받은 응원 — 보낸 사람 닉네임만 (이름·전화번호 없음)');
+  'A: 오늘 받은 응원 — 보낸 사람 닉네임만 (이름, 전화번호 없음)');
 select tests.affects('delete from public.cheers', 0, 'A: 응원 기록 삭제 0건');
 select tests.affects($$update public.cheers set kind = 'done', notified_at = null$$, 0, 'A: 응원 기록 수정 0건 (알림 재발송 조작 방지)');
 

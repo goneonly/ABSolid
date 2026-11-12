@@ -1,7 +1,7 @@
 // 응원 알림 — Supabase Edge Function
 // 앱에서 응원을 보낸 직후 호출: 받은 사람의 기기로 푸시 알림 발송
 // 배포: npx supabase functions deploy notify-cheer
-// 보안: 호출자 JWT 로 본인 확인 → 본인이 보낸, 아직 알림 안 보낸, 10분 이내 응원만 발송 (중복·스팸 방지)
+// 보안: 호출자 JWT 로 본인 확인 후 본인이 보낸, 아직 알림 안 보낸, 10분 이내 응원만 발송 (중복, 스팸 방지)
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { sendPushToUsers } from '../_shared/webpush.ts'
 import { serviceKey, publishableKey } from '../_shared/keys.ts'
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   if (!cheerId) return json({ error: 'cheerId 가 필요해요.' }, 400)
 
   const admin = createClient(url, serviceKey())
-  // 알림 발송 권한 확보: 내가 보낸 응원 + 아직 미발송 + 10분 이내 → notified_at 기록 (한 번만 성공)
+  // 알림 발송 권한 확보: 내가 보낸 응원 + 아직 미발송 + 10분 이내면 notified_at 기록 (한 번만 성공)
   const since = new Date(Date.now() - 10 * 60 * 1000).toISOString()
   const { data: cheer, error } = await admin
     .from('cheers')

@@ -10,14 +10,14 @@ insert into public.profiles (id, nickname, full_name, phone) values
 on conflict (id) do update set nickname = excluded.nickname, full_name = excluded.full_name, phone = excluded.phone;
 update public.profiles set role = 'admin' where id = tests.uid('M'); -- SQL Editor 에서 관리자 지정
 
--- A: 응원반(3명) · 회원반(2명, 회원만) 생성 / B: 응원반 참여
+-- A: 응원반(3명), 회원반(2명, 회원만) 생성 / B: 응원반 참여
 select tests.login('A');
 select name from public.create_group('응원반', 3, false);
 select name from public.create_group('회원반', 2, true);
 select tests.login('B');
 select name from public.join_group(tests.code('응원반'));
 
--- 지난 기록·사진 (운영자만 과거 날짜를 넣을 수 있음)
+-- 지난 기록, 사진 (운영자만 과거 날짜를 넣을 수 있음)
 select tests.as_operator();
 insert into public.workouts (user_id, date, day)
 values (tests.uid('A'), (now() at time zone 'Asia/Seoul')::date - 10, 1);

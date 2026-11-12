@@ -1,5 +1,5 @@
-// 멤버 한 줄: 프로필 사진 · 이름 · 최근 7일 운동 여부 · 응원/차단 버튼
-import { todayKey, lastNDays } from '../../storage.js'
+// 멤버 한 줄: 프로필 사진, 이름, 최근 7일 운동 여부, 응원/차단 버튼
+import { todayKey, lastNDays } from '../../lib/storage.js'
 import { CheckIcon, MemberAvatar, cx } from '../../components/ui.jsx'
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토']

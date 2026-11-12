@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { loadYouTubeAPI } from '../youtube.js'
-import { todayWorkoutDay, todayKey, saveRecord, getRecords, computeStreak } from '../storage.js'
+import { loadYouTubeAPI } from '../lib/youtube.js'
+import { todayWorkoutDay, todayKey, saveRecord, getRecords, computeStreak } from '../lib/storage.js'
 import CompleteModal from '../components/CompleteModal.jsx'
-import { getPlaylistId, startWorkoutSession, completeWorkout, uploadPhoto } from '../api.js'
-import { toast } from '../toast.js'
+import { getPlaylistId, startWorkoutSession, completeWorkout, uploadPhoto } from '../server/api.js'
+import { toast } from '../lib/toast.js'
 import { Button, Card, CardTitle, Page, PageTitle, Sub } from '../components/ui.jsx'
 
 const FINISH_RATIO = 0.8 // 영상 80% 이상 시청 시 수동 완료 버튼 활성화
@@ -142,7 +142,7 @@ export default function Workout({ onDone, session }) {
       closeAndReturn()
     } catch (e) {
       if (e.retryable) {
-        // 연결 문제: 기기에 먼저 저장하고 다음 접속 때 다시 기록 (App → retryPendingCompletions)
+        // 연결 문제: 기기에 먼저 저장하고 다음 접속 때 다시 기록 (App 의 retryPendingCompletions)
         record(todayKey(), { pendingSession: sessionId })
         toast('서버 연결이 불안정해 이 기기에 먼저 저장했어요. 다음 접속 때 다시 기록할게요.')
         return closeAndReturn()

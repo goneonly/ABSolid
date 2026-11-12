@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
-import { computeStreak, todayKey, todayWorkoutDay, isReminderDismissedToday, dismissReminderToday } from '../storage.js'
-import { fetchActiveAnnouncement, fetchReceivedCheers } from '../api.js'
+import {
+  computeStreak,
+  todayKey,
+  todayWorkoutDay,
+  isReminderDismissedToday,
+  dismissReminderToday,
+} from '../lib/storage.js'
+import { fetchActiveAnnouncement, fetchReceivedCheers } from '../server/api.js'
 import WeeklyReport from '../components/WeeklyReport.jsx'
 import { Banner, Card, CheckIcon, CloseIcon, Page, PageTitle, Sub, cx } from '../components/ui.jsx'
 
 const REMIND_AFTER_HOUR = 18 // 저녁 6시 이후부터 리마인더 표시
 
-// celebrate: 방금 운동을 완료하고 돌아왔으면 true → streak 숫자·완료 표시를 한 번 튀어나오게 (onCelebrated 로 해제)
+// celebrate: 방금 운동을 완료하고 돌아왔으면 true. streak 숫자와 완료 표시를 한 번 튀어나오게 (onCelebrated 로 해제)
 export default function Home({ records, onStart, session, celebrate, onCelebrated }) {
   const streak = computeStreak(records)
   const doneToday = !!records[todayKey()]?.completed
@@ -91,10 +97,10 @@ export default function Home({ records, onStart, session, celebrate, onCelebrate
   )
 }
 
-// 오늘 받은 응원 — "민준·서연 외 1명이 응원했어요"
+// 오늘 받은 응원 — "민준, 서연 외 1명이 응원했어요"
 function CheersBanner({ cheers }) {
   const names = [...new Set(cheers.map((c) => c.from_nickname))]
-  const shown = names.slice(0, 2).join('·')
+  const shown = names.slice(0, 2).join(', ')
   const rest = names.length - 2
   const allDone = cheers.every((c) => c.kind === 'done')
   return (

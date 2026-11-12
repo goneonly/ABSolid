@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { updatePassword } from '../auth.js'
-import { validatePassword } from '../validation.js'
-import { toast } from '../toast.js'
+import { updatePassword } from '../server/auth.js'
+import { validatePassword } from '../lib/validation.js'
+import { toast } from '../lib/toast.js'
 import { Button, Field, Modal, ModalText, ModalTitle } from './ui.jsx'
 
 // 비밀번호 재설정 메일의 링크로 들어오면(PASSWORD_RECOVERY) 뜨는 새 비밀번호 설정 모달

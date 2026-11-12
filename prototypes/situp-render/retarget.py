@@ -1,10 +1,10 @@
-# Mixamo 애니메이션(FBX) → MetaHuman 바디(FBX) 리타게팅 후 .blend 로 저장
+# Mixamo 애니메이션(FBX)을 MetaHuman 바디(FBX)에 리타게팅한 후 .blend 로 저장
 # 실행: Blender -b --factory-startup --python retarget.py -- <model.fbx> <anim.fbx> <out.blend> [seconds] [fps]
 #
-# 방식: 두 뼈대를 같은 'T-포즈 기준'으로 맞춘 뒤(팔·다리·손가락 방향 정렬),
-#       원본 뼈의 월드 회전 변화량(rest → 현재)을 대상 뼈에 그대로 적용한다.
-#       척추는 뼈 개수가 달라(3 → 5) 척추 길이 비율로 회전을 보간해 나눠준다.
-#       이후 엉덩이·발이 바닥에 닿도록 몸 기울기·높이를 풀고 다리는 IK 로 맞춘다.
+# 방식: 두 뼈대를 같은 'T-포즈 기준'으로 맞춘 뒤(팔, 다리, 손가락 방향 정렬),
+#       원본 뼈의 월드 회전 변화량(rest 에서 현재까지)을 대상 뼈에 그대로 적용한다.
+#       척추는 뼈 개수가 달라(3개와 5개) 척추 길이 비율로 회전을 보간해 나눠준다.
+#       이후 엉덩이, 발이 바닥에 닿도록 몸 기울기, 높이를 풀고 다리는 IK 로 맞춘다.
 import bpy, sys, os, math
 from mathutils import Matrix, Vector, Quaternion
 
@@ -114,7 +114,7 @@ def leg_len(rest, up, low, foot):
 
 K = leg_len(TREST, T("thigh_l"), T("calf_l"), T("foot_l")) / leg_len(SREST, S("LeftUpLeg"), S("LeftLeg"), S("LeftFoot"))
 
-# ───────── 2) 프레임마다 원본 포즈 → 대상 포즈 ─────────
+# ───────── 2) 프레임마다 원본 포즈를 대상 포즈로 ─────────
 n_frames = round(SECONDS * FPS)
 sc.frame_set(int(f0)); p0 = {pb.name: pb.matrix.copy() for pb in src.pose.bones}
 sc.frame_set(int(f1)); p1 = {pb.name: pb.matrix.copy() for pb in src.pose.bones}
@@ -137,7 +137,7 @@ for i in range(n_frames):
 bpy.data.objects.remove(src)
 
 # ───────── 3) 접지 보정 ─────────
-#  엉덩이는 항상 바닥에 닿고, 등·머리는 바닥을 뚫지 않게: 몸 전체를 고관절 중심 기준
+#  엉덩이는 항상 바닥에 닿고, 등, 머리는 바닥을 뚫지 않게: 몸 전체를 고관절 중심 기준
 #  좌우축(X)으로 dθ 만큼 기울이고 dy 만큼 내린다. 발은 원래 자리(바닥 높이)에 IK 로 고정.
 FOOT_KEEP = set()  # 발 회전은 foot_rots 로 따로 고정
 for s in SIDES:

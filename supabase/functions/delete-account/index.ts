@@ -5,12 +5,10 @@
 //
 // 동작:
 //   1) 호출자의 JWT 로 본인 user_id 확인 (남의 계정 삭제 불가)
-//   2) service_role 로:
-//      - 속한 그룹에서 빠지며 그룹장 위임 (남은 멤버가 없는 그룹만 삭제 + 그룹 사진 정리)
-//      - Storage 의 본인 인증샷/프로필 사진 삭제
-//      - auth.users 삭제 → profiles/workouts/group_members/push_subscriptions/reports 자동 cascade
+//   2) service_role 로 그룹장 위임, 계정 삭제(나머지 cascade), 사진 정리 순서 (_shared/purgeUser.ts)
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { serviceKey as getServiceKey, publishableKey } from '../_shared/keys.ts'
+import { purgeUser } from '../_shared/purgeUser.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -44,28 +42,7 @@ Deno.serve(async (req) => {
   // 2) service_role 로 정리
   const admin = createClient(url, serviceKey)
   try {
-    // 그룹장 위임 — 예전처럼 그룹을 지우면 남은 멤버들까지 그룹을 잃음 (v0.5-groups-and-fixes.sql)
-    const { data: deletedGroups, error: hErr } = await admin.rpc('handoff_user_groups', { p_uid: uid })
-    if (hErr) throw hErr
-    // setof uuid 응답은 문자열 배열 (객체 형태로 와도 처리)
-    // 경로 규칙은 src/storagePaths.js 의 groupPhotoPath 와 같음: {groupId}/photo.jpg
-    const emptied = ((deletedGroups || []) as Array<string | Record<string, string>>)
-      .map((r) => (typeof r === 'string' ? r : r.handoff_user_groups))
-      .filter(Boolean)
-      .map((gid) => `${gid}/photo.jpg`)
-    if (emptied.length) await admin.storage.from('group-photos').remove(emptied)
-
-    // Storage 사진 삭제 (photos + avatars)
-    for (const bucket of ['photos', 'avatars']) {
-      const { data: files } = await admin.storage.from(bucket).list(uid, { limit: 1000 })
-      if (files?.length) {
-        await admin.storage.from(bucket).remove(files.map((f) => `${uid}/${f.name}`))
-      }
-    }
-
-    // 계정 삭제 → 나머지 테이블 cascade
-    const { error: dErr } = await admin.auth.admin.deleteUser(uid)
-    if (dErr) throw dErr
+    await purgeUser(admin, uid)
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,

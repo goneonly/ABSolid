@@ -3,11 +3,11 @@
 -- 선행: v0.8-cheers-and-push.sql 까지 실행되어 있어야 함
 --
 -- 포함:
---   1) 차단 목록(user_blocks) — 차단한 본인만 조회·추가·해제 (상대는 차단 사실을 알 수 없음)
+--   1) 차단 목록(user_blocks) — 차단한 본인만 조회, 추가, 해제 (상대는 차단 사실을 알 수 없음)
 --   2) 차단 / 해제 / 내 차단 목록 함수
 --   3) 응원: 차단 관계(어느 쪽이든)면 보낼 수 없고, 받은 응원 목록에서도 제외
 --
--- 그룹 화면의 멤버·리더보드·인증샷은 my_blocked_ids() 로 받은 목록을 앱에서 숨김.
+-- 그룹 화면의 멤버, 리더보드, 인증샷은 my_blocked_ids() 로 받은 목록을 앱에서 숨김.
 
 -- ══════════════════════════════════════════════
 -- 1) 차단 목록
@@ -22,7 +22,7 @@ create table if not exists public.user_blocks (
 create index if not exists user_blocks_blocked on public.user_blocks (blocked);
 alter table public.user_blocks enable row level security;
 
--- 본인이 한 차단만 조회·해제. 추가는 block_user() 로만 (존재하지 않는 사용자·자기 자신 차단 방지)
+-- 본인이 한 차단만 조회, 해제. 추가는 block_user() 로만 (존재하지 않는 사용자, 자기 자신 차단 방지)
 drop policy if exists "user_blocks: 본인 조회" on public.user_blocks;
 create policy "user_blocks: 본인 조회" on public.user_blocks
   for select using (blocker = auth.uid());
@@ -62,7 +62,7 @@ begin
   delete from public.user_blocks where blocker = auth.uid() and blocked = p_target;
 end $$;
 
--- 내가 차단한 사용자 (설정 화면용 — 닉네임만, 이름·전화번호는 노출 안 함)
+-- 내가 차단한 사용자 (설정 화면용 — 닉네임만, 이름, 전화번호는 노출 안 함)
 create or replace function public.my_blocks()
 returns table(id uuid, nickname text, created_at timestamptz)
 language sql stable security definer set search_path = public as $$

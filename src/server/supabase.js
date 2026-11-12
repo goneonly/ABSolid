@@ -18,7 +18,7 @@ export const supabase = makeClient()
 
 // 기기에 저장된 로그인 정보를 네트워크 없이 바로 읽기 (앱 시작을 빠르게)
 // supabase.auth.getSession() 은 로그인 정보가 만료(1시간)됐으면 서버에서 새로 받아 올 때까지 기다려서
-// 느린 회선에서는 첫 화면이 몇 초씩 늦어짐 → 저장된 정보로 먼저 그리고, 갱신은 뒤에서 (useAuth.js)
+// 느린 회선에서는 첫 화면이 몇 초씩 늦어져서, 저장된 정보로 먼저 그리고, 갱신은 뒤에서 (useAuth.js)
 // 저장 위치는 supabase-js 기본값: localStorage 'sb-<프로젝트ID>-auth-token'
 export function parseStoredSession(raw) {
   try {

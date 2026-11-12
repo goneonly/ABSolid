@@ -1,10 +1,11 @@
-// 관리자 화면 — 대시보드 · 신고 처리 · 회원 · 그룹 · 공지 · 운동 프로그램
+// 관리자 화면 — 대시보드, 신고 처리, 회원, 그룹, 공지, 운동 프로그램
 // 각 카드는 독립된 컴포넌트이고, 서버 통신은 admin.js 에 있음
 import { useState } from 'react'
 import {
   fetchStats,
   fetchUsers,
   setUserActive,
+  deleteUserAdmin,
   fetchGroupsAdmin,
   deleteGroupAdmin,
   fetchReports,
@@ -14,10 +15,10 @@ import {
   setAnnouncementActive,
   deleteAnnouncement,
   setPlaylistId,
-} from '../admin.js'
-import { getPlaylistId } from '../api.js'
-import { toast } from '../toast.js'
-import { useLoad } from '../useLoad.js'
+} from '../server/admin.js'
+import { getPlaylistId } from '../server/api.js'
+import { toast } from '../lib/toast.js'
+import { useLoad } from '../hooks/useLoad.js'
 import { Button, Card, CardTitle, Input, MiniButton, Page, PageTitle, Pill, Sub, cx } from '../components/ui.jsx'
 
 const ADMIN_ROW = 'flex items-center gap-3 border-b border-line py-3 last:border-b-0'
@@ -53,7 +54,7 @@ export default function Admin({ onBack }) {
   return (
     <Page>
       <PageTitle>관리자</PageTitle>
-      <Sub>서비스 현황을 확인하고 회원·그룹·신고를 관리해요.</Sub>
+      <Sub>서비스 현황을 확인하고 회원, 그룹, 신고를 관리해요.</Sub>
 
       <StatsSection />
       <ReportsSection />
@@ -63,7 +64,7 @@ export default function Admin({ onBack }) {
       <ProgramSection />
 
       <Button variant="secondary" className="mt-5" onClick={onBack}>
-        ← 설정으로 돌아가기
+        설정으로 돌아가기
       </Button>
     </Page>
   )
@@ -170,12 +171,23 @@ function UsersSection() {
     if (done) reload()
   }
 
+  // 되돌릴 수 없는 작업이라 확인 문구를 직접 입력해야 진행
+  async function remove(u) {
+    const name = u.nickname || '이 회원'
+    const typed = prompt(
+      `${name} 계정을 완전히 삭제할까요?\n운동 기록, 인증샷, 응원, 신고 기록이 모두 지워지고 되돌릴 수 없어요.\n그룹장이면 다른 멤버에게 넘어가고, 혼자인 그룹은 삭제돼요.\n\n계속하려면 "삭제"를 입력하세요.`,
+    )
+    if (typed === null) return
+    if (typed.trim() !== '삭제') return toast('"삭제"를 정확히 입력해야 삭제돼요.')
+    if (await attempt(() => deleteUserAdmin(u.id), `${name} 계정을 삭제했어요.`)) reload()
+  }
+
   return (
     <Card>
       <CardTitle>회원 관리</CardTitle>
       <Input
         className="mt-3"
-        placeholder="닉네임·이름·전화번호 검색"
+        placeholder="닉네임, 이름, 전화번호 검색"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
@@ -194,9 +206,14 @@ function UsersSection() {
             </div>
           </div>
           {u.role !== 'admin' && (
-            <MiniButton danger={u.is_active} onClick={() => toggleActive(u)}>
-              {u.is_active ? '비활성' : '활성화'}
-            </MiniButton>
+            <div className="flex flex-none gap-2">
+              <MiniButton danger={u.is_active} onClick={() => toggleActive(u)}>
+                {u.is_active ? '비활성' : '활성화'}
+              </MiniButton>
+              <MiniButton danger onClick={() => remove(u)}>
+                삭제
+              </MiniButton>
+            </div>
           )}
         </div>
       ))}
@@ -296,7 +313,7 @@ function AnnouncementsSection() {
 // ── 운동 프로그램 ─────────────────────────────
 function ProgramSection() {
   const { data: saved } = useLoad(getPlaylistId)
-  const [edited, setEdited] = useState(null) // 입력칸을 고치기 전에는 null → 서버에 저장된 값을 보여줌
+  const [edited, setEdited] = useState(null) // 입력칸을 고치기 전에는 null 이라 서버에 저장된 값을 보여줌
   const [busy, setBusy] = useState(false)
   const value = edited ?? saved ?? ''
 

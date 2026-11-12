@@ -1,4 +1,4 @@
-# 리타게팅된 .blend 에 근육 강화·재질·조명·카메라·렌더 설정을 더해 렌더용 장면으로 저장
+# 리타게팅된 .blend 에 근육 강화, 재질, 조명, 카메라, 렌더 설정을 더해 렌더용 장면으로 저장
 # 실행: Blender -b <animated.blend> --python build_scene.py -- <out.blend> <frames_dir> [preview] [outfit=male|female] [muscle=2.4]
 import bpy, sys, os, math
 import numpy as np
@@ -149,7 +149,7 @@ leg_l = E.math('ADD', OUT_P["leg"], E.math('MULTIPLY', 2.0, E.S(0.0, 25.0, ax)))
 cover = E.step_between(hzv, leg_l, waist_l)
 red = E.math('MULTIPLY', cover, E.S(E.math('SUBTRACT', waist_l, OUT_P["band"] + 0.12), E.math('SUBTRACT', waist_l, OUT_P["band"] - 0.12), hzv))
 if OUTFIT == "female":
-    front = E.math('SUBTRACT', 1.0, E.S(-4.0, 2.0, fyv))  # 앞쪽 1 → 뒤쪽 0
+    front = E.math('SUBTRACT', 1.0, E.S(-4.0, 2.0, fyv))  # 앞쪽 1, 뒤쪽 0
     # 윗선: 앞 가운데가 파인 스쿱 네크라인, 등 쪽은 2cm 낮게
     scoop = E.math('MULTIPLY', E.math('MULTIPLY', 4.0, E.math('SUBTRACT', 1.0, E.S(0.0, 8.0, ax))), front)
     top_l = E.math('SUBTRACT', E.math('SUBTRACT', OUT_P["top"], scoop), E.math('MULTIPLY', 2.0, E.math('SUBTRACT', 1.0, front)))
@@ -171,7 +171,7 @@ L.new(cover, mix.inputs[0]); L.new(skin.outputs[0], mix.inputs[1]); L.new(cloth.
 L.new(mix.outputs[0], out.inputs["Surface"])
 me.materials.clear(); me.materials.append(mat)
 
-# ───────── 동작 전체를 감싸는 범위 → 매트·카메라 배치 ─────────
+# ───────── 동작 전체를 감싸는 범위로 매트, 카메라 배치 ─────────
 dg = bpy.context.evaluated_depsgraph_get()
 lo, hi = Vector((1e9,) * 3), Vector((-1e9,) * 3)
 pts = []  # 프레이밍용 표본 정점
@@ -267,7 +267,7 @@ sc.cycles.denoiser = 'OPENIMAGEDENOISE'
 sc.cycles.max_bounces = 6
 sc.render.resolution_x, sc.render.resolution_y = 1920, 1080
 sc.render.resolution_percentage = 50 if PREVIEW else 100
-# 모션블러는 변형 메시 BVH 비용으로 빠른 프레임이 5~6배 느려짐 → 끄고 60fps 로 부드러움 확보
+# 모션블러는 변형 메시 BVH 비용으로 빠른 프레임이 5~6배 느려져서 끄고 60fps 로 부드러움 확보
 sc.render.use_motion_blur = False
 sc.view_settings.view_transform = 'AgX'
 sc.view_settings.look = 'AgX - Medium High Contrast'

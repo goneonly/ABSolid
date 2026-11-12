@@ -1,5 +1,5 @@
 -- 운동 기록 — 영상 안 보고 완료, 남의 세션 사용, 과거 날짜 위조, 남의 기록 수정
--- (테스트는 한 트랜잭션 안이라 now() 가 고정 → 시청 경과 시간은 운영자가 started_at 을 당겨서 재현)
+-- (테스트는 한 트랜잭션 안이라 now() 가 고정이라 시청 경과 시간은 운영자가 started_at 을 당겨서 재현)
 begin;
 
 create temp table ctx (k text primary key, v uuid);
@@ -12,16 +12,16 @@ select tests.throws(format($$insert into public.workouts (user_id, date, day) va
 select tests.throws(format('select public.complete_workout(%L)', gen_random_uuid()), '시청 기록을 찾을 수 없어요', '없는 시청 세션으로 완료 불가');
 select tests.eq(tests.count('select * from public.workout_sessions'), 0, 'B: 시청 세션 테이블 직접 조회 불가');
 
--- ── 10분 영상 시청 → 80%(8분) 지나야 기록 ──
+-- ── 10분 영상 시청은 80%(8분) 지나야 기록 ──
 insert into ctx values ('s', public.start_workout(600));
 select tests.throws(format('select public.complete_workout(%L)', (select v from ctx where k = 's')),
-  '약 8분 남았어요', '시작 직후 완료 → 남은 시간 안내 (약 8분)');
+  '약 8분 남았어요', '시작 직후 완료하면 남은 시간 안내 (약 8분)');
 
 select tests.as_operator();
 update public.workout_sessions set started_at = now() - interval '350 seconds' where id = (select v from ctx where k = 's');
 select tests.login('B');
 select tests.throws(format('select public.complete_workout(%L)', (select v from ctx where k = 's')),
-  '약 3분 남았어요', '5분 50초 경과 → 2분 10초 남음은 약 3분으로 올림');
+  '약 3분 남았어요', '5분 50초 경과, 2분 10초 남음은 약 3분으로 올림');
 
 select tests.as_operator();
 update public.workout_sessions set started_at = now() - interval '435 seconds' where id = (select v from ctx where k = 's');
@@ -30,19 +30,19 @@ select tests.throws(format('select public.complete_workout(%L)', (select v from 
   '시청 기록을 찾을 수 없어요', 'C: 남의 시청 세션으로 완료 불가');
 select tests.login('B');
 select tests.throws(format('select public.complete_workout(%L)', (select v from ctx where k = 's')),
-  '45초 남았어요', '7분 15초 경과 → 45초 남음');
+  '45초 남았어요', '7분 15초 경과, 45초 남음');
 
 select tests.as_operator();
 update public.workout_sessions set started_at = now() - interval '481 seconds' where id = (select v from ctx where k = 's');
 select tests.login('B');
 select tests.eq(public.complete_workout((select v from ctx where k = 's')), (now() at time zone 'Asia/Seoul')::date,
-  '8분 1초 경과 → 오늘(한국 시간)로 기록');
+  '8분 1초 경과하면 오늘(한국 시간)로 기록');
 select tests.eq((select day from public.workouts where user_id = tests.uid('B')),
   least(extract(day from (now() at time zone 'Asia/Seoul')::date)::int, 30), 'Day 번호는 서버가 날짜로 계산');
 select tests.lives(format('select public.complete_workout(%L)', (select v from ctx where k = 's')), '같은 세션 다시 완료해도 무해');
 select tests.eq(tests.count(format('select * from public.workouts where user_id = %L', tests.uid('B'))), 1, '하루 기록은 1건');
 
--- ── 영상 길이 보정·오래된 세션 ──
+-- ── 영상 길이 보정, 오래된 세션 ──
 insert into ctx values ('short', public.start_workout(5)), ('long', public.start_workout(999999)), ('old', public.start_workout(600));
 select tests.as_operator();
 select tests.eq((select video_seconds from public.workout_sessions where id = (select v from ctx where k = 'short')), 60, '영상 길이를 짧게 속여도 최소 60초');

@@ -1,4 +1,4 @@
-# 같은 장면을 EEVEE 로 렌더해 Cycles 와 비교 (속도·품질 확인용)
+# 같은 장면을 EEVEE 로 렌더해 Cycles 와 비교 (속도, 품질 확인용)
 # 실행: Blender -b <scene.blend> --python tools/eevee_test.py -- <out_prefix> <frames(예: 1,60)>
 import bpy, sys, time
 argv = sys.argv[sys.argv.index("--") + 1:]
@@ -7,7 +7,7 @@ sc = bpy.context.scene
 sc.render.engine = 'BLENDER_EEVEE'
 e = sc.eevee
 e.taa_render_samples = 64
-e.use_raytracing = True               # 반사·AO·간접광을 화면 공간 레이트레이싱으로
+e.use_raytracing = True               # 반사, AO, 간접광을 화면 공간 레이트레이싱으로
 e.ray_tracing_options.resolution_scale = '1'
 e.use_shadows = True
 e.shadow_ray_count = 3

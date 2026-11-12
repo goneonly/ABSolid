@@ -1,13 +1,13 @@
--- ABSolid v0.11 — 가입·기능 남용 방지
+-- ABSolid v0.11 — 가입, 기능 남용 방지
 -- Supabase SQL Editor에서 실행 (재실행 안전)
 -- 선행: v0.10-signup-profile.sql 까지 실행되어 있어야 함
 --
 -- 포함:
 --   1) 일회용(임시) 이메일 가입 차단 — 서버가 거절 + 앱이 가입 전에 미리 안내
 --   2) 그룹 생성: 한 사람당 하루 5개
---   3) 신고: 하루 20건, 같은 사람·같은 날짜 인증샷 중복 신고 불가
+--   3) 신고: 하루 20건, 같은 사람, 같은 날짜 인증샷 중복 신고 불가
 --   4) 초대 코드: 틀린 코드는 한 시간에 10번까지 (코드 무작위 대입 방지)
--- 봇 가입 차단(캡차)·IP 당 요청 제한은 Supabase 대시보드 설정 (docs/SUPABASE_SETUP.md)
+-- 봇 가입 차단(캡차), IP 당 요청 제한은 Supabase 대시보드 설정 (docs/SUPABASE_SETUP.md)
 
 -- ══════════════════════════════════════════════
 -- 1) 일회용 이메일
@@ -117,7 +117,7 @@ create table if not exists public.join_attempts (
   created_at timestamptz not null default now()
 );
 create index if not exists join_attempts_user_time on public.join_attempts (user_id, created_at);
-alter table public.join_attempts enable row level security; -- 정책 없음: join_group() 만 기록·조회
+alter table public.join_attempts enable row level security; -- 정책 없음: join_group() 만 기록, 조회
 
 -- v0.5 join_group 교체: 틀린 코드는 오류 대신 빈 결과로 응답해야 시도 기록이 남음
 -- (오류를 내면 트랜잭션이 되돌려져 기록도 사라짐 — 앱은 빈 결과를 "코드를 찾을 수 없어요"로 표시)
@@ -138,7 +138,7 @@ begin
     raise exception '초대 코드를 너무 많이 틀렸어요. 1시간 뒤 다시 시도해 주세요.';
   end if;
 
-  -- 그룹 행을 잠근 채 조회 → 동시 참여 경합 방지
+  -- 그룹 행을 잠근 채 조회해 동시 참여 경합 방지
   select * into g from public.groups gr where gr.invite_code = upper(btrim(code)) for update;
   if g.id is null then
     insert into public.join_attempts (user_id) values (uid);
@@ -156,11 +156,11 @@ begin
     raise exception '이 그룹은 정원(%명)이 가득 찼어요.', g.max_members;
   end if;
 
-  -- 회원만 받기: 이름·전화번호 등록 필수
+  -- 회원만 받기: 이름, 전화번호 등록 필수
   if g.members_only then
     select * into me from public.profiles p where p.id = uid;
     if coalesce(me.full_name, '') = '' or coalesce(me.phone, '') = '' then
-      raise exception '이 그룹은 이름·전화번호를 등록한 회원만 참여할 수 있어요. 설정에서 회원가입을 완료해 주세요.';
+      raise exception '이 그룹은 이름과 전화번호를 등록한 회원만 참여할 수 있어요. 설정에서 회원가입을 완료해 주세요.';
     end if;
   end if;
 

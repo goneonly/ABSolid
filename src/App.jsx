@@ -13,8 +13,8 @@ import {
   Workout,
   prefetchPages,
 } from './lazyPages.js'
-import { supabase } from './supabase.js'
-import { isPushSupported } from './push.js'
+import { supabase } from './server/supabase.js'
+import { isPushSupported } from './server/push.js'
 import {
   getRecords,
   mergeRecords,
@@ -27,11 +27,11 @@ import {
   markPushConsentAsked,
   isServerCleanupDoneToday,
   markServerCleanupDone,
-} from './storage.js'
-import { useAuth } from './useAuth.js'
-import { hideSplash } from './splash.js'
-import { signOut } from './auth.js'
-import { fetchMyRole, fetchServerRecords, retryPendingCompletions, cleanupOldServerPhotos } from './api.js'
+} from './lib/storage.js'
+import { useAuth } from './hooks/useAuth.js'
+import { hideSplash } from './lib/splash.js'
+import { signOut } from './server/auth.js'
+import { fetchMyRole, fetchServerRecords, retryPendingCompletions, cleanupOldServerPhotos } from './server/api.js'
 
 export default function App() {
   // view: home | workout | group | settings | admin
@@ -42,19 +42,22 @@ export default function App() {
   const [showPushConsent, setShowPushConsent] = useState(false)
   const [showRecovery, setShowRecovery] = useState(false)
   const [justDone, setJustDone] = useState(false) // 운동 완료 직후 홈 축하 표시
+  const [guest, setGuest] = useState(isGuestChosen)
+  // 로딩 화면의 '오프라인으로 시작': 로그인 확인이 12초 넘게 안 끝날 때 기기 기록으로 먼저 시작 (확인되면 그대로 회원 화면으로)
+  const [offlineStart, setOfflineStart] = useState(false)
+  const session = useAuth()
+  // 로그인한 계정 id. 로그인 정보는 갱신될 때마다 새 객체로 오므로, 계정이 바뀔 때만 실행할 작업은 이 값을 기준으로 함
+  const userId = session?.user?.id
+  const accountKey = userId || 'guest'
+  const records = getRecords()
+
+  const refresh = useCallback(() => setTick((t) => t + 1), [])
   const endCelebration = useCallback(() => setJustDone(false), [])
-  // 비회원 → 로그인: 비회원 선택을 해제하면 첫 로그인 화면이 다시 표시됨 (설정·그룹 탭의 로그인 버튼)
+  // 비회원이 로그인하려 할 때: 비회원 선택을 해제하면 첫 로그인 화면이 다시 표시됨 (설정, 그룹 탭의 로그인 버튼)
   const requestLogin = useCallback(() => {
     setGuestChosen(false)
     setGuest(false)
   }, [])
-  const [guest, setGuest] = useState(isGuestChosen)
-  const refresh = useCallback(() => setTick((t) => t + 1), [])
-  const session = useAuth()
-  // 로딩 화면의 '오프라인으로 시작': 로그인 확인이 8초 넘게 안 끝날 때 기기 기록으로 먼저 시작 (확인되면 그대로 회원 화면으로)
-  const [offlineStart, setOfflineStart] = useState(false)
-  const records = getRecords()
-  const accountKey = session?.user?.id || 'guest'
 
   useEffect(() => {
     const start = () => setOfflineStart(true)
@@ -83,7 +86,7 @@ export default function App() {
         setView('settings')
         setShowRecovery(true)
       }
-      // 로그아웃·탈퇴하면 다시 첫 로그인 화면부터
+      // 로그아웃, 탈퇴하면 다시 첫 로그인 화면부터
       if (event === 'SIGNED_OUT') {
         setGuestChosen(false)
         setGuest(false)
@@ -95,15 +98,15 @@ export default function App() {
 
   // 기능 소개 팝업: 가입 완료 후 첫 진입 1회 (비회원은 '비회원으로 시작하기'를 누를 때마다 — Login onGuest)
   useEffect(() => {
-    if (session && isOnboardingPending()) {
+    if (userId && isOnboardingPending()) {
       setView('home')
       setShowOnboarding(true)
     }
-  }, [session])
+  }, [userId])
 
   // 로그인 시: 역할 확인 (관리자 메뉴 노출) + 비활성 계정 차단
   useEffect(() => {
-    if (!session) {
+    if (!userId) {
       setIsAdmin(false)
       return
     }
@@ -122,13 +125,13 @@ export default function App() {
     return () => {
       alive = false
     }
-  }, [session])
+  }, [userId])
 
   // 로그인되면: 연결 문제로 못 남긴 완료 기록 재시도 + 서버 기록 내려받아 병합
   // (비회원 시절 기록은 시청 확인이 없어 서버로 올리지 않음 — 기기에만 남음)
   // + 하루 1회, 30일 지난 내 서버 인증샷 정리
   useEffect(() => {
-    if (!session) return
+    if (!userId) return
     let alive = true
     retryPendingCompletions()
       .then(fetchServerRecords)
@@ -147,7 +150,7 @@ export default function App() {
     return () => {
       alive = false
     }
-  }, [session, refresh])
+  }, [userId, refresh])
 
   // 첫 화면: 서버 연결 시, 로그인도 비회원 선택도 안 했으면 로그인 화면
   if (!authChecked) return null // 저장된 세션 확인 중 — 그동안은 로딩 화면 (index.html)
@@ -201,7 +204,7 @@ export default function App() {
             }}
           />
         )}
-        {/* 계정이 바뀌면 화면 상태(닉네임 입력값·선택한 그룹 등)를 새로 시작 */}
+        {/* 계정이 바뀌면 화면 상태(닉네임 입력값, 선택한 그룹 등)를 새로 시작 */}
         {view === 'group' && (
           <Group key={accountKey} records={records} session={session} onRequestLogin={requestLogin} />
         )}

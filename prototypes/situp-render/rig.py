@@ -12,8 +12,8 @@ X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
 SIDES = ("l", "r")
 
 # 트위스트 뼈: (뼈, 기준 뼈, 비틀림을 가져올 뼈, 비율)
-#  - 아래팔/종아리: 손·발의 비틀림을 손목·발목 쪽부터 나눠 받음
-#  - 위팔/허벅지: 자기 비틀림을 어깨·골반 쪽에서 되돌려 피부가 꼬이지 않게
+#  - 아래팔/종아리: 손, 발의 비틀림을 손목, 발목 쪽부터 나눠 받음
+#  - 위팔/허벅지: 자기 비틀림을 어깨, 골반 쪽에서 되돌려 피부가 꼬이지 않게
 TWIST = []
 for _s in SIDES:
     TWIST += [
@@ -60,10 +60,10 @@ class Rig:
         self.body = next(o for o in new if o.type == 'MESH')
         par = self.body.parent
         self.arm = par if par and par.type == 'ARMATURE' else next(o for o in new if o.type == 'ARMATURE')
-        for o in new:  # 여성 FBX 에는 Maya 리그 보조 객체(포즈 드라이버·트위스트 셋업 등)가 같이 들어 있음
+        for o in new:  # 여성 FBX 에는 Maya 리그 보조 객체(포즈 드라이버, 트위스트 셋업 등)가 같이 들어 있음
             if o not in (self.arm, self.body):
                 bpy.data.objects.remove(o)
-        # 뼈 이름 통일: 남성 FBX 는 'DHIbody:pelvis', 여성은 'pelvis' → 접두사를 붙여 같은 이름으로
+        # 뼈 이름 통일: 남성 FBX 는 'DHIbody:pelvis', 여성은 'pelvis' 라서 접두사를 붙여 같은 이름으로
         if not any(b.name.startswith("DHIbody:") for b in self.arm.data.bones):
             for b in self.arm.data.bones:
                 b.name = "DHIbody:" + b.name
@@ -96,7 +96,7 @@ class Rig:
         return out
 
     def fk(self, Q, ppos):
-        """Q: 뼈별 월드 회전, ppos: 골반 위치 → 모든 뼈의 포즈 행렬 (Q 에 없는 뼈는 부모를 따라감)"""
+        """Q: 뼈별 월드 회전, ppos: 골반 위치로 모든 뼈의 포즈 행렬 계산 (Q 에 없는 뼈는 부모를 따라감)"""
         P = {}
         for n in self.ORDER:
             par = self.PARENT[n]
@@ -150,10 +150,10 @@ class Rig:
         not_arm = (arm_w["l"] + arm_w["r"]) < 0.3
         self.REGION = {
             "butt": (hz > hip - 0.46 * (hip - knee)) & (hz < waist) & (fwd < 2) & (np.abs(lat) < 2.15 * hip_w),
-            # 누운 자세 접지용 등 아랫부분(천골~요추): 골반·요추에만 붙은 정점이라 고관절을 굽혀도 안 움직이고,
+            # 누운 자세 접지용 등 아랫부분(천골~요추): 골반, 요추에만 붙은 정점이라 고관절을 굽혀도 안 움직이고,
             # 골반을 뒤로 말면 접점이 천골에서 허리로 자연스럽게 옮겨감
             "lowback": (hz > hip - 0.2 * (hip - knee)) & (hz < h("spine_04")) & (fwd < 0) & (pelvis_w > 0.9) & not_arm,
-            "torso": hz >= waist,  # 팔 포함: 등·팔꿈치 모두 바닥 관통 금지
+            "torso": hz >= waist,  # 팔 포함: 등, 팔꿈치 모두 바닥 관통 금지
             "upperback": (hz > h("spine_04")) & (hz < h("neck_01")) & (fwd < 0) & not_arm,
             "head": hz > h("head"),
             "feet": hz < 1.27 * ankle,
@@ -241,7 +241,7 @@ class Rig:
             out[n] = (self.TREST[n].inverted() @ self.TREST[par] @ P[par].inverted() @ P[n]) if par else (self.TREST[n].inverted() @ P[n])
         return out
 
-    # ───────── 키프레임 기록 · 검증 · 저장 ─────────
+    # ───────── 키프레임 기록, 검증, 저장 ─────────
     def write_keys(self, frames_P, keyed, fps):
         sc = bpy.context.scene
         sc.render.fps = fps

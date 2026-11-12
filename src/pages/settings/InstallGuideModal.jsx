@@ -1,6 +1,6 @@
 // 홈 화면에 앱 추가 방법 안내 (설치 창을 직접 띄울 수 없는 브라우저용 — 아이폰 Safari 등)
-import { isPushConfigured } from '../../push.js'
-import { isIOS } from '../../install.js'
+import { isPushConfigured } from '../../server/push.js'
+import { isIOS } from '../../lib/install.js'
 import { Button, Modal, ModalText, ModalTitle } from '../../components/ui.jsx'
 
 export default function InstallGuideModal({ onClose }) {

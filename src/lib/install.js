@@ -1,6 +1,6 @@
 // 홈 화면에 앱 추가(PWA 설치) 도우미
 // - 안드로이드 Chrome 등: 브라우저가 주는 설치 이벤트를 받아 두었다가 버튼으로 바로 설치 창 띄움
-// - 아이폰 Safari: 설치 창 API가 없어 '공유 → 홈 화면에 추가' 안내만 가능
+// - 아이폰 Safari: 설치 창 API가 없어 '공유 버튼의 홈 화면에 추가' 안내만 가능
 let deferredPrompt = null
 
 if (typeof window !== 'undefined') {
@@ -25,7 +25,7 @@ export function isIOS() {
 
 export const canPromptInstall = () => !!deferredPrompt
 
-// 설치 창 띄우기 → true = 설치함
+// 설치 창 띄우기. 설치하면 true
 export async function promptInstall() {
   if (!deferredPrompt) return false
   deferredPrompt.prompt()

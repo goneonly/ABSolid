@@ -1,6 +1,6 @@
-// 그룹 상세 화면: 그룹 정보 · 멤버 현황 · 리더보드 · 오늘의 인증샷
+// 그룹 상세 화면: 그룹 정보, 멤버 현황, 리더보드, 오늘의 인증샷
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { todayKey, getProfile } from '../../storage.js'
+import { todayKey, getProfile } from '../../lib/storage.js'
 import {
   leaveGroup,
   fetchGroupStatus,
@@ -11,8 +11,8 @@ import {
   fetchTodayCheers,
   blockUser,
   submitReport,
-} from '../../api.js'
-import { toast } from '../../toast.js'
+} from '../../server/api.js'
+import { toast } from '../../lib/toast.js'
 import Leaderboard from '../../components/Leaderboard.jsx'
 import { CameraBadge, PhotoActionSheet, readPickedImage } from '../../components/PhotoPicker.jsx'
 import {
@@ -25,6 +25,7 @@ import {
   Page,
   Skeleton,
   Sub,
+  ChevronIcon,
 } from '../../components/ui.jsx'
 import { CameraArt } from '../../components/EmptyArt.jsx'
 import MemberRow from './MemberRow.jsx'
@@ -112,7 +113,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
     if (confirm(`${p.name}님을 차단할까요?\n이 멤버의 기록과 인증샷이 더 이상 보이지 않아요.`)) blockMember(p, true)
   }
 
-  // 차단: 그룹 화면(멤버·리더보드·인증샷)과 받은 응원에서 숨기고, 서로 응원 불가. 상대에게는 알리지 않음.
+  // 차단: 그룹 화면(멤버, 리더보드, 인증샷)과 받은 응원에서 숨기고, 서로 응원 불가. 상대에게는 알리지 않음.
   async function blockMember(m, confirmed = false) {
     if (
       !confirmed &&
@@ -121,7 +122,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
           '• 그룹 화면에서 이 멤버의 기록과 인증샷이 보이지 않아요.\n' +
           '• 서로 응원을 보낼 수 없어요.\n' +
           '• 상대에게는 알리지 않아요.\n\n' +
-          '설정 > 차단한 사용자에서 언제든 해제할 수 있어요.',
+          '설정의 차단한 사용자에서 언제든 해제할 수 있어요.',
       )
     )
       return
@@ -154,18 +155,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   return (
     <Page>
       <button className="hit -ml-1 flex items-center gap-1 py-1 text-sm text-dim" onClick={onBack}>
-        <svg
-          className="size-4.5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="m15 6-6 6 6 6" />
-        </svg>
+        <ChevronIcon left className="size-4.5" />
         그룹 목록
       </button>
 
@@ -296,7 +286,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   )
 }
 
-// 그룹 사진 — 그룹장만 바꿀 수 있음 (사진이 없으면 누르면 바로 고르기, 있으면 교체·삭제 선택지)
+// 그룹 사진 — 그룹장만 바꿀 수 있음 (사진이 없으면 누르면 바로 고르기, 있으면 교체, 삭제 선택지)
 function GroupPhotoEditor({ group, editable, onChanged }) {
   const fileRef = useRef(null)
   const [showSheet, setShowSheet] = useState(false)

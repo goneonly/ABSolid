@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { getProfile, clearRecords, getRecords, todayKey } from '../storage.js'
-import { supabase } from '../supabase.js'
-import { signOut, deleteAccount } from '../auth.js'
-import { resetServerWorkouts } from '../api.js'
-import { isPushConfigured } from '../push.js'
-import { toast } from '../toast.js'
-import { isStandalone, isIOS, canPromptInstall, promptInstall } from '../install.js'
+import { getProfile, clearRecords, getRecords, todayKey } from '../lib/storage.js'
+import { supabase } from '../server/supabase.js'
+import { signOut, deleteAccount } from '../server/auth.js'
+import { resetServerWorkouts } from '../server/api.js'
+import { isPushConfigured } from '../server/push.js'
+import { toast } from '../lib/toast.js'
+import { isStandalone, isIOS, canPromptInstall, promptInstall } from '../lib/install.js'
 import { PrivacyModal, TermsModal } from '../components/LegalModals.jsx'
 import {
   Banner,
@@ -34,7 +34,7 @@ const RESET_WARNING = {
   guest: '이 기기의 운동 기록을 삭제할까요? 되돌릴 수 없어요.',
 }
 
-// 기록을 CSV 파일로 내려받기 — 구글시트에서 파일 > 가져오기로 열 수 있음
+// 기록을 CSV 파일로 내려받기 — 구글시트의 파일 메뉴에서 가져오기로 열 수 있음
 function downloadRecordsCsv() {
   const records = getRecords()
   const rows = [['날짜', 'Day', '완료 시각', '사진']]
@@ -42,7 +42,7 @@ function downloadRecordsCsv() {
     const r = records[date]
     if (r.completed) rows.push([date, r.day || '', r.completedAt || '', r.photoUrl || ''])
   }
-  const csv = '﻿' + rows.map((r) => r.join(',')).join('\r\n') // 맨 앞 BOM: 엑셀·시트에서 한글이 깨지지 않게
+  const csv = '﻿' + rows.map((r) => r.join(',')).join('\r\n') // 맨 앞 BOM: 엑셀, 시트에서 한글이 깨지지 않게
   const link = document.createElement('a')
   link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
   link.download = `absolid-records-${todayKey()}.csv`
@@ -67,7 +67,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
     if (await promptInstall()) toast('홈 화면에 ABSolid를 추가했어요.')
   }
 
-  // 운동 기록 초기화 — 기기 기록을 지우고, 회원이면 서버 기록·인증샷도 삭제
+  // 운동 기록 초기화 — 기기 기록을 지우고, 회원이면 서버 기록, 인증샷도 삭제
   async function resetRecords() {
     if (!confirm(session ? RESET_WARNING.member : RESET_WARNING.guest)) return
     clearRecords()
@@ -98,7 +98,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
         {session && (
           <>
             <RowButton hint="그룹 멤버에게는 비공개" onClick={() => setModal('info')}>
-              이름·전화번호 변경
+              이름과 전화번호 변경
             </RowButton>
             <RowButton hint="현재 비밀번호 확인 후 변경" onClick={() => setModal('password')}>
               비밀번호 변경
@@ -115,7 +115,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
 
       {isAdmin && (
         <Card>
-          <RowButton hint="회원·그룹·신고 관리" onClick={onOpenAdmin}>
+          <RowButton hint="회원, 그룹, 신고 관리" onClick={onOpenAdmin}>
             관리자 페이지
           </RowButton>
         </Card>
@@ -153,7 +153,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           운동 기록 초기화
         </RowButton>
         {session && (
-          <RowButton danger hint="계정·데이터 영구 삭제" onClick={() => setModal('delete')}>
+          <RowButton danger hint="계정과 데이터 영구 삭제" onClick={() => setModal('delete')}>
             회원 탈퇴
           </RowButton>
         )}
@@ -166,19 +166,16 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
       )}
 
       <Sub className="mt-4 text-center">ABSolid v{__APP_VERSION__}</Sub>
-      <div className="mt-2 flex items-center justify-center gap-3 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
+      <div className="mt-2 flex items-center justify-center gap-5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
         <a className="hit" href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
           LinkedIn
         </a>
-        <span aria-hidden="true">·</span>
         <button className="hit hover:text-fg hover:underline" onClick={() => setModal('terms')}>
           이용약관
         </button>
-        <span aria-hidden="true">·</span>
         <button className="hit hover:text-fg hover:underline" onClick={() => setModal('privacy')}>
           개인정보 처리방침
         </button>
-        <span aria-hidden="true">·</span>
         <a className="hit" href="https://github.com/goneonly/ABSolid" target="_blank" rel="noreferrer">
           GitHub
         </a>
@@ -239,7 +236,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
           title="회원 탈퇴"
           text={
             <>
-              탈퇴하면 계정과 운동 기록·인증샷·그룹 정보가 <strong>모두 영구 삭제</strong>되며 되돌릴 수 없어요.
+              탈퇴하면 계정과 운동 기록, 인증샷, 그룹 정보가 <strong>모두 영구 삭제</strong>되며 되돌릴 수 없어요.
               계속하려면 비밀번호를 입력해 주세요.
             </>
           }

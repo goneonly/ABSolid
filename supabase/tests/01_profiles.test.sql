@@ -1,10 +1,10 @@
--- 회원 정보·권한 — 남의 개인정보 조회, 관리자 승격, 프로필 사진 주소 위조
+-- 회원 정보, 권한 — 남의 개인정보 조회, 관리자 승격, 프로필 사진 주소 위조
 begin;
 
 -- ── 비로그인 (publishable key 만 가진 외부인) ──
 select tests.logout();
-select tests.eq(tests.count('select * from public.profiles'), 0, '비로그인: 회원 목록(이름·전화번호) 조회 불가');
-select tests.eq(tests.count('select * from public.groups'), 0, '비로그인: 그룹·초대코드 조회 불가');
+select tests.eq(tests.count('select * from public.profiles'), 0, '비로그인: 회원 목록(이름, 전화번호) 조회 불가');
+select tests.eq(tests.count('select * from public.groups'), 0, '비로그인: 그룹, 초대코드 조회 불가');
 select tests.eq(tests.count('select * from public.group_members'), 0, '비로그인: 그룹 멤버 조회 불가');
 select tests.eq(tests.count('select * from public.workouts'), 0, '비로그인: 운동 기록 조회 불가');
 select tests.throws(format($$insert into public.profiles (id, nickname) values (%L, 'x')$$, tests.uid('E')),
@@ -15,15 +15,15 @@ select tests.affects($$update public.profiles set nickname = 'hacked'$$, 0, '비
 select tests.login('B');
 select tests.eq(tests.count('select * from public.profiles'), 1, 'B: 프로필은 본인 것만 보임');
 select tests.eq(tests.count(format('select * from public.profiles where id = %L', tests.uid('A'))), 0,
-  'B: 같은 그룹 A 의 이름·전화번호도 직접 조회 불가');
+  'B: 같은 그룹 A 의 이름, 전화번호도 직접 조회 불가');
 select tests.eq((select count(*) from public.get_group_profiles(tests.gid('응원반'))), 2::bigint,
-  'B: 그룹 화면용 함수로는 같은 그룹 멤버의 닉네임·사진만 조회');
+  'B: 그룹 화면용 함수로는 같은 그룹 멤버의 닉네임, 사진만 조회');
 select tests.ok(not exists (
     select 1 from pg_proc p, unnest(p.proargnames) a
     where p.proname = 'get_group_profiles' and a in ('full_name', 'phone')),
-  '그룹 멤버 조회 함수는 이름·전화번호 컬럼을 돌려주지 않음');
+  '그룹 멤버 조회 함수는 이름, 전화번호 컬럼을 돌려주지 않음');
 
--- 관리자 승격·비활성 해제 시도 → 오류 없이 원래 값으로 고정
+-- 관리자 승격, 비활성 해제 시도는 오류 없이 원래 값으로 고정
 select tests.affects(format($$update public.profiles set role = 'admin', is_active = false where id = %L$$, tests.uid('B')), 1,
   'B: 본인 프로필 수정 자체는 가능');
 select tests.eq((select role from public.profiles where id = tests.uid('B')), 'user', 'B: 스스로 관리자 승격 불가');
@@ -53,7 +53,7 @@ select tests.lives(format($$insert into public.profiles (id, nickname, role, is_
     on conflict (id) do update set nickname = excluded.nickname, role = excluded.role, is_active = excluded.is_active$$, tests.uid('E')),
   'E: 본인 프로필 저장 가능');
 select tests.eq((select role || '/' || is_active from public.profiles where id = tests.uid('E')), 'user/true',
-  'E: 가입 시 관리자·비활성 값은 무시되고 일반·활성으로 시작');
+  'E: 가입 시 관리자, 비활성 값은 무시되고 일반, 활성으로 시작');
 select tests.eq((select age_over_14 from public.profiles where id = tests.uid('E')), false, 'E: 연령 확인 기본값은 미확인');
 
 -- ── 관리자 M ──

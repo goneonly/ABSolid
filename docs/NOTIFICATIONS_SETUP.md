@@ -1,4 +1,4 @@
-# 알림 설정 가이드 (운동 리마인더 · 응원 알림)
+# 알림 설정 가이드 (운동 리마인더, 응원 알림)
 
 알림은 세 가지예요.
 
@@ -15,13 +15,13 @@
 모든 명령은 프로젝트 폴더의 터미널에서 실행해요. (`npx supabase login` 은 한 번 해 두었으면 생략)
 
 ### 1. DB 준비
-SQL Editor 에서 `supabase/v0.8-cheers-and-push.sql` 실행 (응원 테이블·푸시 등록 함수).
+SQL Editor 에서 `supabase/v0.8-cheers-and-push.sql` 실행 (응원 테이블, 푸시 등록 함수).
 
 ### 2. 알림 키(VAPID) 만들기
 ```bash
 npx web-push generate-vapid-keys
 ```
-`Public Key` 와 `Private Key` 가 나와요. **Private Key 는 아래 3번 시크릿에만 넣고, 코드·채팅·깃에 올리지 마세요.**
+`Public Key` 와 `Private Key` 가 나와요. **Private Key 는 아래 3번 시크릿에만 넣고, 코드, 채팅, 깃에 올리지 마세요.**
 
 ### 3. 서버 시크릿 등록
 `CRON_SECRET` 은 아무 긴 무작위 문자열이면 돼요. (예: `openssl rand -hex 32` 결과)
@@ -39,15 +39,15 @@ npx supabase functions deploy notify-cheer --project-ref pqxtzuomckmroqjjkjdq
 (`send-reminders` 는 크론이 부르므로 로그인 토큰 검사를 끄고, 함수 안에서 `CRON_SECRET` 으로 확인해요.)
 
 ### 5. 매일 저녁 자동 발송(크론) 등록
-1. Dashboard → **Database → Extensions** 에서 `pg_cron`, `pg_net` 켜기
+1. 대시보드의 **Database / Extensions** 에서 `pg_cron`, `pg_net` 켜기
 2. SQL Editor 에서 `supabase/notifications-cron.sql` 의 `<CRON_SECRET>` 을 3번 값으로 바꿔 실행
 
 ### 6. 앱에 공개키 연결
-Vercel → Project → Settings → **Environment Variables** 에 `VITE_VAPID_PUBLIC_KEY` = 2번의 Public Key 추가 → **Redeploy**.
-이 값이 있어야 설정 화면에 "알림 (리마인더·응원)" 항목이 나타나요.
+Vercel 의 **Project / Settings / Environment Variables** 에 `VITE_VAPID_PUBLIC_KEY` = 2번의 Public Key 를 추가하고 **Redeploy**.
+이 값이 있어야 설정 화면에 "알림 (리마인더, 응원)" 항목이 나타나요.
 
 ## 확인
-- 앱 설정에서 알림 켜기 → 다른 계정으로 같은 그룹에서 응원 보내기 → 알림 도착
+- 앱 설정에서 알림을 켜고, 다른 계정으로 같은 그룹에서 응원을 보내면 알림이 도착
 - 리마인더 수동 실행 (크론 기다리지 않고):
   ```bash
   curl -X POST https://pqxtzuomckmroqjjkjdq.supabase.co/functions/v1/send-reminders -H "x-cron-secret: 무작위문자열"
@@ -56,6 +56,6 @@ Vercel → Project → Settings → **Environment Variables** 에 `VITE_VAPID_PU
 - 크론 실행 기록: SQL Editor 에서 `select * from cron.job_run_details order by start_time desc limit 5;`
 
 ## 문제 해결
-- 설정에 알림 항목이 안 보임 → 6번(Vercel 환경 변수 + 재배포) 확인, 아이폰은 홈 화면 앱으로 열었는지 확인
-- 알림 켜기에서 "알림 등록에 실패" → 1번 SQL 실행 여부 확인
-- 알림이 안 옴 → 3·4번 확인, 브라우저/OS 알림 권한 확인
+- 설정에 알림 항목이 안 보임: 6번(Vercel 환경 변수 + 재배포) 확인, 아이폰은 홈 화면 앱으로 열었는지 확인
+- 알림 켜기에서 "알림 등록에 실패": 1번 SQL 실행 여부 확인
+- 알림이 안 옴: 3번과 4번 확인, 브라우저/OS 알림 권한 확인

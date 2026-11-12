@@ -13,7 +13,7 @@ const KEYS = {
   theme: 'absolid-theme', // 'system' | 'light' (없으면 기본값 다크)
 }
 
-// 단순 값 읽기·쓰기 (프라이빗 모드 등에서 localStorage 접근이 실패해도 앱이 죽지 않게)
+// 단순 값 읽기, 쓰기 (프라이빗 모드 등에서 localStorage 접근이 실패해도 앱이 죽지 않게)
 function read(key) {
   try {
     return localStorage.getItem(key)
@@ -35,7 +35,7 @@ function remove(key) {
     /* noop */
   }
 }
-// JSON 값 읽기·쓰기 (없거나 깨진 값이면 fallback)
+// JSON 값 읽기, 쓰기 (없거나 깨진 값이면 fallback)
 function readJson(key, fallback) {
   try {
     return JSON.parse(localStorage.getItem(key)) || fallback
@@ -54,7 +54,7 @@ export function todayKey(d = new Date()) {
   return `${y}-${m}-${day}`
 }
 
-// 오늘 날짜의 "일" 기준 운동 Day 번호 (31일 → day 30)
+// 오늘 날짜의 "일" 기준 운동 Day 번호 (31일은 day 30)
 export function todayWorkoutDay(d = new Date()) {
   return Math.min(d.getDate(), 30)
 }
@@ -100,7 +100,7 @@ export function clearAllAppData() {
 export const isGuestChosen = () => read(KEYS.guest) === '1'
 export const setGuestChosen = (on) => (on ? write(KEYS.guest, '1') : remove(KEYS.guest))
 
-// 가입 직후 온보딩 팝업 (가입 요청 전에 pending → 팝업을 닫으면 done)
+// 가입 직후 온보딩 팝업 (가입 요청 전에 pending, 팝업을 닫으면 done)
 export const isOnboardingPending = () => read(KEYS.onboarding) === 'pending'
 export const markOnboardingPending = () => write(KEYS.onboarding, 'pending')
 export const markOnboardingDone = () => write(KEYS.onboarding, 'done')
@@ -167,7 +167,7 @@ export function lastNDays(n, records = getRecords()) {
   return out
 }
 
-// ── 내 프로필 (닉네임·프로필 사진) ─────────────
+// ── 내 프로필 (닉네임, 프로필 사진) ─────────────
 export function getProfile() {
   return readJson(KEYS.profile, { nickname: '' })
 }

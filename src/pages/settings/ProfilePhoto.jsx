@@ -1,9 +1,9 @@
 // 설정 상단의 프로필 사진 + 닉네임
-// 회원: 사진이 없으면 누르면 바로 고르기 / 있으면 교체·삭제 선택지. 비회원: 기본 아이콘 고정
+// 회원: 사진이 없으면 누르면 바로 고르기 / 있으면 교체, 삭제 선택지. 비회원: 기본 아이콘 고정
 import { useEffect, useRef, useState } from 'react'
-import { getProfile, saveProfile } from '../../storage.js'
-import { uploadAvatar, deleteAvatar, fetchMyAvatarUrl } from '../../api.js'
-import { toast } from '../../toast.js'
+import { getProfile, saveProfile } from '../../lib/storage.js'
+import { uploadAvatar, deleteAvatar, fetchMyAvatarUrl } from '../../server/api.js'
+import { toast } from '../../lib/toast.js'
 import { CameraBadge, PhotoActionSheet, readPickedImage } from '../../components/PhotoPicker.jsx'
 import { DefaultAvatar } from '../../components/ui.jsx'
 

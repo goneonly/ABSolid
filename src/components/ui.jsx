@@ -1,6 +1,6 @@
 // 공통 UI 컴포넌트 — 반복되는 Tailwind 클래스 조합을 한 곳에서 관리
 import { extendTailwindMerge } from 'tailwind-merge'
-import { easterEggAvatar } from '../easterEggs.js'
+import { easterEggAvatar } from '../lib/easterEggs.js'
 
 // 클래스 합치기 — 뒤에 온 클래스가 같은 속성의 앞 클래스를 덮어씀
 // (index.css @theme에 추가한 커스텀 폰트 크기를 알려줘야 색상 클래스와 구분됨)
@@ -106,7 +106,7 @@ export function LinkButton({ className, ...props }) {
   return <button className={cx('hit text-xs text-dim disabled:opacity-50', className)} {...props} />
 }
 
-// 홈 상단 공지·리마인더 배너 — 빨강은 주요 버튼·달성 표시에 아껴 두고 배너는 중립색
+// 홈 상단 공지, 리마인더 배너 — 빨강은 주요 버튼, 달성 표시에 아껴 두고 배너는 중립색
 export function Banner({ className, ...props }) {
   return (
     <div
@@ -190,7 +190,7 @@ export function ModalText({ className, ...props }) {
 }
 
 // ── 아바타 ───────────────────────────────────
-export function PersonIcon({ className }) {
+function PersonIcon({ className }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4.2 0-8 2.2-8 5.4V21h16v-1.6c0-3.2-3.8-5.4-8-5.4Z" />
@@ -205,7 +205,7 @@ export function DefaultAvatar({ nickname, iconClassName }) {
   return <PersonIcon className={iconClassName} />
 }
 
-// 그룹·리더보드용 작은 원형 아바타 (active면 빨간 테두리)
+// 그룹, 리더보드용 작은 원형 아바타 (active면 빨간 테두리)
 export function MemberAvatar({ name, avatar, active, className }) {
   return (
     <span
@@ -269,8 +269,17 @@ export function CloseIcon({ className = 'size-[1em]' }) {
   )
 }
 
-// 순위·횟수 변동 화살표 (up=true 위, false 아래)
-export function TrendIcon({ up, className = 'size-[0.8em]' }) {
+// 목록 줄의 '더 보기'(오른쪽)와 '뒤로'(왼쪽) 꺾쇠
+export function ChevronIcon({ left, className = 'size-5' }) {
+  return (
+    <svg className={cx('flex-none', className)} viewBox="0 0 24 24" {...STROKE} strokeWidth={2}>
+      <path d={left ? 'm15 6-6 6 6 6' : 'm9 6 6 6-6 6'} />
+    </svg>
+  )
+}
+
+// 순위, 횟수 변동 화살표 (up=true 위, false 아래)
+function TrendIcon({ up, className = 'size-[0.8em]' }) {
   return (
     <svg className={cx('inline-block align-[-0.05em]', className)} viewBox="0 0 12 12" aria-hidden="true">
       <path d={up ? 'M6 2 11 10H1Z' : 'M6 10 1 2h10Z'} fill="currentColor" />
@@ -292,7 +301,7 @@ export function Trend({ delta, className }) {
   )
 }
 
-// ── 로딩·빈 화면 ─────────────────────────────
+// ── 로딩, 빈 화면 ─────────────────────────────
 // 불러오는 동안 보여줄 회색 자리표시 (lines 줄 수만큼, inCard 면 카드 안의 목록 줄 모양)
 export function Skeleton({ lines = 3, inCard, className }) {
   return (

@@ -1,13 +1,13 @@
-// 기록 통계 계산 — 리더보드 순위·기간, 주간 리포트 요약 (화면과 분리한 순수 함수)
+// 기록 통계 계산 — 리더보드 순위, 기간, 주간 리포트 요약 (화면과 분리한 순수 함수)
 import { todayKey, computeStreak, lastNDays } from './storage.js'
 
-// 'YYYY-MM-DD' → 그 날짜 자정(기기 시간대)
-export function parseKey(key) {
+// 'YYYY-MM-DD' 를 그 날짜 자정(기기 시간대)으로
+function parseKey(key) {
   const [y, m, d] = key.split('-').map(Number)
   return new Date(y, m - 1, d)
 }
 
-// 'YYYY-MM-DD' → 'MM.DD' (화면 표시용)
+// 'YYYY-MM-DD' 를 'MM.DD' 로 (화면 표시용)
 export const shortDate = (key) => key.slice(5).replace('-', '.')
 
 // 날짜 키 범위의 일수 (양 끝 포함)
@@ -25,7 +25,7 @@ export function mondayOf(d) {
 }
 
 // start 부터 n일의 날짜 키
-export function keysFrom(start, n) {
+function keysFrom(start, n) {
   const out = []
   const d = new Date(start)
   for (let i = 0; i < n; i++) {
@@ -36,7 +36,7 @@ export function keysFrom(start, n) {
 }
 
 // ── 리더보드 ─────────────────────────────────
-// 기간 → [시작키, 끝키] (week: 이번 주 월요일~오늘, month: 1일~오늘, 30d: 최근 30일, custom: 직접 설정)
+// 기간의 [시작키, 끝키] (week: 이번 주 월요일~오늘, month: 1일~오늘, 30d: 최근 30일, custom: 직접 설정)
 export function getRange(period, customStart, customEnd, today = new Date()) {
   const end = todayKey(today)
   const daysAgo = (n) => {
@@ -47,7 +47,7 @@ export function getRange(period, customStart, customEnd, today = new Date()) {
   if (period === 'week') return [todayKey(mondayOf(today)), end]
   if (period === 'month') return [`${end.slice(0, 8)}01`, end]
   if (period === '30d') return [daysAgo(29), end]
-  // custom: 비워 두면 최근 7일, 시작·끝이 뒤바뀌면 바로잡음
+  // custom: 비워 두면 최근 7일, 시작, 끝이 뒤바뀌면 바로잡음
   const a = customStart || daysAgo(6)
   const b = customEnd || end
   return a <= b ? [a, b] : [b, a]
@@ -63,7 +63,7 @@ export function getPrevRange(startKey, endKey) {
   return [todayKey(ps), todayKey(pe)]
 }
 
-// 인증 횟수 → 순위 (동점은 같은 순위, 같은 횟수면 이름순)
+// 인증 횟수로 순위 매기기 (동점은 같은 순위, 같은 횟수면 이름순)
 // dateSets: { memberId: ['YYYY-MM-DD', …] } / 내 기록은 로컬 기록으로 보충 (서버 동기화 지연 대비)
 export function rankRows(members, dateSets, myId, records, startKey, endKey) {
   const rows = members.map((m) => {
@@ -121,7 +121,7 @@ export function weeklySummary(records, now = new Date()) {
   }
 }
 
-// 연속 기록·프로그램 진행에 맞춘 축하 문구 (운동 완료 = 앱에서 가장 기억에 남을 순간)
+// 연속 기록, 프로그램 진행에 맞춘 축하 문구 (운동 완료 = 앱에서 가장 기억에 남을 순간)
 const STREAK_MILESTONES = {
   3: '3일 연속! 좋은 출발이에요.',
   7: '일주일 연속 달성! 습관이 되고 있어요.',

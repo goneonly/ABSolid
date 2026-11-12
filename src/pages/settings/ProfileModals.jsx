@@ -1,11 +1,11 @@
-// 설정 > 내 프로필의 변경 모달 3종: 닉네임 / 이름·전화번호 / 비밀번호
+// 설정의 내 프로필 변경 모달 3종: 닉네임 / 이름, 전화번호 / 비밀번호
 import { useEffect, useState } from 'react'
-import { getProfile, saveProfile } from '../../storage.js'
-import { updatePassword } from '../../auth.js'
-import { saveNickname, fetchMyProfileInfo, updateMyProfileInfo } from '../../api.js'
-import { INVALID_CREDENTIALS } from '../../authErrors.js'
-import { validateNickname, validateName, validatePhone, formatPhone, validatePassword } from '../../validation.js'
-import { toast } from '../../toast.js'
+import { getProfile, saveProfile } from '../../lib/storage.js'
+import { updatePassword } from '../../server/auth.js'
+import { saveNickname, fetchMyProfileInfo, updateMyProfileInfo } from '../../server/api.js'
+import { INVALID_CREDENTIALS } from '../../server/authErrors.js'
+import { validateNickname, validateName, validatePhone, formatPhone, validatePassword } from '../../lib/validation.js'
+import { toast } from '../../lib/toast.js'
 import { Button, Field, Modal, ModalText, ModalTitle, Sub, cx } from '../../components/ui.jsx'
 import { usePasswordCheck } from './PasswordConfirm.jsx'
 
@@ -35,7 +35,7 @@ export function NicknameModal({ session, initial, onSaved, onClose }) {
       <ModalText>그룹에서 다른 멤버에게 보이는 이름이에요.</ModalText>
       <Field
         id="nick"
-        label="닉네임 (2~12자, 한글·영문·숫자·_)"
+        label="닉네임 (2~12자, 한글, 영문, 숫자, _)"
         className="mt-3"
         autoFocus
         value={value}
@@ -60,7 +60,7 @@ export function NicknameModal({ session, initial, onSaved, onClose }) {
   )
 }
 
-// ── 이름·전화번호 변경 (가입 때 입력한 값 — '회원만 받기' 그룹 참여 조건) ──
+// ── 이름, 전화번호 변경 (가입 때 입력한 값 — '회원만 받기' 그룹 참여 조건) ──
 export function ProfileInfoModal({ onClose }) {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -95,7 +95,7 @@ export function ProfileInfoModal({ onClose }) {
     setBusy(true)
     try {
       await updateMyProfileInfo({ fullName: fullName.trim(), phone: phone ? formatPhone(phone) : '' })
-      toast('이름·전화번호를 저장했어요.')
+      toast('이름과 전화번호를 저장했어요.')
       onClose()
     } catch (e) {
       setErrors({ phone: e.message })
@@ -104,8 +104,8 @@ export function ProfileInfoModal({ onClose }) {
   }
 
   return (
-    <Modal label="이름·전화번호 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>이름·전화번호 변경</ModalTitle>
+    <Modal label="이름과 전화번호 변경" onBackdrop={busy ? undefined : onClose}>
+      <ModalTitle>이름과 전화번호 변경</ModalTitle>
       <ModalText>그룹 멤버에게는 보이지 않아요. '회원만 받기' 그룹에 참여하려면 둘 다 필요해요.</ModalText>
       {!loaded ? (
         <Sub className={cx('mt-4 text-center', loadError && 'text-danger')}>{loadError || '불러오는 중…'}</Sub>

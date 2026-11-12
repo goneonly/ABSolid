@@ -1,4 +1,4 @@
-# 렌더된 PNG 프레임 → H.264 MP4 (Blender 내장 FFmpeg 사용, 별도 설치 불필요)
+# 렌더된 PNG 프레임을 H.264 MP4 로 (Blender 내장 FFmpeg 사용, 별도 설치 불필요)
 # 실행: Blender -b --factory-startup --python encode.py -- <frames_dir> <out.mp4> [fps] [width]
 import bpy, sys, os
 

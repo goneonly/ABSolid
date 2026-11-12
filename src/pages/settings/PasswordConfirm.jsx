@@ -1,11 +1,11 @@
-// 본인 확인 — 되돌릴 수 없는 작업(기록 초기화·탈퇴·비밀번호 변경) 전에 비밀번호를 다시 확인
+// 본인 확인 — 되돌릴 수 없는 작업(기록 초기화, 탈퇴, 비밀번호 변경) 전에 비밀번호를 다시 확인
 import { useState } from 'react'
-import { signIn } from '../../auth.js'
+import { signIn } from '../../server/auth.js'
 import { useCaptcha, CAPTCHA_WAIT } from '../../components/Captcha.jsx'
 import { Button, Field, Modal, ModalText, ModalTitle } from '../../components/ui.jsx'
 
 // 비밀번호가 맞는지 다시 로그인해서 확인 (서버 캡차가 켜져 있으면 확인란 토큰도 필요)
-// 사용: const pwCheck = usePasswordCheck(email) → 폼 안에 {pwCheck.widget}, 제출 때 await pwCheck.check(비밀번호)
+// 사용: const pwCheck = usePasswordCheck(email) 후 폼 안에 {pwCheck.widget}, 제출 때 await pwCheck.check(비밀번호)
 // check 반환: '' = 맞음 / 그 외 = 사용자에게 보여줄 오류 문구
 export function usePasswordCheck(email) {
   const captcha = useCaptcha()

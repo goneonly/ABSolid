@@ -1,9 +1,9 @@
 import { Suspense, lazy, useState } from 'react'
-import { signIn, signUp, sendPasswordReset, resendSignupEmail, isDisposableEmail } from '../auth.js'
-import { EMAIL_NOT_CONFIRMED } from '../authErrors.js'
-import { getProfile, markOnboardingPending, cancelOnboarding } from '../storage.js'
-import { validateEmail, validateName, validatePhone, formatPhone, validatePassword } from '../validation.js'
-import { TERMS_VERSION } from '../terms.js'
+import { signIn, signUp, sendPasswordReset, resendSignupEmail, isDisposableEmail } from '../server/auth.js'
+import { EMAIL_NOT_CONFIRMED } from '../server/authErrors.js'
+import { getProfile, markOnboardingPending, cancelOnboarding } from '../lib/storage.js'
+import { validateEmail, validateName, validatePhone, formatPhone, validatePassword } from '../lib/validation.js'
+import { TERMS_VERSION } from '../lib/terms.js'
 
 // 약관 본문은 길어서 열 때만 받아 옴 (로그인 화면을 빨리 띄우기 위해)
 const PrivacyModal = lazy(() => import('../components/LegalModals.jsx').then((m) => ({ default: m.PrivacyModal })))
@@ -12,7 +12,7 @@ import { Button, Field, FieldError, LinkButton, Logo, Sub } from '../components/
 import { useCaptcha, CAPTCHA_WAIT } from '../components/Captcha.jsx'
 
 // 앱 첫 화면 — 로그인 / 회원가입 / 비회원으로 시작
-// 로그인(또는 즉시 세션이 생기는 가입)에 성공하면 onDone → App이 메인 화면으로 전환
+// 로그인(또는 즉시 세션이 생기는 가입)에 성공하면 onDone 을 불러 App 이 메인 화면으로 전환
 const CHECKBOX = 'size-4 flex-none accent-brand'
 
 export default function Login({ onDone, onGuest }) {
@@ -28,9 +28,9 @@ export default function Login({ onDone, onGuest }) {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [resetBusy, setResetBusy] = useState(false)
-  const [canResend, setCanResend] = useState(false) // 가입 직후·미인증 로그인 시 '인증 메일 다시 보내기' 노출
+  const [canResend, setCanResend] = useState(false) // 가입 직후, 미인증 로그인 시 '인증 메일 다시 보내기' 노출
   const [resendBusy, setResendBusy] = useState(false)
-  const captcha = useCaptcha() // 로그인·가입·메일 요청 모두 같은 확인란 사용 (토큰은 요청마다 새로)
+  const captcha = useCaptcha() // 로그인, 가입, 메일 요청 모두 같은 확인란 사용 (토큰은 요청마다 새로)
   const [showPrivacy, setShowPrivacy] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
   const allAgreed = agreed.age && agreed.terms && agreed.privacy
@@ -63,7 +63,7 @@ export default function Login({ onDone, onGuest }) {
     return !Object.values(errs).some(Boolean)
   }
 
-  // 캡차 토큰이 필요한 요청 공통 처리: 확인란 통과 여부 확인 → 요청 → 토큰 새로 받기(토큰은 1회용)
+  // 캡차 토큰이 필요한 요청 공통 처리: 확인란 통과 여부 확인, 요청, 토큰 새로 받기(토큰은 1회용) 순서
   // 확인란이 아직 준비되지 않았으면 안내만 띄우고 null 반환
   async function withCaptcha(request) {
     if (!captcha.ready) {
@@ -251,7 +251,7 @@ export default function Login({ onDone, onGuest }) {
             {[
               ['age', '(필수) 만 14세 이상입니다'],
               ['terms', '(필수) 이용약관 동의', () => setShowTerms(true)],
-              ['privacy', '(필수) 개인정보 수집·이용 및 국외 이전 동의', () => setShowPrivacy(true)],
+              ['privacy', '(필수) 개인정보 수집, 이용 및 국외 이전 동의', () => setShowPrivacy(true)],
             ].map(([key, label, onView]) => (
               <div key={key} className="mt-3 flex items-center gap-2 text-sm">
                 <label className="flex flex-1 cursor-pointer items-center gap-2">

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Modal, ModalText, ModalTitle, cx } from './ui.jsx'
+import { Modal, ModalText, ModalTitle, cx, ChevronIcon } from './ui.jsx'
 
 const ONB_BTN = 'rounded-md border px-6 py-3 text-sm font-bold active:scale-[.97]'
 
@@ -70,7 +70,7 @@ export default function OnboardingModal({ onClose }) {
       <strong className="mt-4 block text-center text-base font-bold">{slide.title}</strong>
       <p className="mt-2 min-h-10 text-center text-sm text-dim">{slide.desc}</p>
 
-      {/* 하단(엄지 영역): 왼쪽 '이전'은 보조 동작이라 테두리 없는 글자 버튼, 오른쪽 '다음·확인'이 주요 동작 */}
+      {/* 하단(엄지 영역): 왼쪽 '이전'은 보조 동작이라 테두리 없는 글자 버튼, 오른쪽 '다음, 확인'이 주요 동작 */}
       <div className="mt-5 flex items-center justify-between">
         <button
           className={cx(
@@ -81,18 +81,7 @@ export default function OnboardingModal({ onClose }) {
           disabled={i === 0}
           aria-label="이전 소개 보기"
         >
-          <svg
-            className="size-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="m15 6-6 6 6 6" />
-          </svg>
+          <ChevronIcon left className="size-4" />
           이전
         </button>
         {last ? (

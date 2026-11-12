@@ -81,7 +81,7 @@ describe('기록 저장', () => {
     expect(Object.keys(getRecords())).toEqual(['2026-10-13'])
   })
   it('오래된 로컬 사진만 지우고 완료 기록은 남긴다 (최근 7일 유지)', () => {
-    at(KST_AFTER_MIDNIGHT) // 10-15 → 10-09 부터 유지
+    at(KST_AFTER_MIDNIGHT) // 10-15 기준 10-09 부터 유지
     saveRecord('2026-10-08', { completed: true, photo: 'old' })
     saveRecord('2026-10-09', { completed: true, photo: 'keep' })
     cleanupLocalPhotos()
@@ -142,7 +142,7 @@ describe('기기 플래그', () => {
     setGuestChosen(false)
     expect(isGuestChosen()).toBe(false)
   })
-  it('온보딩: pending → done', () => {
+  it('온보딩: pending 다음 done', () => {
     markOnboardingPending()
     expect(isOnboardingPending()).toBe(true)
     markOnboardingDone()
@@ -153,7 +153,7 @@ describe('기기 플래그', () => {
     markPushConsentAsked()
     expect(isPushConsentAsked()).toBe(true)
   })
-  it('리마인더 닫기·서버 정리는 한국 시간 자정이 지나면 다시 필요해진다', () => {
+  it('리마인더 닫기, 서버 정리는 한국 시간 자정이 지나면 다시 필요해진다', () => {
     at(KST_BEFORE_MIDNIGHT)
     dismissReminderToday()
     markServerCleanupDone()

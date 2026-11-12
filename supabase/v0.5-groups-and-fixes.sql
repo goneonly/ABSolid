@@ -6,17 +6,17 @@
 -- 포함:
 --   1) 역할 보호 트리거 — SQL Editor(서비스 권한)에서 관리자 지정이 되돌려지던 문제 수정
 --   2) 그룹 사진 — groups.photo_url + group-photos 버킷 + 그룹장 전용 변경 함수
---   3) 그룹 생성·참여·나가기 RPC — 여러 그룹 참여 허용, 생성 원자화, 그룹장 자동 위임
---   4) group_members/groups 직접 쓰기 차단 — 정원·회원제한을 우회한 직접 가입 방지
---   5) 인증샷 조회 권한 — 본인·같은 그룹 멤버·관리자만
+--   3) 그룹 생성, 참여, 나가기 RPC — 여러 그룹 참여 허용, 생성 원자화, 그룹장 자동 위임
+--   4) group_members/groups 직접 쓰기 차단 — 정원, 회원제한을 우회한 직접 가입 방지
+--   5) 인증샷 조회 권한 — 본인, 같은 그룹 멤버, 관리자만
 --   6) 관리자 통계 — '오늘'을 한국 시간 기준으로
 
 -- ══════════════════════════════════════════════
 -- 1) 역할 보호 트리거
 -- ══════════════════════════════════════════════
--- 문제: SQL Editor 에서는 auth.uid() 가 없어 is_admin() 이 false →
+-- 문제: SQL Editor 에서는 auth.uid() 가 없어 is_admin() 이 false 라서
 --       update profiles set role='admin' 이 오류 없이 원래 값으로 되돌려졌음.
--- 해결: auth.uid() 가 없는 호출(SQL Editor·service_role)은 신뢰된 운영자 작업으로 보고 허용.
+-- 해결: auth.uid() 가 없는 호출(SQL Editor, service_role)은 신뢰된 운영자 작업으로 보고 허용.
 --       (anon 키로는 RLS 때문에 profiles 를 수정할 수 없음)
 create or replace function public.protect_profile_privileges()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -29,12 +29,12 @@ begin
   ) into is_special;
 
   if tg_op = 'INSERT' then
-    -- 신규 가입은 항상 일반·활성으로 시작 (admin 으로 위장한 insert 차단)
+    -- 신규 가입은 항상 일반, 활성으로 시작 (admin 으로 위장한 insert 차단)
     new.role := case when is_special then 'admin' else 'user' end;
     new.is_active := true;
   else -- UPDATE
     if auth.uid() is null or public.is_admin() then
-      null;                       -- 운영자(SQL Editor)·관리자는 자유롭게 변경
+      null;                       -- 운영자(SQL Editor), 관리자는 자유롭게 변경
     elsif is_special then
       new.role := 'admin';        -- 지정 이메일은 admin 유지
       new.is_active := old.is_active;
@@ -60,7 +60,7 @@ returns boolean language sql stable security definer set search_path = public as
   );
 $$;
 
--- 그룹 사진 버킷: 공개 조회(프로필 사진과 같은 수준), 업로드·교체·삭제는 그룹장만
+-- 그룹 사진 버킷: 공개 조회(프로필 사진과 같은 수준), 업로드, 교체, 삭제는 그룹장만
 insert into storage.buckets (id, name, public)
 values ('group-photos', 'group-photos', true)
 on conflict (id) do nothing;
@@ -92,7 +92,7 @@ begin
 end $$;
 
 -- ══════════════════════════════════════════════
--- 3) 그룹 생성·참여·나가기
+-- 3) 그룹 생성, 참여, 나가기
 -- ══════════════════════════════════════════════
 -- 생성: 그룹 + 그룹장 멤버십을 한 트랜잭션으로 (중간 실패 시 빈 그룹이 남지 않음)
 create or replace function public.create_group(p_name text, p_max_members int, p_members_only boolean)
@@ -132,7 +132,7 @@ begin
   return next g;
 end $$;
 
--- 참여: 정원·회원제한 확인을 원자적으로 (여러 그룹 참여 허용)
+-- 참여: 정원, 회원제한 확인을 원자적으로 (여러 그룹 참여 허용)
 create or replace function public.join_group(code text)
 returns table(id uuid, name text, invite_code text, max_members int, members_only boolean)
 language plpgsql security definer set search_path = public as $$
@@ -147,7 +147,7 @@ declare
 begin
   if uid is null then raise exception '로그인이 필요해요.'; end if;
 
-  -- 그룹 행을 잠근 채 조회 → 동시 참여 경합 방지
+  -- 그룹 행을 잠근 채 조회해 동시 참여 경합 방지
   select * into g from public.groups gr where gr.invite_code = upper(btrim(code)) for update;
   if g.id is null then raise exception '초대 코드를 찾을 수 없어요. 다시 확인해 주세요.'; end if;
 
@@ -162,11 +162,11 @@ begin
     raise exception '이 그룹은 정원(%명)이 가득 찼어요.', g.max_members;
   end if;
 
-  -- 회원만 받기: 이름·전화번호 등록 필수
+  -- 회원만 받기: 이름, 전화번호 등록 필수
   if g.members_only then
     select * into me from public.profiles p where p.id = uid;
     if coalesce(me.full_name, '') = '' or coalesce(me.phone, '') = '' then
-      raise exception '이 그룹은 이름·전화번호를 등록한 회원만 참여할 수 있어요. 설정에서 회원가입을 완료해 주세요.';
+      raise exception '이 그룹은 이름과 전화번호를 등록한 회원만 참여할 수 있어요. 설정에서 회원가입을 완료해 주세요.';
     end if;
   end if;
 
@@ -216,7 +216,7 @@ begin
 end $$;
 
 -- 회원 탈퇴용(delete-account 엣지 함수, service_role 전용):
--- 탈퇴자의 모든 그룹에서 빠지면서 그룹장 위임 → 삭제된 그룹 id 반환(그룹 사진 정리용)
+-- 탈퇴자의 모든 그룹에서 빠지면서 그룹장 위임, 삭제된 그룹 id 반환(그룹 사진 정리용)
 create or replace function public.handoff_user_groups(p_uid uuid)
 returns setof uuid language plpgsql security definer set search_path = public as $$
 declare r record;
@@ -237,15 +237,15 @@ revoke all on function public.handoff_user_groups(uuid) from public, anon, authe
 grant execute on function public.handoff_user_groups(uuid) to service_role;
 
 -- ══════════════════════════════════════════════
--- 4) 직접 쓰기 차단 — 생성·참여·나가기는 위 함수로만
+-- 4) 직접 쓰기 차단 — 생성, 참여, 나가기는 위 함수로만
 -- ══════════════════════════════════════════════
--- 문제: "본인 참여" 정책으로 API 직접 호출 시 정원·회원제한 검사를 건너뛰고 가입 가능했음.
+-- 문제: "본인 참여" 정책으로 API 직접 호출 시 정원, 회원제한 검사를 건너뛰고 가입 가능했음.
 drop policy if exists "members: 본인 참여" on public.group_members;
 drop policy if exists "members: 본인 탈퇴" on public.group_members;     -- 그룹장 위임을 거치도록
 drop policy if exists "groups: 로그인 사용자 생성" on public.groups;    -- 멤버 없는 그룹 생성 방지
 
 -- ══════════════════════════════════════════════
--- 5) 인증샷 조회 권한 — 본인·같은 그룹 멤버·관리자만
+-- 5) 인증샷 조회 권한 — 본인, 같은 그룹 멤버, 관리자만
 -- ══════════════════════════════════════════════
 -- 문제: "인증된 사용자 조회" 정책으로 로그인한 누구나 모든 회원의 인증샷을 열람 가능했음.
 create or replace function public.shares_group_with(p_user text)
@@ -260,8 +260,8 @@ $$;
 
 drop policy if exists "photos: 누구나 조회" on storage.objects;
 drop policy if exists "photos: 인증된 사용자 조회" on storage.objects;
-drop policy if exists "photos: 본인·그룹·관리자 조회" on storage.objects;
-create policy "photos: 본인·그룹·관리자 조회" on storage.objects
+drop policy if exists "photos: 본인, 그룹, 관리자 조회" on storage.objects;
+create policy "photos: 본인, 그룹, 관리자 조회" on storage.objects
   for select using (
     bucket_id = 'photos' and (
       (storage.foldername(name))[1] = auth.uid()::text

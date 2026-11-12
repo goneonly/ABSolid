@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# DB 보안 테스트 — supabase/*.sql 을 빈 Postgres 에 실행 순서대로 적용한 뒤 tests/*.test.sql 로 공격·권한을 검증
+# DB 보안 테스트 — supabase/*.sql 을 빈 Postgres 에 실행 순서대로 적용한 뒤 tests/*.test.sql 로 공격, 권한을 검증
 #
 # 사용: npm run test:db
 #   - PGHOST 가 설정돼 있으면 그 서버를 사용 (CI 의 Postgres 서비스)
-#   - 없으면 임시 로컬 Postgres 를 띄웠다가 끝나면 지움 (initdb·pg_ctl·psql 필요, 예: brew install postgresql@16)
+#   - 없으면 임시 로컬 Postgres 를 띄웠다가 끝나면 지움 (initdb, pg_ctl, psql 필요, 예: brew install postgresql@16)
 #
 # 두 가지 설치 상태를 모두 검증:
 #   처음 설치 — 모든 SQL 을 한 번씩
@@ -21,7 +21,7 @@ MIGRATIONS=(
   v0.5-groups-and-fixes v0.6-security v0.7-workout-verify-and-consent v0.8-cheers-and-push
   v0.9-user-blocks v0.10-signup-profile v0.11-abuse-limits
 )
-FIRST_RERUNNABLE=3 # schema·storage·avatars 는 최초 1회용 (재실행 시 정책 중복 오류)
+FIRST_RERUNNABLE=3 # schema, storage, avatars 는 최초 1회용 (재실행 시 정책 중복 오류)
 
 # ── Postgres 준비 ──
 if [ -z "${PGHOST:-}" ]; then
@@ -39,7 +39,7 @@ export PGUSER="${PGUSER:-postgres}"
 
 psql_q() { PGOPTIONS='-c client_min_messages=warning' psql -X -q -v ON_ERROR_STOP=1 "$@"; }
 
-# 실패 시 해당 출력에서 원인만 보여 주고 종료 ('psql:경로:41: ERROR:  FAIL: …' → '41행: …')
+# 실패 시 해당 출력에서 원인만 보여 주고 종료 ('psql:경로:41: ERROR:  FAIL: …' 을 '41행: …' 로)
 fail() {
   echo "❌ $1"
   grep -E "ERROR|FATAL" "$2" | head -5 | sed -E 's/^psql:[^:]*:([0-9]+): (ERROR|FATAL): +(FAIL: )?/   \1행: /'
@@ -64,7 +64,7 @@ run_suite() { # $1 = 데이터베이스 이름, $2 = 재실행 여부
       || fail "적용 실패: ${f#"$SQL_DIR"/}" "$log"
   done
 
-  # 테스트 (각 파일은 끝에서 rollback → 서로 영향 없음)
+  # 테스트 (각 파일은 끝에서 rollback 해서 서로 영향 없음)
   local n
   for t in "$TESTS_DIR"/*.test.sql; do
     PGOPTIONS='-c client_min_messages=notice' psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$t" >"$log" 2>&1 \

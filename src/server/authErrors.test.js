@@ -3,7 +3,7 @@ import { authErrorMessage, INVALID_CREDENTIALS, NETWORK_ERROR } from './authErro
 
 const UNKNOWN = '일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'
 
-describe('인증 오류 → 한국어 메시지', () => {
+describe('인증 오류를 한국어 메시지로', () => {
   it('오류 코드로 먼저 판단한다 (영문 문장이 바뀌어도 동작)', () => {
     expect(authErrorMessage({ code: 'invalid_credentials', message: 'something new' })).toBe(INVALID_CREDENTIALS)
     expect(authErrorMessage({ code: 'email_not_confirmed' })).toContain('이메일 인증')
@@ -32,7 +32,7 @@ describe('인증 오류 → 한국어 메시지', () => {
     expect(authErrorMessage({ message: 'User already registered' })).toBe('이미 가입된 이메일이에요.')
   })
 
-  it('알 수 없는 오류·빈 값은 일반 안내 (영문 원문을 그대로 보여주지 않음)', () => {
+  it('알 수 없는 오류, 빈 값은 일반 안내 (영문 원문을 그대로 보여주지 않음)', () => {
     expect(authErrorMessage({ code: 'unexpected_failure', message: 'Database error' })).toBe(UNKNOWN)
     expect(authErrorMessage(null)).toBe(UNKNOWN)
     expect(authErrorMessage(undefined)).toBe(UNKNOWN)
@@ -40,10 +40,10 @@ describe('인증 오류 → 한국어 메시지', () => {
 })
 
 describe('가입 정보 검증 실패 (v0.10 가입 트리거)', () => {
-  it('인증 서버의 저장 실패 응답을 이름·전화번호 확인 안내로 바꾼다', () => {
+  it('인증 서버의 저장 실패 응답을 이름, 전화번호 확인 안내로 바꾼다', () => {
     expect(
       authErrorMessage({ code: 'unexpected_failure', status: 500, message: 'Database error saving new user' }),
-    ).toContain('이름·전화번호')
+    ).toContain('이름, 전화번호')
   })
 })
 

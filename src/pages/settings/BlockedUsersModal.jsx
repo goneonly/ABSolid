@@ -1,7 +1,7 @@
-// 설정 > 차단한 사용자 — 목록 확인과 차단 해제
+// 설정의 차단한 사용자 — 목록 확인과 차단 해제
 import { useEffect, useState } from 'react'
-import { fetchMyBlocks, unblockUser } from '../../api.js'
-import { toast } from '../../toast.js'
+import { fetchMyBlocks, unblockUser } from '../../server/api.js'
+import { toast } from '../../lib/toast.js'
 import { Button, Modal, ModalText, ModalTitle, Skeleton, Sub } from '../../components/ui.jsx'
 
 export default function BlockedUsersModal({ onClose }) {

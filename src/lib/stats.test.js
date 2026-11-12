@@ -94,7 +94,7 @@ describe('주간 리포트', () => {
     vi.setSystemTime(d)
   }
 
-  it('이번 주 인증·지난주 대비·달성률(지난 날 기준)', () => {
+  it('이번 주 인증, 지난주 대비, 달성률(지난 날 기준)', () => {
     at(THU) // 월~목 4일 경과
     const s = weeklySummary(
       done(
@@ -125,7 +125,7 @@ describe('운동 완료 축하 문구', () => {
   it('30일 프로그램 완주가 가장 우선', () => {
     expect(cheerMessage(30, 7)).toContain('완주')
   })
-  it('연속 기록 이정표 (3·7·14·21·30일 …)', () => {
+  it('연속 기록 이정표 (3, 7, 14, 21, 30일 …)', () => {
     expect(cheerMessage(5, 3)).toContain('3일 연속')
     expect(cheerMessage(9, 7)).toContain('일주일')
     expect(cheerMessage(9, 30)).toContain('30일 연속')

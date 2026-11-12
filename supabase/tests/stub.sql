@@ -1,7 +1,7 @@
--- Supabase 환경 흉내 — 빈 Postgres 에 Supabase 가 기본 제공하는 역할·스키마를 만든다 (테스트 전용)
--- 실제 Supabase 와 같은 이름·동작만 최소한으로: anon/authenticated/service_role 역할, auth.uid(), storage 테이블
+-- Supabase 환경 흉내 — 빈 Postgres 에 Supabase 가 기본 제공하는 역할, 스키마를 만든다 (테스트 전용)
+-- 실제 Supabase 와 같은 이름, 동작만 최소한으로: anon/authenticated/service_role 역할, auth.uid(), storage 테이블
 
--- 역할은 클러스터 전체에 하나 → 이미 있으면 건너뜀 (같은 서버에서 여러 번 실행 가능)
+-- 역할은 클러스터 전체에 하나라서 이미 있으면 건너뜀 (같은 서버에서 여러 번 실행 가능)
 do $$
 declare r text;
 begin
@@ -18,11 +18,11 @@ create schema auth;
 create table auth.users (
   id uuid primary key,
   email text,
-  raw_user_meta_data jsonb,  -- 가입 요청의 options.data (앱이 보낸 이름·전화번호 등)
+  raw_user_meta_data jsonb,  -- 가입 요청의 options.data (앱이 보낸 이름, 전화번호 등)
   raw_app_meta_data jsonb,   -- 서버가 정하는 값 (provider: 'email' 등)
   created_at timestamptz not null default now()
 );
--- 로그인한 사용자 id — Supabase 처럼 요청의 JWT sub 값을 읽음 (없으면 null = 비로그인·운영자)
+-- 로그인한 사용자 id — Supabase 처럼 요청의 JWT sub 값을 읽음 (없으면 null = 비로그인, 운영자)
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
@@ -45,7 +45,7 @@ create table storage.objects (
   unique (bucket_id, name)
 );
 alter table storage.objects enable row level security;
--- 'a/b/c.jpg' → {a,b}
+-- 'a/b/c.jpg' 는 {a,b}
 create function storage.foldername(name text) returns text[] language sql immutable as $$
   select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1]
 $$;
