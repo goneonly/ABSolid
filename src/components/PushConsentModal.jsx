@@ -1,57 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { enablePush } from '../push.js'
 import { toast } from '../toast.js'
 import { Button, Modal, ModalText, ModalTitle } from './ui.jsx'
 
-// 가입 완료 후 1회: 푸시 알림 동의/미동의 모달
-// - 동의 → 브라우저 권한 요청 + 구독
-// - 미동의 → "설정에서 켤 수 있어요" 안내 모달이 잠깐 떴다가 자동으로 닫힘
+// 가입 완료 후 1회: 푸시 알림을 받을지 묻는 팝업 — 결과는 팝업을 더 띄우지 않고 아래 안내 한 줄(토스트)로
+// - 알림 받기 → 휴대폰 권한 창 → 허용하면 완료 안내, 거부·실패하면 그 이유만 안내
+// - 나중에(또는 바깥 탭) → "설정에서 켤 수 있어요" 안내
 export default function PushConsentModal({ onClose }) {
-  const [step, setStep] = useState('ask') // ask | declined
   const [busy, setBusy] = useState(false)
-
-  // 미동의 안내 모달은 2.5초 뒤 자동으로 내려감
-  useEffect(() => {
-    if (step !== 'declined') return
-    const t = setTimeout(onClose, 2500)
-    return () => clearTimeout(t)
-  }, [step, onClose])
 
   async function agree() {
     setBusy(true)
     try {
       await enablePush()
-      toast('운동 안 한 날 저녁 리마인더와 응원 알림을 보내드릴게요.')
-      onClose()
+      toast('알림을 켰어요. 운동 안 한 날 저녁과 응원받을 때 알려드릴게요.')
     } catch (e) {
-      toast(e.message || '알림 설정에 실패했어요.')
-      setStep('declined')
+      toast(e.message || '알림을 켜지 못했어요. 설정에서 다시 시도할 수 있어요.')
     }
     setBusy(false)
+    onClose()
   }
 
-  if (step === 'declined') {
-    return (
-      <Modal label="알림 안내">
-        <ModalTitle>알겠어요</ModalTitle>
-        <ModalText>
-          알림은 <strong>설정 → 기타</strong>에서 언제든 켤 수 있어요.
-        </ModalText>
-      </Modal>
-    )
+  function later() {
+    toast('알림은 설정 → 기타에서 언제든 켤 수 있어요.')
+    onClose()
   }
 
   return (
-    <Modal label="푸시 알림 동의">
-      <ModalTitle>알림 받기</ModalTitle>
+    <Modal label="운동 알림" onBackdrop={busy ? undefined : later}>
+      <ModalTitle>운동 알림 받을까요?</ModalTitle>
       <ModalText>
-        운동을 안 한 날 저녁, 그리고 그룹 멤버가 응원을 보냈을 때 알려드릴까요? 꾸준한 streak에 도움이 돼요.
+        운동을 안 한 날 저녁과 그룹 멤버가 응원을 보냈을 때 알려드려요. 꾸준한 streak에 도움이 돼요.
       </ModalText>
       <Button className="mt-5" disabled={busy} onClick={agree}>
-        {busy ? '설정 중…' : '동의하고 알림 받기'}
+        {busy ? '설정 중…' : '알림 받기'}
       </Button>
-      <Button variant="secondary" className="mt-3" disabled={busy} onClick={() => setStep('declined')}>
-        미동의 (다음에 할게요)
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={later}>
+        나중에
       </Button>
     </Modal>
   )

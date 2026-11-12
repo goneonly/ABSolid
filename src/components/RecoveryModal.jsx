@@ -32,6 +32,13 @@ export default function RecoveryModal({ onClose }) {
     onClose()
   }
 
+  // 닫아도 로그인은 유지되고 비밀번호는 그대로. 설정의 '비밀번호 변경'은 현재 비밀번호가 필요해서
+  // 비밀번호를 잊은 경우엔 재설정 메일을 다시 받아야 한다는 점을 알려줌
+  function later() {
+    toast('비밀번호는 그대로예요. 바꾸려면 재설정 메일을 다시 받아 주세요.')
+    onClose()
+  }
+
   return (
     <Modal label="새 비밀번호 설정">
       <ModalTitle>새 비밀번호 설정</ModalTitle>
@@ -66,6 +73,10 @@ export default function RecoveryModal({ onClose }) {
       />
       <Button className="mt-4" disabled={busy} onClick={submit}>
         {busy ? '변경 중…' : '비밀번호 변경'}
+      </Button>
+      {/* 실수로 링크를 눌렀거나 지금 바꾸기 싫을 때. 바깥 탭으로는 안 닫힘(입력 중 실수로 닫히지 않게) */}
+      <Button variant="secondary" className="mt-3" disabled={busy} onClick={later}>
+        나중에 하기
       </Button>
     </Modal>
   )
