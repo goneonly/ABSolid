@@ -26,6 +26,7 @@ import {
   markServerCleanupDone,
 } from './storage.js'
 import { useAuth } from './useAuth.js'
+import { hideSplash } from './splash.js'
 import { signOut } from './auth.js'
 import { fetchMyRole, fetchServerRecords, retryPendingCompletions, cleanupOldServerPhotos } from './api.js'
 
@@ -47,8 +48,22 @@ export default function App() {
   const [guest, setGuest] = useState(isGuestChosen)
   const refresh = useCallback(() => setTick((t) => t + 1), [])
   const session = useAuth()
+  // 로딩 화면의 '오프라인으로 시작': 로그인 확인이 8초 넘게 안 끝날 때 기기 기록으로 먼저 시작 (확인되면 그대로 회원 화면으로)
+  const [offlineStart, setOfflineStart] = useState(false)
   const records = getRecords()
   const accountKey = session?.user?.id || 'guest'
+
+  useEffect(() => {
+    const start = () => setOfflineStart(true)
+    window.addEventListener('absolid:offline-start', start)
+    return () => window.removeEventListener('absolid:offline-start', start)
+  }, [])
+
+  // 로그인 상태 확인이 끝나면(또는 오프라인 시작) 로딩 화면을 걷음
+  const authChecked = session !== undefined || offlineStart
+  useEffect(() => {
+    if (authChecked) hideSplash()
+  }, [authChecked])
 
   // 앱 시작 시: 7일 지난 로컬 인증샷 정리 (localStorage 용량 보호)
   useEffect(() => {
@@ -130,8 +145,8 @@ export default function App() {
   }, [session, refresh])
 
   // 첫 화면: 서버 연결 시, 로그인도 비회원 선택도 안 했으면 로그인 화면
-  if (session === undefined) return null // 저장된 세션 확인 중 (로그인 화면이 깜빡이지 않게)
-  if (supabase && !session && !guest) {
+  if (!authChecked) return null // 저장된 세션 확인 중 — 그동안은 로딩 화면 (index.html)
+  if (supabase && !session && !guest && !offlineStart) {
     return (
       <Login
         onDone={() => setView('home')}

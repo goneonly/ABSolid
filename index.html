@@ -32,8 +32,86 @@
       })()
     </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <style>
+      /* 앱 시작 로딩 화면 — JS 보다 먼저 보이도록 여기에 둠 (색은 src/index.css 토큰과 같은 값) */
+      #splash {
+        --bg: #141519; --fg: #f2f3f5; --dim: #9a9ea8; --dot: #4a4d55; --brand: #ff3b30; --brand-strong: #e5281d;
+        position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; background: var(--bg); color: var(--fg);
+        font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        transition: opacity 0.2s ease;
+      }
+      [data-theme='light'] #splash { --bg: #f5f6f8; --fg: #15171c; --dim: #626873; --dot: #c5c9d0; --brand: #d0261b; --brand-strong: #c42318; }
+      #splash.splash-out { opacity: 0; pointer-events: none; }
+      #splash .sp-mark { width: 72px; height: 72px; animation: sp-breathe 1.6s ease-in-out 1s infinite; }
+      #splash .sp-a1 { stroke-dasharray: 30; stroke-dashoffset: 30; animation: sp-draw 0.5s ease forwards; }
+      #splash .sp-a2 { stroke-dasharray: 8; stroke-dashoffset: 8; animation: sp-draw 0.2s ease 0.45s forwards; }
+      #splash .sp-word { margin-top: 16px; font-size: 30px; font-weight: 800; letter-spacing: -0.5px; opacity: 0; animation: sp-up 0.35s ease 0.3s forwards; }
+      #splash .sp-word em { font-style: normal; color: var(--brand); }
+      #splash .sp-tag { margin-top: 8px; font-size: 14px; color: var(--dim); opacity: 0; animation: sp-up 0.35s ease 0.45s forwards; }
+      #splash .sp-msg { margin-top: 24px; min-height: 20px; font-size: 14px; color: var(--dim); text-align: center; padding: 0 24px; }
+      #splash .sp-acts { display: none; margin-top: 12px; flex-direction: column; align-items: center; gap: 8px; width: 220px; }
+      #splash.splash-stuck .sp-acts { display: flex; }
+      #splash .sp-retry { width: 100%; border: 0; border-radius: 14px; padding: 14px; font: inherit; font-size: 16px; font-weight: 700; color: #fff; background: var(--brand-strong); cursor: pointer; } /* 흰 글자 대비 4.5:1 */
+      #splash .sp-offline { border: 0; background: none; padding: 12px; font: inherit; font-size: 14px; color: var(--dim); text-decoration: underline; cursor: pointer; }
+      #splash .sp-bars { position: absolute; bottom: calc(44px + env(safe-area-inset-bottom)); display: flex; gap: 8px; }
+      #splash .sp-bars i { display: block; width: 12px; height: 6px; border-radius: 2px; background: var(--dot); transition: width 0.3s, background 0.3s; }
+      #splash[data-stage='1'] .sp-bars i:nth-child(-n + 1),
+      #splash[data-stage='2'] .sp-bars i:nth-child(-n + 2),
+      #splash[data-stage='3'] .sp-bars i { width: 24px; background: var(--brand); }
+      @keyframes sp-draw { to { stroke-dashoffset: 0; } }
+      @keyframes sp-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      @keyframes sp-breathe { 50% { transform: scale(1.04); } }
+      @media (prefers-reduced-motion: reduce) {
+        #splash *, #splash { animation: none !important; transition: none !important; }
+        #splash .sp-a1, #splash .sp-a2 { stroke-dashoffset: 0; }
+        #splash .sp-word, #splash .sp-tag { opacity: 1; }
+      }
+    </style>
   </head>
   <body>
+    <!-- 앱 시작 로딩 화면: 로그인 상태 확인이 끝나면 src/splash.js 가 최소 0.6초 뒤 0.2초 동안 흐려지며 제거 -->
+    <div id="splash" data-stage="1" role="status" aria-label="ABSolid 불러오는 중">
+      <svg class="sp-mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--brand)" />
+        <path class="sp-a1" d="M8 18 L13 7 L18 18" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+        <path class="sp-a2" d="M10 14.5 H16" stroke="#fff" stroke-width="2.6" stroke-linecap="round" />
+      </svg>
+      <div class="sp-word">ABS<em>olid</em></div>
+      <div class="sp-tag">10분의 꾸준함이 만드는 단단함</div>
+      <div class="sp-msg" id="splash-msg" aria-live="polite"></div>
+      <div class="sp-acts">
+        <button class="sp-retry" id="splash-retry" type="button">다시 시도</button>
+        <button class="sp-offline" id="splash-offline" type="button">오프라인으로 시작</button>
+      </div>
+      <div class="sp-bars" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+    <script>
+      // 3초가 넘으면 안내, 8초가 넘으면 다시 시도·오프라인 시작 버튼 (앱 코드가 늦거나 실패해도 동작하도록 여기서 처리)
+      ;(function () {
+        var splash = document.getElementById('splash')
+        var msg = document.getElementById('splash-msg')
+        var offline = document.getElementById('splash-offline')
+        var slow = setTimeout(function () {
+          msg.textContent = '연결 중이에요…'
+        }, 3000)
+        var stuck = setTimeout(function () {
+          msg.textContent = '연결이 느려요. 네트워크를 확인해 주세요.'
+          offline.hidden = !window.__absolidAppLoaded // 앱 코드조차 못 받았으면 오프라인 시작도 불가
+          splash.classList.add('splash-stuck')
+        }, 8000)
+        window.__absolidSplashDone = function () {
+          clearTimeout(slow)
+          clearTimeout(stuck)
+        }
+        document.getElementById('splash-retry').onclick = function () {
+          location.reload()
+        }
+        offline.onclick = function () {
+          window.dispatchEvent(new Event('absolid:offline-start'))
+        }
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
