@@ -5,7 +5,7 @@ import { getProfile, saveProfile } from '../../storage.js'
 import { uploadAvatar, deleteAvatar, fetchMyAvatarUrl } from '../../api.js'
 import { toast } from '../../toast.js'
 import { CameraBadge, PhotoActionSheet, readPickedImage } from '../../components/PhotoPicker.jsx'
-import { PersonIcon } from '../../components/ui.jsx'
+import { DefaultAvatar } from '../../components/ui.jsx'
 
 const CIRCLE =
   'relative flex size-24 items-center justify-center rounded-full border-2 border-line bg-surface-2 p-0 text-dot'
@@ -32,7 +32,7 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
     return (
       <div className="flex flex-col items-center pt-2">
         <div className={CIRCLE} aria-label="기본 프로필 사진">
-          <PersonIcon className="size-12" />
+          <DefaultAvatar nickname={nickname} iconClassName="size-12" />
         </div>
         <ProfileName nickname={nickname} />
         <div className="mt-1 text-xs text-dim">프로필 사진은 로그인 후 설정할 수 있어요</div>
@@ -81,7 +81,7 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
         {avatar ? (
           <img className="block size-full rounded-full object-cover" src={avatar} alt="프로필 사진" />
         ) : (
-          <PersonIcon className="size-12" />
+          <DefaultAvatar nickname={nickname} iconClassName="size-12" />
         )}
         <CameraBadge className="size-7.5 border-3" />
       </button>

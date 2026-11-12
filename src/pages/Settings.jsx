@@ -258,9 +258,9 @@ function GuestNotice() {
   const count = Object.values(getRecords()).filter((r) => r?.completed).length
   return (
     <Banner className="mt-4 mb-0">
-      {count > 0 ? `운동 기록 ${count}개가 이 기기에만 저장돼 있어요.` : '비회원 기록은 이 기기에만 저장돼요.'}
+      {count > 0 ? `운동 기록 ${count}개가 이 기기에만 있어요.` : '비회원 기록은 이 기기에만 저장돼요.'}
       <br />
-      브라우저 데이터를 지우면 사라지고, 로그인해도 계정으로 옮겨지지 않아요. 로그인한 뒤의 운동부터 계정에 기록돼요.
+      로그인해도 계정으로 옮겨지지 않아요.
     </Banner>
   )
 }

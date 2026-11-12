@@ -1,5 +1,6 @@
 // 공통 UI 컴포넌트 — 반복되는 Tailwind 클래스 조합을 한 곳에서 관리
 import { extendTailwindMerge } from 'tailwind-merge'
+import { easterEggAvatar } from '../easterEggs.js'
 
 // 클래스 합치기 — 뒤에 온 클래스가 같은 속성의 앞 클래스를 덮어씀
 // (index.css @theme에 추가한 커스텀 폰트 크기를 알려줘야 색상 클래스와 구분됨)
@@ -197,6 +198,13 @@ export function PersonIcon({ className }) {
   )
 }
 
+// 프로필 사진이 없을 때의 기본 모습: 사람 아이콘 (닉네임이 '푸앙이'면 푸앙이 — easterEggs.js)
+export function DefaultAvatar({ nickname, iconClassName }) {
+  const egg = easterEggAvatar(nickname)
+  if (egg) return <img className="block size-full object-contain" src={egg} alt="푸앙이" />
+  return <PersonIcon className={iconClassName} />
+}
+
 // 그룹·리더보드용 작은 원형 아바타 (active면 빨간 테두리)
 export function MemberAvatar({ name, avatar, active, className }) {
   return (
@@ -210,7 +218,7 @@ export function MemberAvatar({ name, avatar, active, className }) {
       {avatar ? (
         <img className="size-full object-cover" src={avatar} alt={`${name} 프로필 사진`} loading="lazy" />
       ) : (
-        <PersonIcon className="size-4" />
+        <DefaultAvatar nickname={name} iconClassName="size-4" />
       )}
     </span>
   )
