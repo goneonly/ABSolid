@@ -44,21 +44,12 @@ export function GroupArt() {
 
 // 자물쇠: 로그인이 필요할 때
 export function LockArt() {
+  // 단순한 선 아이콘: 고리 + 몸통 테두리 + 브랜드색 점 하나 (채움·열쇠 구멍 줄 없음)
   return (
     <svg viewBox="0 0 96 72" fill="none" aria-hidden="true">
-      <path d="M34 32V22a14 14 0 0 1 28 0v10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-      <rect
-        x="24"
-        y="32"
-        width="48"
-        height="34"
-        rx="8"
-        fill="var(--color-surface-2)"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <circle cx="48" cy="47" r="5" fill="var(--color-brand)" />
-      <path d="M48 52v6" stroke="var(--color-brand)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M38 34v-8a10 10 0 0 1 20 0v8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <rect x="30" y="34" width="36" height="28" rx="7" stroke="currentColor" strokeWidth="2.5" />
+      <circle cx="48" cy="48" r="3.5" fill="var(--color-brand)" />
     </svg>
   )
 }
