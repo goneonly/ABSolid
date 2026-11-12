@@ -1,8 +1,6 @@
 import { Button, Modal, ModalTitle } from './ui.jsx'
 
-// 개인정보 처리방침 · 이용약관 — 내용을 바꾸면 TERMS_VERSION(시행일)도 함께 바꿔 주세요
-// (회원가입 시 동의한 버전이 profiles.terms_version 에 저장됨)
-export const TERMS_VERSION = '2026-10-10'
+// 개인정보 처리방침 · 이용약관 — 내용을 바꾸면 src/terms.js 의 TERMS_VERSION(시행일)도 함께 바꿔 주세요
 const EFFECTIVE_DATE = '2026년 10월 10일'
 const CONTACT_URL = 'https://github.com/goneonly/ABSolid/issues'
 

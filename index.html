@@ -102,20 +102,20 @@
       <div class="sp-bars" aria-hidden="true"><i></i><i></i><i></i></div>
     </div>
     <script>
-      // 3초가 넘으면 안내, 8초가 넘으면 다시 시도·오프라인 시작 버튼 (앱 코드가 늦거나 실패해도 동작하도록 여기서 처리)
+      // 5초가 넘으면 안내, 12초가 넘으면 다시 시도·오프라인 시작 버튼 (느린 회선에서 너무 일찍 겁주지 않게) (앱 코드가 늦거나 실패해도 동작하도록 여기서 처리)
       window.__absolidSplashAt = performance.now() // 로딩 화면이 실제로 보이기 시작한 시각
       ;(function () {
         var splash = document.getElementById('splash')
         var msg = document.getElementById('splash-msg')
         var offline = document.getElementById('splash-offline')
         var slow = setTimeout(function () {
-          msg.textContent = '연결 중이에요…'
-        }, 3000)
+          msg.textContent = '조금 오래 걸리고 있어요…'
+        }, 5000)
         var stuck = setTimeout(function () {
-          msg.textContent = '연결이 느려요. 네트워크를 확인해 주세요.'
+          msg.textContent = '연결이 원활하지 않아요. 네트워크를 확인해 주세요.'
           offline.hidden = !window.__absolidAppLoaded // 앱 코드조차 못 받았으면 오프라인 시작도 불가
           splash.classList.add('splash-stuck')
-        }, 8000)
+        }, 12000)
         window.__absolidSplashDone = function () {
           clearTimeout(slow)
           clearTimeout(stuck)

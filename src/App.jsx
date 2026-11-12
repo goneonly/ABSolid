@@ -1,15 +1,18 @@
-import { useState, useCallback, useEffect } from 'react'
+import { Suspense, useState, useCallback, useEffect } from 'react'
 import Home from './pages/Home.jsx'
-import Workout from './pages/Workout.jsx'
-import Group from './pages/Group.jsx'
-import Settings from './pages/Settings.jsx'
-import Admin from './pages/Admin.jsx'
 import BottomNav from './components/BottomNav.jsx'
-import { Logo, Page, PageTitle, Sub } from './components/ui.jsx'
+import { Logo, Page, PageTitle, Skeleton, Sub } from './components/ui.jsx'
 import Login from './pages/Login.jsx'
-import OnboardingModal from './components/OnboardingModal.jsx'
-import PushConsentModal from './components/PushConsentModal.jsx'
-import RecoveryModal from './components/RecoveryModal.jsx'
+import {
+  Admin,
+  Group,
+  OnboardingModal,
+  PushConsentModal,
+  RecoveryModal,
+  Settings,
+  Workout,
+  prefetchPages,
+} from './lazyPages.js'
 import { supabase } from './supabase.js'
 import { isPushSupported } from './push.js'
 import {
@@ -62,7 +65,9 @@ export default function App() {
   // 로그인 상태 확인이 끝나면(또는 오프라인 시작) 로딩 화면을 걷음
   const authChecked = session !== undefined || offlineStart
   useEffect(() => {
-    if (authChecked) hideSplash()
+    if (!authChecked) return
+    hideSplash()
+    prefetchPages() // 첫 화면 이후 나머지 화면을 미리 받아 둠
   }, [authChecked])
 
   // 앱 시작 시: 7일 지난 로컬 인증샷 정리 (localStorage 용량 보호)
@@ -169,70 +174,83 @@ export default function App() {
         {session && <span className="rounded-sm bg-surface-2 px-2 py-1 text-xs font-bold text-dim">로그인됨</span>}
       </header>
 
-      {view === 'home' && (
-        <Home
-          records={records}
-          session={session}
-          onStart={() => setView('workout')}
-          celebrate={justDone}
-          onCelebrated={endCelebration}
-        />
-      )}
-      {view === 'workout' && (
-        <Workout
-          session={session}
-          onDone={() => {
-            refresh()
-            setJustDone(true)
-            setView('home')
-          }}
-        />
-      )}
-      {/* 계정이 바뀌면 화면 상태(닉네임 입력값·선택한 그룹 등)를 새로 시작 */}
-      {view === 'group' && <Group key={accountKey} records={records} session={session} onRequestLogin={requestLogin} />}
-      {view === 'settings' && (
-        <Settings
-          key={accountKey}
-          session={session}
-          onChanged={refresh}
-          isAdmin={isAdmin}
-          onOpenAdmin={() => setView('admin')}
-          onRequestLogin={requestLogin}
-        />
-      )}
-      {view === 'admin' &&
-        (isAdmin ? (
-          <Admin onBack={() => setView('settings')} />
-        ) : (
+      {/* 따로 받아 오는 화면이 아직 도착하지 않았으면 잠깐 회색 자리표시 */}
+      <Suspense
+        fallback={
           <Page>
-            <PageTitle>관리자</PageTitle>
-            <Sub>접근 권한이 없어요.</Sub>
+            <Skeleton lines={2} />
           </Page>
-        ))}
+        }
+      >
+        {view === 'home' && (
+          <Home
+            records={records}
+            session={session}
+            onStart={() => setView('workout')}
+            celebrate={justDone}
+            onCelebrated={endCelebration}
+          />
+        )}
+        {view === 'workout' && (
+          <Workout
+            session={session}
+            onDone={() => {
+              refresh()
+              setJustDone(true)
+              setView('home')
+            }}
+          />
+        )}
+        {/* 계정이 바뀌면 화면 상태(닉네임 입력값·선택한 그룹 등)를 새로 시작 */}
+        {view === 'group' && (
+          <Group key={accountKey} records={records} session={session} onRequestLogin={requestLogin} />
+        )}
+        {view === 'settings' && (
+          <Settings
+            key={accountKey}
+            session={session}
+            onChanged={refresh}
+            isAdmin={isAdmin}
+            onOpenAdmin={() => setView('admin')}
+            onRequestLogin={requestLogin}
+          />
+        )}
+        {view === 'admin' &&
+          (isAdmin ? (
+            <Admin onBack={() => setView('settings')} />
+          ) : (
+            <Page>
+              <PageTitle>관리자</PageTitle>
+              <Sub>접근 권한이 없어요.</Sub>
+            </Page>
+          ))}
+      </Suspense>
 
-      {showOnboarding && (
-        <OnboardingModal
-          onClose={() => {
-            markOnboardingDone()
-            setShowOnboarding(false)
-            // 온보딩 종료 후: 푸시 알림 동의 팝업을 1회 표시 (지원 브라우저 + 회원만 — 푸시는 로그인 필요)
-            if (session && isPushSupported() && !isPushConsentAsked()) {
-              setShowPushConsent(true)
-            }
-          }}
-        />
-      )}
+      <Suspense fallback={null}>
+        {showOnboarding && (
+          <OnboardingModal
+            onClose={() => {
+              markOnboardingDone()
+              setShowOnboarding(false)
+              // 온보딩 종료 후: 푸시 알림 동의 팝업을 1회 표시 (지원 브라우저 + 회원만 — 푸시는 로그인 필요)
+              if (session && isPushSupported() && !isPushConsentAsked()) {
+                setShowPushConsent(true)
+              }
+            }}
+          />
+        )}
 
-      {showPushConsent && (
-        <PushConsentModal
-          onClose={() => {
-            markPushConsentAsked()
-            setShowPushConsent(false)
-          }}
-        />
-      )}
+        {showPushConsent && (
+          <PushConsentModal
+            onClose={() => {
+              markPushConsentAsked()
+              setShowPushConsent(false)
+            }}
+          />
+        )}
 
-      {showRecovery && <RecoveryModal onClose={() => setShowRecovery(false)} />}
+        {showRecovery && <RecoveryModal onClose={() => setShowRecovery(false)} />}
+      </Suspense>
 
       <BottomNav view={view} onChange={setView} />
     </div>

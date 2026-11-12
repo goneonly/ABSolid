@@ -170,6 +170,10 @@ ABSolid 는 별도 백엔드 서버 없이 **Supabase** 를 서버로 씁니다.
 
 `isPushConfigured`, `isPushSupported`, `getPushEnabled`, `enablePush`, `disablePush`
 
+### `src/supabase.js` (연결·로그인 상태)
+
+`supabase`(클라이언트, 키가 없으면 `null`), `currentUser`, `currentUserId`, `storedSession`(기기에 저장된 로그인 정보를 네트워크 없이 바로 읽음 — 앱 시작용), `parseStoredSession`
+
 ---
 
 ## 함수를 추가할 때

@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { signIn, signUp, sendPasswordReset, resendSignupEmail, isDisposableEmail } from '../auth.js'
 import { EMAIL_NOT_CONFIRMED } from '../authErrors.js'
 import { getProfile, markOnboardingPending, cancelOnboarding } from '../storage.js'
 import { validateEmail, validateName, validatePhone, formatPhone, validatePassword } from '../validation.js'
-import { PrivacyModal, TermsModal, TERMS_VERSION } from '../components/LegalModals.jsx'
+import { TERMS_VERSION } from '../terms.js'
+
+// 약관 본문은 길어서 열 때만 받아 옴 (로그인 화면을 빨리 띄우기 위해)
+const PrivacyModal = lazy(() => import('../components/LegalModals.jsx').then((m) => ({ default: m.PrivacyModal })))
+const TermsModal = lazy(() => import('../components/LegalModals.jsx').then((m) => ({ default: m.TermsModal })))
 import { Button, Field, FieldError, LinkButton, Logo, Sub } from '../components/ui.jsx'
 import { useCaptcha, CAPTCHA_WAIT } from '../components/Captcha.jsx'
 
@@ -295,8 +299,10 @@ export default function Login({ onDone, onGuest }) {
         비회원으로 시작하기
       </LinkButton>
 
-      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
-      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+      <Suspense fallback={null}>
+        {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+        {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+      </Suspense>
     </main>
   )
 }
