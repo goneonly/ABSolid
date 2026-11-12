@@ -123,7 +123,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
                 <div key={r.id} className="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
                   <span
                     className={cx(
-                      'w-6 flex-none text-center font-extrabold',
+                      'w-6 flex-none text-center font-extrabold tabular-nums',
                       medal ? 'text-base text-brand' : 'text-sm text-dim',
                     )}
                   >
@@ -145,7 +145,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
                   <span className="w-8 flex-none text-right text-xs">
                     {r.delta ? <Trend delta={r.delta} /> : <span className="text-dot">—</span>}
                   </span>
-                  <span className="w-10 flex-none text-right text-sm font-extrabold">
+                  <span className="w-10 flex-none text-right text-sm font-extrabold tabular-nums">
                     {r.count}
                     <span className="ml-px text-xs font-normal text-dim">회</span>
                   </span>

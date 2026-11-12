@@ -3,6 +3,7 @@
 //
 // 휴대폰은 아이콘을 받아서 스스로 둥글게 잘라 쓰므로, 이미지는 네 모서리까지 빨간색으로 꽉 찬 정사각형이어야 함.
 // (예전 아이콘은 빨간 둥근 사각형 바깥이 검은색이나 투명이라 홈 화면에서 검은 테두리로 보였음)
+// 아이콘을 다시 만들면 index.html 의 apple-touch-icon 과 public/manifest.webmanifest 의 ?v= 숫자를 하나 올려야 휴대폰에 반영됨
 // "A" 는 가운데 40% 안쪽에 있어서 안드로이드 maskable 의 안전 영역(지름 80% 원)에도 들어감. 그래서 같은 그림을 그대로 씀
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'

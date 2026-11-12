@@ -76,7 +76,7 @@ export default function Home({ records, onStart, session, celebrate, onCelebrate
       <Sub>Day {day} 운동이 준비되어 있어요.</Sub>
 
       <Card className="px-5 py-8 text-center">
-        <div className="text-display font-extrabold tracking-tight">
+        <div className="text-display font-extrabold tracking-tight tabular-nums">
           <span className={cx('inline-block text-brand', celebrating && 'motion-safe:animate-pop')}>{streak}</span>일
         </div>
         <div className="mt-2 text-sm text-dim">연속 운동 streak</div>

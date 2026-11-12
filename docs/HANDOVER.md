@@ -93,6 +93,8 @@ npm run splash
 npm run icons
 ```
 
+다시 만든 뒤에는 `index.html` 의 `apple-touch-icon` 주소와 `public/manifest.webmanifest` 의 아이콘 주소 끝 `?v=` 숫자를 하나 올립니다. 휴대폰이 같은 주소의 예전 아이콘을 오래 저장해 두기 때문입니다.
+
 **글꼴 버전 변경**
 `index.html` 의 글꼴 주소를 바꾸면 `integrity` 해시도 새로 계산해 넣어야 합니다. 해시가 다르면 브라우저가 글꼴을 거부합니다. 계산 방법은 그 줄 위 주석에 있습니다.
 

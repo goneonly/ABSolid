@@ -43,10 +43,11 @@ export default function WeeklyReport({ records }) {
       </Sub>
 
       <div className="mt-5 border-t border-line pt-4">
-        <Sub className="mb-3">최근 7일</Sub>
+        <Sub className="mb-4">최근 7일</Sub>
+        {/* 원과 요일 사이 12px (오늘은 바깥 테두리 4px 를 빼고도 8px 은 떨어지게) */}
         <div className="flex justify-between">
           {recent.map((d, i) => (
-            <div className="flex flex-col items-center gap-2 text-xs text-dim" key={d.key}>
+            <div className="flex flex-col items-center gap-3 text-xs text-dim" key={d.key}>
               <div
                 className={cx(
                   'flex size-8 items-center justify-center rounded-full text-sm tabular-nums',
@@ -68,7 +69,7 @@ export default function WeeklyReport({ records }) {
 function Stat({ value, unit, label }) {
   return (
     <div className="rounded-md border border-line bg-surface-2 px-2 py-3 text-center text-xs text-dim">
-      <b className="mb-1 block text-xl font-extrabold text-fg">
+      <b className="mb-1 block text-xl font-extrabold text-fg tabular-nums">
         {value}
         <span className="ml-px text-xs font-bold text-dim">{unit}</span>
       </b>

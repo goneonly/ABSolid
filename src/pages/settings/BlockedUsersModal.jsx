@@ -53,7 +53,7 @@ export default function BlockedUsersModal({ onClose }) {
             >
               <span className="truncate text-sm">{u.nickname}</span>
               <button
-                className="shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-bold disabled:opacity-60"
+                className="hit shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-bold disabled:opacity-60"
                 disabled={busyId === u.id}
                 onClick={() => unblock(u)}
               >

@@ -94,7 +94,7 @@ function StatsSection() {
         <div className="mt-4 grid grid-cols-2 gap-2">
           {items.map(([label, value]) => (
             <div className="rounded-md border border-line bg-surface-2 p-3 text-center" key={label}>
-              <div className="text-xl font-extrabold">{value}</div>
+              <div className="text-xl font-extrabold tabular-nums">{value}</div>
               <div className="mt-1 text-xs text-dim">{label}</div>
             </div>
           ))}
