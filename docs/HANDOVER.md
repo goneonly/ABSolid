@@ -5,7 +5,7 @@ ABSolid 를 처음 맡는 개발자가 코드를 읽기 전에 보는 문서입�
 ## 1. 한눈에 보기
 
 - 화면: React 18, Vite 8, Tailwind CSS 4. 배포는 Vercel (main 브랜치에 push 하면 자동 배포)
-- 서버: 별도 백엔드 없이 Supabase (인증, Postgres, Storage, Edge Functions)
+- 서버: Supabase (인증, Postgres, Storage, Edge Functions). 그 앞에 자체 API 서버(Hono, `server/`)를 두고 기능을 하나씩 옮기는 중 ([스프린트 백로그](SPRINT_BACKLOG.md) 1번)
 - 형태: 모바일 웹앱(PWA). 홈 화면에 추가하면 앱처럼 열리고 푸시 알림을 받음
 - 운영 주소: https://absolid.vercel.app
 
@@ -18,6 +18,8 @@ npm install
 cp .env.example .env
 npm run dev
 ```
+
+`npm run dev` 는 화면 개발 서버(5173)와 API 서버(8787)를 함께 띄웁니다. 화면에서 `/api` 로 보낸 요청은 개발 서버가 API 서버로 넘겨줍니다. 둘 중 하나만 띄우려면 `npm run dev:web`, `npm run dev:api` 를 씁니다.
 
 `.env` 에는 브라우저에 노출되는 공개 키만 넣습니다. 값이 없으면 서버 연결 없이 비회원 모드로만 동작합니다. 서버 쪽 비밀 키(서비스 키, 크론 비밀값, 푸시 개인 키)는 Supabase 의 Edge Function 시크릿에만 있고, 저장소와 `.env` 에는 절대 넣지 않습니다.
 

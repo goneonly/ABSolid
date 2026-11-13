@@ -10,6 +10,7 @@
 ## 다음 버전
 
 **내부**
+- 자체 API 서버 뼈대 (스프린트 백로그 1번의 1단계): Hono 앱(`server/app.js`), Vercel 서버 함수 입구(`api/index.js`), 서버 상태 확인 주소 `GET /api/health`. `npm run dev` 가 화면과 API 서버를 함께 실행
 - 스프린트 백로그 문서 추가 (`docs/SPRINT_BACKLOG.md`): 자체 백엔드 구현 단계, 플레이스토어 등록 등 앞으로 할 일과 우선순위
 
 ## 0.6.2 (2026-11-13)

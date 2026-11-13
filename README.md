@@ -71,7 +71,7 @@ npm run dev
 
 | 명령어 | 설명 |
 | --- | --- |
-| `npm run dev` | 개발 서버 |
+| `npm run dev` | 개발 서버. 화면(5173)과 API 서버(8787)를 함께 실행 |
 | `npm run check` | 커밋 전 한 번에 검사 (린트, 코드 스타일, 단위 테스트, 빌드) |
 | `npm run build` | 배포용 빌드 |
 | `npm run lint` | ESLint 검사 |
@@ -125,6 +125,8 @@ src/
 │   └── 그 외          image(사진 압축), install(홈 화면 추가), toast(안내 한 줄), youtube, terms(약관 버전), easterEggs
 ├── hooks/             useAuth(로그인 상태), useLoad(서버 데이터 불러오기)
 └── test/              테스트 공통 준비
+server/                자체 API 서버 (Hono). app.js 가 앱, dev.js 는 로컬 실행용
+api/                   Vercel 서버 함수 입구 (index.js 가 server/app.js 를 연결)
 public/                아이콘, 아이폰 시작 이미지(splash/), 서비스 워커(sw.js)
 scripts/               make-splash-images.mjs (아이폰 시작 이미지 생성)
 supabase/

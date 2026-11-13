@@ -7,15 +7,17 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n web,api -c red,blue \"vite\" \"npm:dev:api\"",
+    "dev:web": "vite",
+    "dev:api": "node --watch --env-file-if-exists=.env server/dev.js",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src",
+    "lint": "eslint src server api",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:db": "bash supabase/tests/run.sh",
-    "format": "prettier --write src supabase/functions scripts",
-    "format:check": "prettier --check src supabase/functions scripts",
+    "format": "prettier --write src server api supabase/functions scripts",
+    "format:check": "prettier --check src server api supabase/functions scripts",
     "check": "npm run lint && npm run format:check && npm test && npm run build",
     "splash": "node scripts/make-splash-images.mjs",
     "icons": "node scripts/make-app-icons.mjs"
@@ -23,14 +25,17 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.47.10",
     "@vercel/analytics": "^1.4.1",
+    "hono": "^4.13.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@hono/node-server": "^2.1.8",
     "@tailwindcss/vite": "^4.3.5",
     "@vitejs/plugin-react": "^6.3.0",
+    "concurrently": "^10.0.7",
     "eslint": "^9.17.0",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.1.0",
