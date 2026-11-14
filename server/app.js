@@ -13,11 +13,8 @@ app.get('/health', (c) => c.json({ ok: true }))
 
 // 내 정보 (로그인 필수) — 토큰 확인 미들웨어(requireUser)를 먼저 거침
 app.get('/me', requireUser, (c) => {
-  // TODO 6. 미들웨어가 저장해 둔 사용자를 꺼내, 아이디와 이메일만 JSON 으로 돌려주세요.
-  //   힌트: const user = c.get('user')
-  //         return c.json({ id: user.id, email: user.email })
-  //   (user 에는 가입 정보 등 더 많은 값이 있지만, 필요한 것만 골라 내보내는 게 원칙)
-  return c.json({ error: '아직 만드는 중이에요.' }, 501)
+  const user = c.get('user')
+  return c.json({ id: user.id, email: user.email })
 })
 
 // 없는 주소: 앱이 읽기 쉬운 JSON 으로 404

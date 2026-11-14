@@ -1,24 +1,34 @@
 // 로그인 토큰 확인 미들웨어 — 로그인이 필요한 주소 앞에 세워 두는 문지기
-// 통과하면 다음 단계(라우트)에서 c.get('user') 로 로그인한 사용자를 꺼내 쓸 수 있음
+// 통과하면 다음 단계(라우트)에서 c.get('user') 로 로그인한 사용자를, c.get('token') 으로 토큰을 꺼내 쓸 수 있음
+import { isAuthRetryableFetchError } from '@supabase/supabase-js'
 import { supabaseFor } from './supabase.js'
 
 export async function requireUser(c, next) {
-  // TODO 1. 요청 헤더에서 Authorization 값을 읽으세요.
-  //   힌트: c.req.header('Authorization')  ->  'Bearer eyJ...' 또는 undefined
-  //
-  // TODO 2. 'Bearer ' 로 시작하지 않으면 401 을 돌려주고 끝내세요. (next() 를 부르지 않음)
-  //   힌트: return c.json({ error: '로그인이 필요해요.' }, 401)
-  //
-  // TODO 3. 'Bearer ' 뒤의 토큰만 잘라 내세요.
-  //   힌트: 문자열의 slice 또는 replace
-  //
-  // TODO 4. Supabase 에 토큰이 진짜인지 물어보세요. (설계 Q7)
-  //   힌트: const { data, error } = await supabaseFor(token).auth.getUser(token)
-  //         진짜면 data.user 에 사용자 정보, 가짜나 만료면 error 가 있고 data.user 는 null
-  //
-  // TODO 5. 사용자가 없으면 401, 있으면 다음 단계에서 쓸 수 있게 저장하고 next() 로 넘기세요.
-  //   힌트: c.set('user', data.user)  /  c.set('token', token)  그다음  await next()
-  //   (토큰도 저장해 두면 4단계에서 그 사용자 신분으로 DB 를 조회할 때 씀)
+  // 1. 헤더에서 출입증(토큰) 꺼내기. 없거나 'Bearer 토큰' 형식이 아니면 401
+  const header = c.req.header('Authorization')
+  if (!header || !header.startsWith('Bearer ')) {
+    return c.json({ error: '로그인이 필요해요.' }, 401)
+  }
+  const token = header.slice('Bearer '.length)
+  if (!token) {
+    return c.json({ error: '로그인이 필요해요.' }, 401)
+  }
 
-  await next() // 다 작성하면 이 줄은 지우거나 TODO 5 위치로 옮기세요
+  // 2. Supabase 에 진짜인지 묻기 (요청마다 확인. 로그아웃이나 탈퇴로 취소된 토큰도 바로 막힘)
+  const { data, error } = await supabaseFor(token).auth.getUser(token)
+
+  // 3. Supabase 에 연결이 안 됐으면 503 (사용자 잘못이 아니라 잠시 후 다시 시도하면 됨)
+  if (error && isAuthRetryableFetchError(error)) {
+    return c.json({ error: '로그인 확인 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503)
+  }
+
+  // 4. 가짜이거나 만료된 토큰이면 401 (오류와 빈 사용자를 둘 다 확인하는 이중 안전장치)
+  if (error || !data.user) {
+    return c.json({ error: '로그인이 필요해요.' }, 401)
+  }
+
+  // 5. 통과: 사용자와 토큰을 저장하고 라우트로 넘김
+  c.set('user', data.user)
+  c.set('token', token)
+  await next()
 }
