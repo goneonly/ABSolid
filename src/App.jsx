@@ -173,7 +173,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col pb-22">
+    <div className="flex min-h-dvh flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <header className="flex items-center justify-between px-5 pt-5 pb-3">
         <button onClick={() => setView('home')} aria-label="홈으로">
           <Logo className="text-xl" />
