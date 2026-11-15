@@ -1,0 +1,36 @@
+/*
+ * 소개 페이지(/about) 전용 스타일 — 스크롤과 마우스에 따라 움직이는 부분
+ * --p (스크롤 진행도 0~1), --tx / --ty (마우스 위치 -1~1) 는 motion.jsx 가 넣어 줌
+ * 색은 index.css 의 토큰만 사용
+ */
+
+/* 맨 위 진행 막대: 페이지를 내려간 만큼 늘어남 */
+.about-progress {
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+}
+
+/* 첫 화면의 휴대폰: 뒤로 누워 있다가 스크롤하면 일어서고, 마우스를 따라 살짝 기울어짐 */
+.about-hero-phone {
+  --q: min(1, calc(var(--p, 0) * 1.6));
+  transform: perspective(1400px) rotateX(calc((1 - var(--q)) * 28deg + var(--ty, 0) * -3deg))
+    rotateY(calc(var(--tx, 0) * 5deg)) scale(calc(0.88 + var(--q) * 0.12));
+  transform-origin: 50% 0;
+  transition: transform 0.2s ease-out;
+  will-change: transform;
+}
+
+/* 기능 소개의 휴대폰: 단계를 넘기는 동안 좌우로 천천히 돌아감 */
+.about-showcase-phone {
+  transform: perspective(1400px) rotateY(calc((var(--p, 0) - 0.5) * -16deg));
+  transition: transform 0.2s ease-out;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-hero-phone,
+  .about-showcase-phone {
+    transform: none;
+    transition: none;
+  }
+}

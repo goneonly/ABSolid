@@ -33,6 +33,11 @@ function applyTheme(mode = getThemeMode()) {
   return theme
 }
 
+// 저장된 설정과 상관없이 이 페이지에서만 테마를 고정 (소개 페이지는 항상 다크)
+export function forceTheme(theme) {
+  applyTheme(theme)
+}
+
 export function setThemeMode(mode) {
   saveThemeMode(mode)
   applyTheme(mode)

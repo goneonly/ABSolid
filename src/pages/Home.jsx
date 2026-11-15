@@ -7,8 +7,9 @@ import {
   dismissReminderToday,
 } from '../lib/storage.js'
 import { fetchActiveAnnouncement, fetchReceivedCheers } from '../server/api.js'
+import StreakCard from '../components/StreakCard.jsx'
 import WeeklyReport from '../components/WeeklyReport.jsx'
-import { Banner, Card, CheckIcon, CloseIcon, Page, PageTitle, Sub, cx } from '../components/ui.jsx'
+import { Banner, CloseIcon, Page, PageTitle, Sub } from '../components/ui.jsx'
 
 const REMIND_AFTER_HOUR = 18 // 저녁 6시 이후부터 리마인더 표시
 
@@ -75,22 +76,7 @@ export default function Home({ records, onStart, session, celebrate, onCelebrate
       <PageTitle>오늘도 복근 챙기기</PageTitle>
       <Sub>Day {day} 운동이 준비되어 있어요.</Sub>
 
-      <Card className="px-5 py-8 text-center">
-        <div className="text-display font-extrabold tracking-tight tabular-nums">
-          <span className={cx('inline-block text-brand', celebrating && 'motion-safe:animate-pop')}>{streak}</span>일
-        </div>
-        <div className="mt-2 text-sm text-dim">연속 운동 streak</div>
-        <div
-          className={cx(
-            'mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold',
-            doneToday ? 'bg-brand/15 text-fg [&>svg]:text-brand' : 'bg-surface-2 text-dim',
-            celebrating && 'motion-safe:animate-pop',
-          )}
-        >
-          {doneToday && <CheckIcon className="size-4" />}
-          {doneToday ? (celebrating ? '오늘 운동 완료! 내일도 만나요' : '오늘 운동 완료!') : '아직 운동 전이에요'}
-        </div>
-      </Card>
+      <StreakCard streak={streak} doneToday={doneToday} celebrating={celebrating} />
 
       <WeeklyReport records={records} />
     </Page>

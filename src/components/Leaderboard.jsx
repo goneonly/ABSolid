@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { todayKey } from '../lib/storage.js'
 import { fetchGroupWorkoutDates } from '../server/api.js'
 import { daysInRange, getPrevRange, getRange, rankRows, shortDate, withRankDelta } from '../lib/stats.js'
-import { Card, CardTitle, Input, MemberAvatar, Sub, Trend, cx } from './ui.jsx'
+import RankBoard from './RankBoard.jsx'
+import { Card, CardTitle, Input, Sub, cx } from './ui.jsx'
 
 const PERIODS = [
   { key: 'week', label: '이번 주' },
@@ -57,7 +58,6 @@ export default function Leaderboard({ members, myId, myName, records }) {
   }, [cur, prev, members, myId, records, startKey, endKey, pStartKey, pEndKey])
 
   const totalDays = daysInRange(startKey, endKey)
-  const me = rows?.find((r) => r.id === myId)
 
   return (
     <Card>
@@ -109,50 +109,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
         <Sub className="mt-3">집계 중…</Sub>
       ) : (
         <>
-          {me && (
-            <div className="mt-3 rounded-md border border-line px-4 py-3 text-sm">
-              내 순위 <strong className="text-base text-brand">{me.rank}위</strong> · 인증 {me.count}회
-              <Trend delta={me.delta} className="ml-2 text-xs" />
-            </div>
-          )}
-
-          <div className="mt-1">
-            {rows.map((r) => {
-              const medal = r.rank <= 3 && r.count > 0
-              return (
-                <div key={r.id} className="flex items-center gap-3 border-b border-line py-3 last:border-b-0">
-                  <span
-                    className={cx(
-                      'w-6 flex-none text-center font-extrabold tabular-nums',
-                      medal ? 'text-base text-brand' : 'text-sm text-dim',
-                    )}
-                  >
-                    {r.rank}
-                  </span>
-                  <MemberAvatar name={r.name} avatar={r.avatar} active={r.rank === 1 && r.count > 0} />
-                  <div className="min-w-0 flex-1">
-                    <span className={cx('text-sm font-bold', r.id === myId && 'text-brand')}>
-                      {r.id === myId ? myName || r.name : r.name}
-                      {r.id === myId ? ' (나)' : ''}
-                    </span>
-                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-2">
-                      <i
-                        className="block h-full rounded-full bg-brand transition-[width] duration-300"
-                        style={{ width: `${Math.min(100, (r.count / totalDays) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="w-8 flex-none text-right text-xs">
-                    {r.delta ? <Trend delta={r.delta} /> : <span className="text-dot">—</span>}
-                  </span>
-                  <span className="w-10 flex-none text-right text-sm font-extrabold tabular-nums">
-                    {r.count}
-                    <span className="ml-px text-xs font-normal text-dim">회</span>
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+          <RankBoard rows={rows} myId={myId} myName={myName} totalDays={totalDays} />
 
           <Sub className="mt-3 text-xs">
             기간 내 인증 횟수 기준이에요. 삼각형은 직전 {totalDays}일 대비 순위 변동이에요.

@@ -165,7 +165,16 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
         </LinkButton>
       )}
 
-      <Sub className="mt-4 text-center">ABSolid v{__APP_VERSION__}</Sub>
+      {/* 버전 표시를 누르면 소개 페이지로 */}
+      <Sub className="mt-4 text-center">
+        <a
+          className="hit hover:text-fg hover:underline"
+          href="/about"
+          aria-label={`ABSolid v${__APP_VERSION__}, 소개 페이지 보기`}
+        >
+          ABSolid v{__APP_VERSION__}
+        </a>
+      </Sub>
       <div className="mt-3 flex items-center justify-center gap-5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
         <a className="hit" href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
           LinkedIn

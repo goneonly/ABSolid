@@ -11,7 +11,8 @@ export function splashStage(stage) {
 }
 
 let hiding = false
-export function hideSplash() {
+// minVisibleMs: 빨리 준비돼도 이만큼은 보여 줌 (소개 페이지는 더 짧게)
+export function hideSplash(minVisibleMs = MIN_VISIBLE_MS) {
   const splash = el()
   if (!splash || hiding) return
   hiding = true
@@ -20,7 +21,7 @@ export function hideSplash() {
   // 기준은 로딩 화면이 실제로 보이기 시작한 시각 (index.html 에서 기록) — 페이지 요청 시각부터 세면
   // 네트워크가 느릴수록 화면이 덜 보이는 문제가 있었음 (배포 환경에서 0.1초만 보임)
   const shownAt = window.__absolidSplashAt ?? 0
-  const wait = Math.max(0, MIN_VISIBLE_MS - (performance.now() - shownAt))
+  const wait = Math.max(0, minVisibleMs - (performance.now() - shownAt))
   setTimeout(() => {
     splash.classList.add('splash-out')
     setTimeout(() => splash.remove(), FADE_MS)

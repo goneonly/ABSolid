@@ -32,8 +32,9 @@ export function Logo({ size = 26, className }) {
 }
 
 // ── 레이아웃 ─────────────────────────────────
-export function Page({ className, ...props }) {
-  return <main className={cx('flex-1 px-5 pt-2 pb-6', className)} {...props} />
+// as: 다른 태그로 그릴 때 (소개 페이지의 화면 예시는 페이지 안에 main 이 또 생기지 않게 div 로 그림)
+export function Page({ as: Tag = 'main', className, ...props }) {
+  return <Tag className={cx('flex-1 px-5 pt-2 pb-6', className)} {...props} />
 }
 
 export function PageTitle({ className, ...props }) {
@@ -59,9 +60,10 @@ const BUTTON = {
   danger: 'bg-surface-2 text-danger',
 }
 
-export function Button({ variant = 'primary', className, ...props }) {
+// as="a" 를 넘기면 같은 모양의 링크로 그림 (href 와 함께)
+export function Button({ as: Tag = 'button', variant = 'primary', className, ...props }) {
   return (
-    <button
+    <Tag
       className={cx(
         'w-full rounded-lg p-4 text-base font-bold transition-transform active:scale-[.98] disabled:opacity-50 disabled:active:scale-100',
         BUTTON[variant],
@@ -72,9 +74,9 @@ export function Button({ variant = 'primary', className, ...props }) {
   )
 }
 
-export function MiniButton({ danger, className, ...props }) {
+export function MiniButton({ as: Tag = 'button', danger, className, ...props }) {
   return (
-    <button
+    <Tag
       className={cx(
         'flex-none rounded-sm border bg-surface-2 px-3 py-2 text-xs font-bold disabled:opacity-50',
         danger ? 'border-danger/40 text-danger' : 'border-line text-fg',
