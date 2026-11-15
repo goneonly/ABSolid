@@ -43,14 +43,15 @@ export default function WeeklyReport({ records }) {
       </Sub>
 
       <div className="mt-5 border-t border-line pt-4">
-        <Sub className="mb-4">최근 7일</Sub>
-        {/* 원과 요일 사이 12px (오늘은 바깥 테두리 4px 를 빼고도 8px 은 떨어지게) */}
-        <div className="flex justify-between">
+        <Sub className="mb-3">최근 7일</Sub>
+        {/* 원과 요일 사이 12px (오늘은 바깥 테두리 4px 를 빼고도 8px 은 떨어지게)
+            7칸으로 나누고 칸 사이 6px 를 보장. 폭이 좁은 폰(아이폰 확대 화면 등)에서는 원이 32px 보다 작아짐 */}
+        <div className="grid grid-cols-7 gap-1.5">
           {recent.map((d, i) => (
             <div className="flex flex-col items-center gap-3 text-xs text-dim" key={d.key}>
               <div
                 className={cx(
-                  'flex size-8 items-center justify-center rounded-full text-sm tabular-nums',
+                  'flex aspect-square w-full max-w-8 items-center justify-center rounded-full text-sm tabular-nums',
                   d.done ? 'bg-brand text-white' : 'bg-surface-2 text-dim',
                   i === 6 && 'outline-2 outline-offset-2 outline-brand',
                 )}

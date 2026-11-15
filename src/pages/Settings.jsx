@@ -166,7 +166,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
       )}
 
       <Sub className="mt-4 text-center">ABSolid v{__APP_VERSION__}</Sub>
-      <div className="mt-2 flex items-center justify-center gap-5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
+      <div className="mt-3 flex items-center justify-center gap-5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
         <a className="hit" href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
           LinkedIn
         </a>

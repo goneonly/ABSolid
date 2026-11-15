@@ -56,7 +56,7 @@ export default function Home({ records, onStart, session, celebrate, onCelebrate
       {notice && <Banner>{notice.message}</Banner>}
       {showReminder && (
         <Banner className="flex items-center justify-between gap-3" role="alert">
-          <span>오늘 아직 운동 전이에요. 자기 전에 복근 챙겨요!</span>
+          <span>아직 운동 전이에요. 자기 전에 복근 챙겨요!</span>
           <span className="flex flex-none items-center gap-1">
             <button className="hit px-2 py-1 text-sm font-bold text-brand" onClick={onStart}>
               지금 시작
@@ -88,7 +88,7 @@ export default function Home({ records, onStart, session, celebrate, onCelebrate
           )}
         >
           {doneToday && <CheckIcon className="size-4" />}
-          {doneToday ? (celebrating ? '오늘 운동 완료! 내일도 만나요' : '오늘 운동 완료!') : '오늘 아직 운동 전이에요'}
+          {doneToday ? (celebrating ? '오늘 운동 완료! 내일도 만나요' : '오늘 운동 완료!') : '아직 운동 전이에요'}
         </div>
       </Card>
 
