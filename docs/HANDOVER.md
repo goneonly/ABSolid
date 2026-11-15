@@ -118,16 +118,21 @@ npm run icons
 
 1. 코드를 고치면서 `docs/CHANGELOG.md` 맨 위에 변경 사항을 적습니다. 서버 함수나 API 가 바뀌면 `docs/API.md` 도 함께 고칩니다.
 2. `npm run check` 가 통과하는지 확인합니다.
-3. 기능 커밋을 만들고, 버전을 올린 뒤 push 합니다.
+3. 작업 브랜치에서 커밋하고 push 한 뒤, PR 을 열어 main 에 합칩니다. main 에는 직접 push 할 수 없습니다 (GitHub 보호 규칙).
+4. 새 버전을 내보낼 때는 버전 올리기도 PR 로 합니다. 최신 main 에서 `chore/release-버전` 브랜치를 만들어 아래 순서로 합니다.
 
 ```bash
-git add .
-git commit -m "feat: 변경 내용"
-npm version patch
-git push --follow-tags
+git switch main
+git pull
+git switch -c chore/release-0.8.0
+# docs/CHANGELOG.md 의 "다음 버전" 제목을 "0.8.0 (날짜)" 로 바꾼 뒤
+git add docs/CHANGELOG.md
+git commit -m "docs: 0.8.0 변경 기록"
+npm version minor
+git push -u origin chore/release-0.8.0 --follow-tags
 ```
 
-`npm version patch` 는 버전 번호만 올리는 커밋과 태그를 따로 만듭니다. 설정 화면 아래에 표시되는 버전이 이 값입니다.
+push 한 뒤 PR 을 열어 "Create a merge commit" 으로 합칩니다. `npm version` 은 버전 번호만 올리는 커밋과 태그를 따로 만듭니다. 설정 화면 아래에 표시되는 버전이 이 값입니다. 자세한 규칙은 [개발 규칙](CONVENTIONS.md) 6절과 7절에 있습니다.
 
 배포 위치가 세 군데라는 점을 기억해야 합니다.
 
