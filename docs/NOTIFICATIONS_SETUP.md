@@ -6,7 +6,7 @@
 |---|---|---|
 | 홈 배너 | 저녁 6시 이후 앱을 열었는데 오늘 운동 전 | 앱 (설정 불필요) |
 | 미운동 리마인더 푸시 | 매일 저녁 8시(KST), 오늘 운동 기록이 없는 사람 | `send-reminders` 함수 + 크론 |
-| 응원 푸시 | 그룹 멤버가 👏/💪 응원을 보냈을 때 | `notify-cheer` 함수 |
+| 응원 푸시 | 그룹 멤버가 응원을 보냈을 때 | `notify-cheer` 함수 |
 
 푸시는 **로그인한 회원이 설정에서 알림을 켰을 때만** 가요. 아이폰은 iOS 16.4 이상에서 **홈 화면에 추가한 앱**으로 열어야 알림을 켤 수 있어요.
 
@@ -15,7 +15,7 @@
 모든 명령은 프로젝트 폴더의 터미널에서 실행해요. (`npx supabase login` 은 한 번 해 두었으면 생략)
 
 ### 1. DB 준비
-SQL Editor 에서 `supabase/v0.8-cheers-and-push.sql` 실행 (응원 테이블, 푸시 등록 함수).
+SQL Editor 에서 `supabase/notifications.sql`(푸시 구독 테이블)과 `supabase/v0.8-cheers-and-push.sql`(응원 테이블, 푸시 등록 함수)을 이 순서로 실행. [Supabase 설정](SUPABASE_SETUP.md)의 SQL 을 이미 모두 실행했다면 건너뜁니다.
 
 ### 2. 알림 키(VAPID) 만들기
 ```bash

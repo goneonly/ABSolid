@@ -15,7 +15,6 @@ export default function ThemePicker() {
   return (
     <>
       <CardTitle>화면 테마</CardTitle>
-      <Sub className="mt-1">시스템을 고르면 휴대폰의 라이트 또는 다크 설정을 따라가요.</Sub>
       <div className="mt-3 flex gap-1 rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="화면 테마">
         {THEME_MODES.map((m) => (
           <button
@@ -32,6 +31,8 @@ export default function ThemePicker() {
           </button>
         ))}
       </div>
+      {/* 시스템을 골랐을 때만 안내. 버튼 아래에 두어 문구가 나타나고 사라져도 버튼 위치는 그대로 */}
+      {mode === 'system' && <Sub className="mt-2">시스템을 고르면 휴대폰의 라이트 또는 다크 모드 설정을 따라가요.</Sub>}
     </>
   )
 }

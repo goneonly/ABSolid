@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadYouTubeAPI } from '../lib/youtube.js'
-import { todayWorkoutDay, todayKey, saveRecord, getRecords, computeStreak } from '../lib/storage.js'
+import { PROGRAM_DAYS, todayWorkoutDay, todayKey, saveRecord, getRecords, computeStreak } from '../lib/storage.js'
 import CompleteModal from '../components/CompleteModal.jsx'
 import { getPlaylistId, startWorkoutSession, completeWorkout, uploadPhoto } from '../server/api.js'
 import { toast } from '../lib/toast.js'
 import { Button, Card, CardTitle, Page, PageTitle, Sub } from '../components/ui.jsx'
 
 const FINISH_RATIO = 0.8 // 영상 80% 이상 시청 시 수동 완료 버튼 활성화
-const PROGRAM_DAYS = 30
 
 export default function Workout({ onDone, session }) {
   const holderRef = useRef(null)
@@ -102,9 +101,13 @@ export default function Workout({ onDone, session }) {
     setShowModal(true)
   }
 
-  function closeAndReturn() {
+  function closeModal() {
     setSaving(false)
     setShowModal(false)
+  }
+
+  function closeAndReturn() {
+    closeModal()
     onDone()
   }
 
@@ -150,8 +153,7 @@ export default function Workout({ onDone, session }) {
       // 서버가 거절(시청 시간 부족 등): 기록하지 않고 계속 시청할 수 있게 되돌림
       toast(e.message)
       finishedRef.current = false
-      setSaving(false)
-      setShowModal(false)
+      closeModal()
     }
   }
 
@@ -206,7 +208,7 @@ export default function Workout({ onDone, session }) {
         </button>
       )}
 
-      <p className="mt-6 text-center text-xs text-dim"> © XYZ Fitness - 30 days six pack abs</p>
+      <p className="mt-6 text-center text-xs text-dim">© XYZ Fitness - 30 days six pack abs</p>
 
       {showModal && (
         <CompleteModal day={day} streak={streak} busy={saving} onSave={handleSave} onSkip={() => handleSave(null)} />

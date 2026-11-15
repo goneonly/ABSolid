@@ -23,4 +23,13 @@ export default [
       "react/no-unescaped-entities": "off",
     },
   },
+  // API 서버 (Node 에서 실행되는 코드: 브라우저 전역 대신 Node 전역)
+  {
+    files: ["server/**/*.js", "api/**/*.js"],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+  },
 ];

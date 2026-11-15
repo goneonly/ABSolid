@@ -16,6 +16,31 @@
 2. 이 폴더의 `supabase/schema.sql` 파일 내용을 전부 복사해 붙여넣기
 3. **Run** 을 누르고 "Success" 확인
 
+### SQL 실행 순서 한눈에 보기
+
+새 프로젝트에는 아래 16개 파일을 **이 순서대로** 모두 실행해야 합니다. 아래 2-1 부터의 설명에 나오지 않는 파일(3, 4, 5, 7, 9번)도 빠뜨리면 안 됩니다. 순서는 DB 보안 테스트(`supabase/tests/run.sh`)가 쓰는 것과 같습니다.
+
+| 순서 | 파일 | 내용 |
+| --- | --- | --- |
+| 1 | `schema.sql` | 기본 테이블 (프로필, 운동 기록, 그룹) |
+| 2 | `storage.sql` | 인증샷 저장소 |
+| 3 | `avatars.sql` | 프로필 사진 열과 저장소 |
+| 4 | `profiles-update.sql` | 프로필의 이름, 전화번호 열 |
+| 5 | `groups-update.sql` | 그룹 인원 제한 검증, 회원만 받기 |
+| 6 | `profiles-security-fix.sql` | 회원정보 보안 패치 |
+| 7 | `admin.sql` | 관리자 기능 (역할, 신고, 공지, 앱 설정, 통계) |
+| 8 | `security-and-fixes.sql` | 보안, 버그 통합 패치 |
+| 9 | `notifications.sql` | 푸시 구독 테이블 |
+| 10 | `v0.5-groups-and-fixes.sql` | 여러 그룹 참여, 그룹 사진 |
+| 11 | `v0.6-security.sql` | 보안 강화 |
+| 12 | `v0.7-workout-verify-and-consent.sql` | 운동 시청 검증, 가입 동의 |
+| 13 | `v0.8-cheers-and-push.sql` | 응원, 푸시 등록 |
+| 14 | `v0.9-user-blocks.sql` | 차단 |
+| 15 | `v0.10-signup-profile.sql` | 가입 때 프로필 저장 |
+| 16 | `v0.11-abuse-limits.sql` | 남용 방지 제한 |
+
+`notifications-cron.sql` 은 리마인더 푸시를 쓸 때만 실행하며, 방법은 [알림 설정 가이드](NOTIFICATIONS_SETUP.md)에 있습니다.
+
 ## 2-1. 사진 저장소 만들기 (Day 5)
 같은 방법으로 **SQL Editor / New query**에 `supabase/storage.sql` 내용을 붙여넣고 **Run**.
 (인증샷 업로드용 공개 버킷과 보안 규칙이 만들어져요)
@@ -32,7 +57,7 @@
 - **그룹 참여 원자화**: 정원 초과 경합 방지 + 한 사람은 한 그룹만
 - **회원 탈퇴**: 본인 프로필 삭제 정책
 
-> ⚠️ **인증샷 비공개 전환 순서**: 이 파일에는 `photos` 버킷을 비공개로 바꾸는 문장이 포함돼 있어요. **v0.4 프론트엔드를 먼저 배포한 뒤** 실행하세요(프론트가 signed URL로 사진을 불러오도록 바뀌었기 때문). 순서가 바뀌면 잠깐 사진이 안 보일 수 있어요. 과거 사진도 자동 호환됩니다.
+> **주의, 인증샷 비공개 전환 순서**: 이 파일에는 `photos` 버킷을 비공개로 바꾸는 문장이 포함돼 있어요. **v0.4 프론트엔드를 먼저 배포한 뒤** 실행하세요(프론트가 signed URL로 사진을 불러오도록 바뀌었기 때문). 순서가 바뀌면 잠깐 사진이 안 보일 수 있어요. 과거 사진도 자동 호환됩니다.
 
 ## 2-3-1. 여러 그룹 참여, 그룹 사진, 점검 패치 (v0.5, 필수)
 `security-and-fixes.sql` 실행 후, **SQL Editor / New query**에 `supabase/v0.5-groups-and-fixes.sql` 내용을 붙여넣고 **Run**. (재실행 안전)

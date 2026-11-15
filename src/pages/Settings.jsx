@@ -141,8 +141,8 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
             차단한 사용자
           </RowButton>
         )}
-        <RowButton hint="구글시트에서 열기 가능" onClick={() => setModal('export')}>
-          기록 내보내기 (CSV)
+        <RowButton hint="구글시트에서 열기 가능 (csv)" onClick={() => setModal('export')}>
+          기록 내보내기
         </RowButton>
         {/* 회원은 비밀번호로 본인 확인 후 초기화, 비회원은 비밀번호가 없어 바로 확인 창 */}
         <RowButton
@@ -166,7 +166,7 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
       )}
 
       <Sub className="mt-4 text-center">ABSolid v{__APP_VERSION__}</Sub>
-      <div className="mt-2 flex items-center justify-center gap-5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
+      <div className="mt-3 flex items-center justify-center gap-5 text-xs text-dim [&>a]:hover:text-fg [&>a]:hover:underline">
         <a className="hit" href="https://www.linkedin.com/in/jiwon-han-380b29274/" target="_blank" rel="noreferrer">
           LinkedIn
         </a>

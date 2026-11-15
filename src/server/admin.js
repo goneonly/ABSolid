@@ -1,7 +1,7 @@
 // 관리자 화면 전용 서버 통신 — 권한은 서버 RLS(is_admin)가 검증하므로 일반 회원이 호출해도 실패함
 // (회원 기능은 api.js, 명세는 docs/API.md)
 import { supabase } from './supabase.js'
-import { signPhotoPaths } from './api.js'
+import { NO_NAME, signPhotoPaths, withMemberCount } from './api.js'
 import { BUCKET, workoutPhotoPath, photoObjectPath } from './storagePaths.js'
 
 // ── 대시보드 ─────────────────────────────────
@@ -53,10 +53,7 @@ export async function fetchGroupsAdmin() {
     .order('created_at', { ascending: false })
     .limit(100)
   if (error) throw new Error('그룹 목록을 불러오지 못했어요.')
-  return (data || []).map((g) => ({
-    ...g,
-    memberCount: g.group_members?.[0]?.count ?? 0,
-  }))
+  return (data || []).map(withMemberCount)
 }
 
 export async function deleteGroupAdmin(id) {
@@ -98,8 +95,8 @@ export async function fetchReports() {
   }
   return reports.map((r) => ({
     ...r,
-    reporterName: names[r.reporter_id] || '이름 없음',
-    targetName: names[r.target_user_id] || '이름 없음',
+    reporterName: names[r.reporter_id] || NO_NAME,
+    targetName: names[r.target_user_id] || NO_NAME,
     photoUrl: photoOf[`${r.target_user_id}|${r.target_date}`] || null,
   }))
 }

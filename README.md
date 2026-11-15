@@ -69,17 +69,17 @@ npm run dev
 
 자주 쓰는 명령어
 
-| 명령어 | 설명 |
-| --- | --- |
-| `npm run dev` | 개발 서버 |
-| `npm run check` | 커밋 전 한 번에 검사 (린트, 코드 스타일, 단위 테스트, 빌드) |
-| `npm run build` | 배포용 빌드 |
-| `npm run lint` | ESLint 검사 |
-| `npm run format` | Prettier 로 코드 스타일 정리 |
-| `npm test` | 단위 테스트 (Vitest) |
+| 명령어            | 설명                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`     | 개발 서버. 화면(5173)과 API 서버(8787)를 함께 실행                                                                 |
+| `npm run check`   | 커밋 전 한 번에 검사 (린트, 코드 스타일, 단위 테스트, 빌드)                                                        |
+| `npm run build`   | 배포용 빌드                                                                                                        |
+| `npm run lint`    | ESLint 검사                                                                                                        |
+| `npm run format`  | Prettier 로 코드 스타일 정리                                                                                       |
+| `npm test`        | 단위 테스트 (Vitest)                                                                                               |
 | `npm run test:db` | DB 보안 테스트. SQL을 임시 Postgres에 적용해 권한과 공격 시나리오를 검증합니다. PostgreSQL이 설치돼 있어야 합니다. |
-| `npm run splash` | 아이폰 시작 이미지 다시 만들기 (로딩 화면 디자인을 바꿨을 때) |
-| `npm run icons` | 홈 화면 앱 아이콘 다시 만들기 (로고를 바꿨을 때) |
+| `npm run splash`  | 아이폰 시작 이미지 다시 만들기 (로딩 화면 디자인을 바꿨을 때)                                                      |
+| `npm run icons`   | 홈 화면 앱 아이콘 다시 만들기 (로고를 바꿨을 때)                                                                   |
 
 GitHub에 푸시하면 CI가 린트, 코드 스타일, 단위 테스트, 빌드, DB 보안 테스트를 모두 돌립니다.
 SQL 파일을 새로 만들면 `supabase/tests/run.sh`의 실행 순서 목록에도 추가해 주세요.
@@ -91,7 +91,9 @@ SQL 파일을 새로 만들면 `supabase/tests/run.sh`의 실행 순서 목록�
 
 코드를 읽기 전에 보면 좋은 문서입니다.
 
+- [계획](docs/PLAN.md): 프로젝트의 방향. 무엇을, 왜, 어떤 순서로 만드는지. 처음 맡으면 가장 먼저 읽는 문서
 - [스프린트 백로그](docs/SPRINT_BACKLOG.md): 앞으로 할 일과 우선순위 (자체 백엔드, 플레이스토어 등록 등)
+- [개발 규칙](docs/CONVENTIONS.md): 글쓰기, 코드 스타일, 폴더, 화면 디자인, 서버, 브랜치와 커밋, 버전 규칙
 - [인수인계 안내](docs/HANDOVER.md): 앱이 켜지는 과정, 자주 하는 작업, 배포와 릴리스 절차, 주의할 점
 - [API 명세](docs/API.md): 서버 함수, 테이블과 권한, 저장소, 앱 함수 목록
 - [변경 기록](docs/CHANGELOG.md): 버전별 변경 사항. 버전을 올릴 때마다 함께 고칩니다.
@@ -125,19 +127,21 @@ src/
 │   └── 그 외          image(사진 압축), install(홈 화면 추가), toast(안내 한 줄), youtube, terms(약관 버전), easterEggs
 ├── hooks/             useAuth(로그인 상태), useLoad(서버 데이터 불러오기)
 └── test/              테스트 공통 준비
+server/                자체 API 서버 (Hono). app.js 가 앱, auth.js 는 로그인 토큰 확인, supabase.js 는 DB 연결, dev.js 는 로컬 실행용
+api/                   Vercel 서버 함수 입구 (index.js 가 server/app.js 를 연결)
 public/                아이콘, 아이폰 시작 이미지(splash/), 서비스 워커(sw.js)
-scripts/               make-splash-images.mjs (아이폰 시작 이미지 생성)
+scripts/               make-splash-images.mjs (아이폰 시작 이미지 생성), make-app-icons.mjs (홈 화면 앱 아이콘 생성)
 supabase/
 ├── *.sql              스키마와 보안 정책 (실행 순서는 Supabase 설정 문서 참고)
 ├── tests/             DB 보안 테스트
 └── functions/         delete-account(탈퇴), admin-delete-user(관리자 계정 삭제),
                        send-reminders(리마인더), notify-cheer(응원 알림)
-docs/                  인수인계 안내, API 명세, 변경 기록, 서버 설정 문서
+docs/                  계획, 개발 규칙, 인수인계 안내, 스프린트 백로그, API 명세, 변경 기록, 서버 설정 문서
 prototypes/
 └── situp-render/      운동 영상을 3D로 만드는 Blender 파이프라인 (작업 중)
 ```
 
-## 지켜야 할 규칙
+## 규칙
 
 - 오늘의 영상은 이번 달 날짜와 같은 Day입니다. 31일은 Day 30을 보여줍니다.
 - 스타일은 `index.css`에 정의한 토큰만 씁니다. 임의의 색상이나 크기를 넣지 않습니다.
@@ -146,3 +150,5 @@ prototypes/
 ---
 
 개인 프로젝트로, Claude와 함께 바이브 코딩으로 만들고 있습니다.
+
+All rights reserved.

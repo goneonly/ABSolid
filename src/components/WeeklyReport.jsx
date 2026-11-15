@@ -14,7 +14,7 @@ export default function WeeklyReport({ records }) {
     count === 0
       ? '이번 주 첫 운동을 시작해 볼까요?'
       : delta > 0
-        ? '지난주보다 더 활발해요! 이 기세 그대로 가요.'
+        ? '지난주보다 더 활발해요!'
         : delta < 0
           ? '지난주엔 더 열심이었어요. 오늘 한 번 어때요?'
           : '지난주와 같은 페이스로 꾸준해요.'
@@ -22,12 +22,12 @@ export default function WeeklyReport({ records }) {
   return (
     <Card>
       <CardTitle>주간 리포트</CardTitle>
-      <Sub className="mt-1 text-xs">이번 주 · {range}</Sub>
+      <Sub className="mt-1 text-xs">{range}</Sub>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <Stat value={count} unit="회" label="이번 주 인증" />
+        <Stat value={count} unit="회" label="인증" />
         <Stat value={streak} unit="일" label="연속 streak" />
-        <Stat value={rate} unit="%" label="이번 주 달성률" />
+        <Stat value={rate} unit="%" label="달성률" />
       </div>
 
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
@@ -43,14 +43,15 @@ export default function WeeklyReport({ records }) {
       </Sub>
 
       <div className="mt-5 border-t border-line pt-4">
-        <Sub className="mb-4">최근 7일</Sub>
-        {/* 원과 요일 사이 12px (오늘은 바깥 테두리 4px 를 빼고도 8px 은 떨어지게) */}
-        <div className="flex justify-between">
+        <Sub className="mb-3">최근 7일</Sub>
+        {/* 원과 요일 사이 12px (오늘은 바깥 테두리 4px 를 빼고도 8px 은 떨어지게)
+            7칸으로 나누고 칸 사이 6px 를 보장. 폭이 좁은 폰(아이폰 확대 화면 등)에서는 원이 32px 보다 작아짐 */}
+        <div className="grid grid-cols-7 gap-1.5">
           {recent.map((d, i) => (
             <div className="flex flex-col items-center gap-3 text-xs text-dim" key={d.key}>
               <div
                 className={cx(
-                  'flex size-8 items-center justify-center rounded-full text-sm tabular-nums',
+                  'flex aspect-square w-full max-w-8 items-center justify-center rounded-full text-sm tabular-nums',
                   d.done ? 'bg-brand text-white' : 'bg-surface-2 text-dim',
                   i === 6 && 'outline-2 outline-offset-2 outline-brand',
                 )}

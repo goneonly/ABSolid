@@ -18,8 +18,9 @@ vi.mock('./supabase.js', () => {
   return { supabase: client, currentUser, currentUserId: async () => (await currentUser())?.id || null }
 })
 
-const { completeWorkout, retryPendingCompletions, fetchBlockedIds, blockUser } = await import('./api.js')
-const { getRecords, saveRecord } = await import('../lib/storage.js')
+const { completeWorkout, retryPendingCompletions, fetchBlockedIds, blockUser, unblockUser, fetchGroupStatus } =
+  await import('./api.js')
+const { getRecords, saveRecord, todayKey } = await import('../lib/storage.js')
 
 const UID = 'u-1'
 const signedIn = () => client.auth.getSession.mockResolvedValue({ data: { session: { user: { id: UID } } } })
@@ -146,6 +147,59 @@ describe('사용자 차단', () => {
     client.rpc.mockResolvedValueOnce(rpcError('PGRST202', 'function not found'))
     await expect(blockUser('u-2')).rejects.toThrow('차단 기능을 쓸 수 없어요')
     expect(client.rpc).toHaveBeenLastCalledWith('block_user', { p_target: 'u-2' })
+  })
+  it('차단 해제는 해제용 서버 함수를 부른다', async () => {
+    signedIn()
+    client.rpc.mockResolvedValueOnce({ data: null, error: null })
+    await unblockUser('u-2')
+    expect(client.rpc).toHaveBeenLastCalledWith('unblock_user', { p_target: 'u-2' })
+  })
+})
+
+describe('그룹 화면 데이터', () => {
+  // 테이블 이름별로 정해 둔 결과를 돌려주는 가짜 조회 (select, eq, in, gte 를 몇 번 이어 불러도 같은 결과)
+  const tables = (results) =>
+    client.from.mockImplementation((name) => {
+      const query = Object.assign(Promise.resolve(results[name]), {})
+      for (const step of ['select', 'eq', 'in', 'gte']) query[step] = () => query
+      return query
+    })
+
+  it('차단한 멤버는 빼고, 멤버별 운동 날짜와 오늘의 인증샷을 묶어 준다', async () => {
+    signedIn()
+    const today = todayKey()
+    tables({
+      group_members: { data: [{ user_id: 'u-1' }, { user_id: 'u-2' }, { user_id: 'u-3' }] },
+      user_blocks: { data: [{ blocked: 'u-3' }], error: null },
+      workouts: {
+        data: [
+          { user_id: 'u-1', date: today, photo_url: 'u-1/a.jpg' },
+          { user_id: 'u-1', date: '2026-01-01', photo_url: null },
+          { user_id: 'u-2', date: today, photo_url: null },
+          { user_id: 'u-3', date: today, photo_url: 'u-3/c.jpg' },
+        ],
+      },
+    })
+    client.rpc.mockResolvedValueOnce({ data: [{ id: 'u-1', nickname: '민준', avatar_url: 'https://a' }] })
+    bucket.createSignedUrls = vi
+      .fn()
+      .mockResolvedValue({ data: [{ path: 'u-1/a.jpg', signedUrl: 'https://signed/a' }] })
+
+    const { members, photos, hiddenCount } = await fetchGroupStatus('g-1')
+
+    expect(hiddenCount).toBe(1)
+    expect(members.map((m) => [m.id, m.name, m.avatar, [...m.dates].sort()])).toEqual([
+      ['u-1', '민준', 'https://a', ['2026-01-01', today].sort()],
+      ['u-2', '이름 없음', '', [today]],
+    ])
+    expect(photos).toEqual([{ id: 'u-1', name: '민준', url: 'https://signed/a' }])
+    // 차단한 멤버의 사진은 서명 요청에도 넣지 않음
+    expect(bucket.createSignedUrls).toHaveBeenCalledWith(['u-1/a.jpg'], expect.any(Number))
+  })
+  it('멤버가 없으면 빈 결과', async () => {
+    signedIn()
+    tables({ group_members: { data: [] }, user_blocks: { data: [], error: null } })
+    expect(await fetchGroupStatus('g-1')).toEqual({ members: [], photos: [], hiddenCount: 0 })
   })
 })
 
