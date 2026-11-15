@@ -8,7 +8,7 @@ const NAV_START_CIRCLE =
 
 export default function BottomNav({ view, onChange }) {
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 grid h-20 w-full max-w-120 -translate-x-1/2 grid-cols-3 items-center border-t border-line bg-bg/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+    <nav className="fixed bottom-0 left-1/2 z-50 grid h-[calc(5rem+env(safe-area-inset-bottom))] w-full max-w-120 -translate-x-1/2 grid-cols-3 items-center border-t border-line bg-bg/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
       <button className={cx(NAV_BTN, view === 'group' ? 'text-fg' : 'text-dim')} onClick={() => onChange('group')}>
         {/* 속이 찬 아이콘: 앞사람(크게)과 뒷사람(작게) */}
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
