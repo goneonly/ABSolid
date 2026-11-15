@@ -65,6 +65,20 @@ npm run test:db
 **새 화면 추가**
 `src/pages/` 에 파일을 만들고, `src/lazyPages.js` 의 목록과 `src/App.jsx` 의 화면 전환 부분에 추가합니다.
 
+**소개 페이지(/about) 고치기**
+주소가 `/about` 이면 `src/main.jsx` 가 앱 대신 `src/pages/About.jsx` 를 보여 줍니다. 배포에서는 `vercel.json` 의 rewrites 가 `/about` 을 앱 페이지로 연결합니다. 고칠 곳은 종류마다 한 파일입니다.
+
+| 고칠 것 | 파일 |
+| --- | --- |
+| 문구, 구간 안의 항목 | `src/pages/about/content.js` |
+| 휴대폰 속 화면 예시 | `src/pages/about/screens.jsx` (가짜 데이터는 `demoData.js`) |
+| 구간의 순서 | `src/pages/About.jsx` |
+| 구간의 배치 | `src/pages/about/sections/` |
+| 스크롤, 마우스에 따른 움직임 | `src/pages/about/motion.jsx`, `about.css` |
+| 휴대폰 틀 이미지 | `python3 scripts/make-phone-frame.py <새 사진>` 을 돌리고, 출력된 숫자를 `PhoneMockup.jsx` 의 `FRAME` 에 옮김 |
+
+휴대폰 속 화면은 캡처 사진이 아니라 앱의 실제 부품(`StreakCard`, `WeeklyReport`, `MemberRow`, `RankBoard`, `CompleteModal`, `BottomNav`)을 가짜 데이터로 그린 것입니다. 부품의 모양을 바꾸면 소개 페이지도 저절로 따라 바뀌고, 화면의 구성(어떤 부품을 어떤 순서로 놓는지)을 바꿨을 때만 `screens.jsx` 를 함께 고칩니다. 소개 페이지는 서버를 부르지 않습니다.
+
 **서버에서 데이터를 읽거나 쓰는 기능 추가**
 `src/server/api.js` 에 함수를 추가합니다. 조회 함수는 비회원이면 빈 값을 돌려주고, 사용자가 누른 동작은 실패하면 한국어 문구를 담은 `Error` 를 던지는 규칙을 따릅니다. 추가한 함수는 `docs/API.md` 의 목록에도 적습니다.
 

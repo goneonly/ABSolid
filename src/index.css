@@ -90,6 +90,10 @@
   #root {
     @apply mx-auto min-h-dvh max-w-120 pt-[env(safe-area-inset-top)];
   }
+  /* 소개 페이지(/about)는 휴대폰 폭에 가두지 않고 화면 전체를 씀 (main.jsx 가 data-page 를 붙임) */
+  :root[data-page='about'] #root {
+    @apply max-w-none pt-0;
+  }
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
@@ -99,12 +103,13 @@
 /*
  * 라이트 테마 — 위 @theme 의 색, 그림자 변수만 바꿔 끼움 (유틸리티 클래스는 그대로)
  * <html data-theme="light|dark"> 는 index.html 의 첫 스크립트와 src/lib/theme.js 가 설정
+ * 화면 일부에만 data-theme="light" 를 붙여도 그 안쪽만 라이트가 됨 (소개 페이지의 테마 비교가 사용)
  * 빨강은 흰 배경에서 글자 대비 4.5:1 이상이 되도록 조금 더 진하게
  */
 :root {
   color-scheme: dark;
 }
-:root[data-theme='light'] {
+[data-theme='light'] {
   color-scheme: light;
   --color-bg: #f5f6f8;
   --color-surface: #ffffff;

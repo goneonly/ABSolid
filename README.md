@@ -6,6 +6,8 @@ ABS + Solid 의 합성어로,
 
 https://absolid.vercel.app
 
+앱 소개는 https://absolid.vercel.app/about 에서 볼 수 있습니다.
+
 ## 주요 기능
 
 **운동**
@@ -107,7 +109,8 @@ src/
 ├── App.jsx            화면 전환과 로그인 상태에 따른 시작 처리
 ├── lazyPages.js       첫 화면에 필요 없는 화면을 나중에 받아 오는 목록
 ├── index.css          디자인 토큰 (색상, 글자 크기, 모서리), 라이트 테마
-├── pages/             화면 (Login, Home, Workout, Group, Settings, Admin)
+├── pages/             화면 (Login, Home, Workout, Group, Settings, Admin, About)
+│   ├── about/         소개 페이지(/about). 문구(content.js), 휴대폰 속 화면 예시(screens.jsx), 움직임(motion.jsx), 구간(sections/)
 │   ├── group/         그룹 화면 부품 (상세, 멤버 줄, 참여와 생성 카드)
 │   └── settings/      설정 화면 부품 (프로필 사진, 변경 모달, 본인 확인, 알림, 테마, 차단 목록)
 ├── components/        공통 UI(ui.jsx), 모달, 리더보드, 주간 리포트, 캡차, 사진 고르기
@@ -130,7 +133,8 @@ src/
 server/                자체 API 서버 (Hono). app.js 가 앱, auth.js 는 로그인 토큰 확인, supabase.js 는 DB 연결, dev.js 는 로컬 실행용
 api/                   Vercel 서버 함수 입구 (index.js 가 server/app.js 를 연결)
 public/                아이콘, 아이폰 시작 이미지(splash/), 서비스 워커(sw.js)
-scripts/               make-splash-images.mjs (아이폰 시작 이미지 생성), make-app-icons.mjs (홈 화면 앱 아이콘 생성)
+scripts/               make-splash-images.mjs (아이폰 시작 이미지 생성), make-app-icons.mjs (홈 화면 앱 아이콘 생성),
+                       make-phone-frame.py (소개 페이지의 휴대폰 틀 이미지 생성)
 supabase/
 ├── *.sql              스키마와 보안 정책 (실행 순서는 Supabase 설정 문서 참고)
 ├── tests/             DB 보안 테스트
