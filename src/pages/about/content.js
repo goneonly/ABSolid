@@ -48,7 +48,7 @@ export const NUMBERS = {
   items: [
     { value: 10, unit: '분', label: '하루에 필요한 시간' },
     { value: 30, unit: '일', label: 'Day 1부터 이어지는 프로그램' },
-    { value: 80, unit: '%', label: '영상을 이만큼 봐야 완료로 기록' },
+    { value: 1, unit: '번', label: '하루에 운동 하나면 충분' },
   ],
 }
 
@@ -99,7 +99,7 @@ export const FEATURES = {
 export const CTA = {
   title: ['오늘의 10분,', '지금 시작해요'],
   body: '가입 없이 써 보고, 마음에 들면 친구를 불러요.',
-  cta: 'ABSolid 열기',
+  cta: '지금 시작하기',
 }
 
 export const LINKS = {

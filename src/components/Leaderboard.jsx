@@ -74,7 +74,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
             key={p.key}
             className={cx(
               'hit rounded-full border px-3 py-2 text-xs font-bold',
-              period === p.key ? 'border-brand bg-brand/15 text-fg' : 'border-line bg-surface-2 text-dim',
+              period === p.key ? 'border-brand-strong bg-brand-strong text-white' : 'border-line bg-surface-2 text-dim',
             )}
             onClick={() => setPeriod(p.key)}
           >

@@ -12,7 +12,8 @@ export default function StreakCard({ streak, doneToday, celebrating }) {
       <div
         className={cx(
           'mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold',
-          doneToday ? 'bg-brand/15 text-fg [&>svg]:text-brand' : 'bg-surface-2 text-dim',
+          // 완료는 빨간 바탕에 흰 글자 (연한 빨강은 라이트 모드에서 연핑크로 보여서 쓰지 않음)
+          doneToday ? 'bg-brand-strong text-white' : 'bg-surface-2 text-dim',
           celebrating && 'motion-safe:animate-pop',
         )}
       >
