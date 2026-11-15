@@ -38,7 +38,7 @@ export default function Showcase() {
       style={{ height: `${STEPS * 100}svh` }}
       aria-label="주요 기능"
     >
-      <div className="sticky top-0 flex h-svh flex-col items-center gap-6 overflow-hidden px-5 pt-16 pb-6 md:flex-row md:justify-center md:gap-20 md:px-10 md:pt-14 md:pb-0">
+      <div className="sticky top-0 flex h-svh flex-col items-center gap-6 overflow-hidden px-5 pt-[calc(4rem+env(safe-area-inset-top))] pb-6 md:flex-row md:justify-center md:gap-20 md:px-10 md:pt-14 md:pb-0">
         {/* 휴대폰: 좁은 화면에서는 위, 넓은 화면에서는 오른쪽 */}
         <div className="flex min-h-0 flex-1 items-center justify-center md:order-2 md:flex-none">
           <div className="about-showcase-phone">

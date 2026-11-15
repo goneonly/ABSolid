@@ -10,7 +10,7 @@ export default function Hero() {
   const tiltRef = useTilt() // 마우스 위치 (구간 전체에서 받아 휴대폰까지 내려감)
   const phoneRef = useScrollProgress('enter')
   return (
-    <section ref={tiltRef} className="px-5 pt-28 text-center md:pt-32">
+    <section ref={tiltRef} className="px-5 pt-[calc(7rem+env(safe-area-inset-top))] text-center md:pt-32">
       <Reveal eager as="p" className="text-sm font-bold text-brand">
         {HERO.eyebrow}
       </Reveal>

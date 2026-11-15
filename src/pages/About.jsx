@@ -28,7 +28,9 @@ export default function About() {
 
   return (
     <div ref={pageRef} className="overflow-x-clip" style={{ '--phone-ratio': PHONE_RATIO }}>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/92 backdrop-blur-md">
+      {/* 아이폰 상태표시줄(시계, 카메라 자리)만큼 위를 띄우고, 바탕을 불투명하게 해서 그 자리까지 같은 색으로 채움
+          (반투명이면 아이폰 Safari 가 상태표시줄 아래를 흐리게 처리해 바가 잘려 보임) */}
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex h-14 max-w-240 items-center justify-between px-5 md:px-10">
           <a href="/about" aria-label="ABSolid 소개 맨 위로">
             <Logo className="text-xl" />
