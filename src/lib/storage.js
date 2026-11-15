@@ -43,8 +43,14 @@ function readJson(key, fallback) {
     return fallback
   }
 }
+// 저장에 성공했는지 돌려줌 (용량 초과, 프라이빗 모드 등으로 실패하면 false)
 function writeJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value))
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function todayKey(d = new Date()) {
@@ -54,9 +60,11 @@ export function todayKey(d = new Date()) {
   return `${y}-${m}-${day}`
 }
 
+export const PROGRAM_DAYS = 30 // 운동 프로그램 길이 (Day 1~30)
+
 // 오늘 날짜의 "일" 기준 운동 Day 번호 (31일은 day 30)
 export function todayWorkoutDay(d = new Date()) {
-  return Math.min(d.getDate(), 30)
+  return Math.min(d.getDate(), PROGRAM_DAYS)
 }
 
 // ── 운동 기록 ────────────────────────────────
@@ -66,15 +74,19 @@ export function getRecords() {
 }
 
 // 그 날짜 기록에 값을 덮어씀 (없던 날짜면 새로 만듦)
+// 기기 저장 공간이 모자라면(인증샷은 용량이 큼) 사진을 빼고 다시 저장해 완료 기록은 남김
 export function saveRecord(dateKey, rec) {
   const all = getRecords()
   all[dateKey] = { ...(all[dateKey] || {}), ...rec }
-  writeJson(KEYS.records, all)
+  if (!writeJson(KEYS.records, all) && all[dateKey].photo) {
+    delete all[dateKey].photo
+    writeJson(KEYS.records, all)
+  }
   return all
 }
 
 export function clearRecords() {
-  localStorage.removeItem(KEYS.records)
+  remove(KEYS.records)
 }
 
 // 로그아웃 시: 이 기기에 남은 계정별 데이터 정리

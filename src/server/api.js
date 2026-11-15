@@ -18,7 +18,7 @@ import {
 import { PLAYLIST_ID } from '../lib/youtube.js'
 
 const LOGIN_REQUIRED = '로그인이 필요해요.'
-const NO_NAME = '이름 없음'
+export const NO_NAME = '이름 없음' // 닉네임을 정하지 않은 멤버 (admin.js 도 같은 문구 사용)
 
 // 서버 함수가 직접 알려준 거절 사유(raise exception, 코드 P0001)는 그대로 보여주고, 그 외 오류는 일반 안내
 const reasonOf = (error, fallback) => (error.code === 'P0001' && error.message ? error.message : fallback)
@@ -31,6 +31,16 @@ async function requireUid() {
 
 // 서버 함수가 행 하나를 배열로 돌려주는 경우가 있어 첫 행만 꺼냄
 const firstRow = (data) => (Array.isArray(data) ? data[0] : data)
+
+// 그룹 조회에 함께 온 group_members(count) 를 memberCount 숫자로 풀어 줌 (admin.js 도 사용)
+export const withMemberCount = (g) => ({ ...g, memberCount: g.group_members?.[0]?.count ?? 0 })
+
+// 운동 기록 행들을 { 멤버 id: Set(날짜) } 로 묶음
+function datesByUser(rows) {
+  const out = {}
+  for (const w of rows || []) (out[w.user_id] ||= new Set()).add(w.date)
+  return out
+}
 
 // ── 사진 저장소 도우미 ───────────────────────
 const PHOTO_TTL = 60 * 60 * 8 // 인증샷 열람 주소 유효 시간 (8시간)
@@ -274,7 +284,7 @@ export async function fetchMyGroups() {
     )
     .order('created_at')
   if (error) throw new Error(FAILED)
-  return (data || []).map((g) => ({ ...g, memberCount: g.group_members?.[0]?.count ?? 0 }))
+  return (data || []).map(withMemberCount)
 }
 
 // 그룹 만들기 — 그룹, 내 멤버십, 초대 코드를 서버 함수가 한 번에 처리 (v0.5 SQL, 하루 5개 제한은 v0.11)
@@ -341,28 +351,27 @@ const removeGroupPhotoFile = (groupId) =>
 // 반환: { members: [{ id, name, avatar, dates: Set }], photos: [{ id, name, url }], hiddenCount }
 // 내가 차단한 멤버는 빼고, 뺀 인원 수를 hiddenCount 로 알려줌
 export async function fetchGroupStatus(groupId) {
-  const { data: rows } = await supabase.from('group_members').select('user_id').eq('group_id', groupId)
+  // 멤버 목록과 내 차단 목록은 서로 기다릴 필요가 없어 함께 요청
+  const [{ data: rows }, blocked] = await Promise.all([
+    supabase.from('group_members').select('user_id').eq('group_id', groupId),
+    fetchBlockedIds(),
+  ])
   const ids = (rows || []).map((m) => m.user_id)
   if (!ids.length) return { members: [], photos: [], hiddenCount: 0 }
 
   const weekAgo = new Date()
   weekAgo.setDate(weekAgo.getDate() - 6)
   const today = todayKey() // 기록 날짜는 한국 날짜 기준 (toISOString 은 UTC 라 새벽에 하루 밀림)
-  const [{ data: profiles }, { data: workouts }, blocked] = await Promise.all([
+  const [{ data: profiles }, { data: workouts }] = await Promise.all([
     supabase.rpc('get_group_profiles', { gid: groupId }),
     supabase.from('workouts').select('user_id, date, photo_url').in('user_id', ids).gte('date', todayKey(weekAgo)),
-    fetchBlockedIds(),
   ])
   const profileOf = Object.fromEntries((profiles || []).map((p) => [p.id, p]))
   const nameOf = (id) => profileOf[id]?.nickname || NO_NAME
 
-  const datesOf = {} // 멤버 id 별 운동한 날짜 Set
-  const todayPhotos = []
-  for (const w of workouts || []) {
-    if (blocked.has(w.user_id)) continue
-    ;(datesOf[w.user_id] ||= new Set()).add(w.date)
-    if (w.date === today && w.photo_url) todayPhotos.push(w)
-  }
+  const visible = (workouts || []).filter((w) => !blocked.has(w.user_id))
+  const datesOf = datesByUser(visible)
+  const todayPhotos = visible.filter((w) => w.date === today && w.photo_url)
   const signed = await signPhotoPaths(todayPhotos.map((w) => w.photo_url))
 
   const members = ids
@@ -388,9 +397,7 @@ export async function fetchGroupWorkoutDates(memberIds, startKey, endKey) {
     .in('user_id', memberIds)
     .gte('date', startKey)
     .lte('date', endKey)
-  const out = {}
-  for (const w of data || []) (out[w.user_id] ||= new Set()).add(w.date)
-  return out
+  return datesByUser(data)
 }
 
 // ── 응원 (v0.8 SQL) ──────────────────────────
@@ -446,17 +453,15 @@ export async function fetchBlockedIds() {
   return error ? new Set() : new Set((data || []).map((r) => r.blocked))
 }
 
-export async function blockUser(userId) {
+// 차단, 해제는 서버 함수 이름만 다름
+async function callBlockRpc(fn, userId) {
   await requireUid()
-  const { error } = await supabase.rpc('block_user', { p_target: userId })
+  const { error } = await supabase.rpc(fn, { p_target: userId })
   if (error) throw new Error(reasonOf(error, BLOCK_FAILED))
 }
 
-export async function unblockUser(userId) {
-  await requireUid()
-  const { error } = await supabase.rpc('unblock_user', { p_target: userId })
-  if (error) throw new Error(reasonOf(error, BLOCK_FAILED))
-}
+export const blockUser = (userId) => callBlockRpc('block_user', userId)
+export const unblockUser = (userId) => callBlockRpc('unblock_user', userId)
 
 // 설정 화면의 차단 목록 [{ id, nickname, created_at }]
 export async function fetchMyBlocks() {

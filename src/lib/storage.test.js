@@ -4,6 +4,7 @@ import {
   todayWorkoutDay,
   getRecords,
   saveRecord,
+  clearRecords,
   computeStreak,
   lastNDays,
   cleanupLocalPhotos,
@@ -184,6 +185,21 @@ describe('기기 플래그', () => {
     expect(() => clearAllAppData()).not.toThrow()
     expect(getRecords()).toEqual({})
     expect(getProfile()).toEqual({ nickname: '' })
+    // 쓰기 함수도 화면을 멈추지 않는다 (운동 완료 저장 중에 오류가 나면 완료 창이 닫히지 않음)
+    expect(() => saveRecord('2026-10-14', { completed: true })).not.toThrow()
+    expect(() => saveProfile({ nickname: '민준' })).not.toThrow()
+    expect(() => mergeRecords({ '2026-10-14': { completed: true } })).not.toThrow()
+    expect(() => clearRecords()).not.toThrow()
+  })
+  it('저장 공간이 모자라면 인증샷만 빼고 완료 기록은 남긴다', () => {
+    // 사진이 들어간 값은 용량 초과로 거절하는 저장소
+    const real = localStorage.setItem.bind(localStorage)
+    vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (value.includes('data:image')) throw new Error('QuotaExceededError')
+      real(key, value)
+    })
+    saveRecord('2026-10-14', { completed: true, day: 14, photo: 'data:image/jpeg;base64,AAAA' })
+    expect(getRecords()['2026-10-14']).toEqual({ completed: true, day: 14 })
   })
 })
 

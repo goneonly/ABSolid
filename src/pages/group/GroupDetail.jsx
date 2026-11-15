@@ -40,6 +40,8 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   const [cheers, setCheers] = useState({ counts: {}, byMe: new Set() })
   const [cheering, setCheering] = useState(null) // 응원 보내는 중인 멤버 id
   const isOwner = group.created_by === myId
+  // 실제 멤버 수: 차단해 숨긴 멤버도 포함. 아직 불러오기 전이면 목록에서 받은 수
+  const memberCount = members.length + hiddenCount || group.memberCount
 
   async function cheerFor(member) {
     setCheering(member.id)
@@ -81,9 +83,8 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   }, [load])
 
   async function onLeave() {
-    const count = members.length + hiddenCount || group.memberCount // 차단해 숨긴 멤버도 실제 멤버
     const msg =
-      count <= 1
+      memberCount <= 1
         ? '마지막 멤버라 나가면 그룹이 삭제돼요. 나갈까요?'
         : isOwner
           ? '그룹에서 나갈까요? 그룹장은 가장 먼저 참여한 멤버에게 넘어가요. 내 운동 기록은 사라지지 않아요.'
@@ -91,7 +92,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
     if (!confirm(msg)) return
     setBusy(true)
     try {
-      await leaveGroup({ ...group, memberCount: count })
+      await leaveGroup({ ...group, memberCount })
       toast(`'${group.name}' 그룹에서 나왔어요.`)
       onLeft()
     } catch (e) {
@@ -165,8 +166,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-xl font-bold tracking-tight">{group.name}</h2>
             <div className="mt-1 text-xs text-dim">
-              멤버 {members.length + hiddenCount || group.memberCount}/{group.max_members}명
-              {isOwner && ' · 내가 그룹장'}
+              멤버 {memberCount}/{group.max_members}명{isOwner && ' · 내가 그룹장'}
             </div>
           </div>
         </div>

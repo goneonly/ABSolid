@@ -46,7 +46,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
     return () => {
       alive = false
     }
-  }, [members, myId, startKey, endKey, pStartKey, pEndKey])
+  }, [members, startKey, endKey, pStartKey, pEndKey])
 
   const rows = useMemo(() => {
     if (!cur) return null

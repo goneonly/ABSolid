@@ -92,13 +92,12 @@ export default function App() {
       }
       // 로그아웃, 탈퇴하면 다시 첫 로그인 화면부터
       if (event === 'SIGNED_OUT') {
-        setGuestChosen(false)
-        setGuest(false)
+        requestLogin()
         setView('home')
       }
     })
     return () => sub.subscription.unsubscribe()
-  }, [])
+  }, [requestLogin])
 
   // 기능 소개 팝업: 가입 완료 후 첫 진입 1회 (비회원은 '비회원으로 시작하기'를 누를 때마다 — Login onGuest)
   useEffect(() => {
