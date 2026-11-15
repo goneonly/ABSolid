@@ -22,6 +22,7 @@
 - 휴대폰 틀 이미지 생성 스크립트 추가 (`scripts/make-phone-frame.py`): 목업 사진의 흰 배경과 화면 부분을 투명하게 뚫음
 - 테스트 추가: 스크롤 진행도 계산, 화면 예시 데이터, 문구와 화면 연결
 - 문서 반영: README, 인수인계 안내(소개 페이지 고치는 법), 개발 규칙(소개 페이지는 화면 폭 분기 예외), 계획
+- 협업 규칙 변경: main 직접 push 를 GitHub 보호 규칙으로 막고, 버전 올리기도 `chore/release-버전` 브랜치와 PR 로 함. PR 은 CI 가 통과하면 합치고 상대의 승인은 필수가 아님 (`docs/CONVENTIONS.md`, `docs/HANDOVER.md`, `docs/PLAN.md`)
 - 3D 운동 영상 방향 정리: 출시용은 직접 만든 근육 해부도 스타일 모델(참고 앱 Fleek)로 만들고, 지금 영상은 시제품으로 둠. 만드는 순서와 이유를 적음 (`docs/HANDOVER.md`, `docs/PLAN.md`, `docs/SPRINT_BACKLOG.md`)
 - 스프린트 백로그에 9번 근육 지도 추가
 
