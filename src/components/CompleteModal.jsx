@@ -42,10 +42,9 @@ export default function CompleteModal({ day, streak, busy, onSave, onSkip }) {
 
   return (
     <Modal label={`Day ${day} 운동 완료`}>
-      {/* 축하: 빛나는 체크 + 연속 기록 숫자 올라가기 + 문구 */}
-      <div className="relative mx-auto size-16" aria-hidden="true">
-        <span className="absolute inset-0 rounded-full bg-brand blur-xl motion-safe:animate-glow" />
-        <span className="relative flex size-16 items-center justify-center rounded-full bg-brand text-white motion-safe:animate-pop">
+      {/* 축하: 튀어나오는 체크 + 연속 기록 숫자 올라가기 + 문구 */}
+      <div className="mx-auto size-16" aria-hidden="true">
+        <span className="flex size-16 items-center justify-center rounded-full bg-brand text-white motion-safe:animate-pop">
           <CheckIcon className="size-8" />
         </span>
       </div>

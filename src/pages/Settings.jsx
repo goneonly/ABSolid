@@ -141,8 +141,8 @@ export default function Settings({ session, onChanged, isAdmin, onOpenAdmin, onR
             차단한 사용자
           </RowButton>
         )}
-        <RowButton hint="구글시트에서 열기 가능" onClick={() => setModal('export')}>
-          기록 내보내기 (CSV)
+        <RowButton hint="구글시트에서 열기 가능 (csv)" onClick={() => setModal('export')}>
+          기록 내보내기
         </RowButton>
         {/* 회원은 비밀번호로 본인 확인 후 초기화, 비회원은 비밀번호가 없어 바로 확인 창 */}
         <RowButton
