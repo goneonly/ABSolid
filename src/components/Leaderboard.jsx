@@ -68,12 +68,13 @@ export default function Leaderboard({ members, myId, myName, records }) {
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      {/* 기간 버튼: 한 줄로 두고 넘치면 옆으로 밀어 넘김. 카드 안쪽 여백까지 써서 끝에서 잘려 보이게 (더 있다는 표시) */}
+      <div className="-mx-6 mt-3 flex snap-x gap-2 overflow-x-auto scroll-px-6 px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {PERIODS.map((p) => (
           <button
             key={p.key}
             className={cx(
-              'hit rounded-full border px-3 py-2 text-xs font-bold',
+              'flex-none snap-start rounded-full border px-3 py-2 text-xs font-bold whitespace-nowrap',
               period === p.key ? 'border-brand-strong bg-brand-strong text-white' : 'border-line bg-surface-2 text-dim',
             )}
             onClick={() => setPeriod(p.key)}
@@ -84,24 +85,28 @@ export default function Leaderboard({ members, myId, myName, records }) {
       </div>
 
       {period === 'custom' && (
-        <div className="mt-3 flex items-center gap-2">
-          <Input
-            type="date"
-            className="flex-1 px-3 py-2"
-            value={cs}
-            max={todayKey()}
-            onChange={(e) => setCs(e.target.value)}
-            aria-label="시작 날짜"
-          />
-          <Sub>~</Sub>
-          <Input
-            type="date"
-            className="flex-1 px-3 py-2"
-            value={ce}
-            max={todayKey()}
-            onChange={(e) => setCe(e.target.value)}
-            aria-label="끝 날짜"
-          />
+        // 날짜 칸은 폰(특히 아이폰)이 글자 폭만큼 최소 너비를 잡아 카드 밖으로 넘치므로, 최소 너비를 없애고 두 칸이 폭을 나눠 가짐
+        // 칸 폭이 17rem(272px)보다 좁으면(폭 320px 폰) 날짜가 잘리지 않게 위아래로 쌓음
+        <div className="@container mt-3">
+          <div className="grid grid-cols-1 items-center gap-2 @[17rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+            <Input
+              type="date"
+              className="min-w-0 appearance-none px-2 py-2 text-center"
+              value={cs}
+              max={todayKey()}
+              onChange={(e) => setCs(e.target.value)}
+              aria-label="시작 날짜"
+            />
+            <Sub className="hidden @[17rem]:block">~</Sub>
+            <Input
+              type="date"
+              className="min-w-0 appearance-none px-2 py-2 text-center"
+              value={ce}
+              max={todayKey()}
+              onChange={(e) => setCe(e.target.value)}
+              aria-label="끝 날짜"
+            />
+          </div>
         </div>
       )}
 
