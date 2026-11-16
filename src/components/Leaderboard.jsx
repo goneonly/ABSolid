@@ -59,6 +59,17 @@ export default function Leaderboard({ members, myId, myName, records }) {
 
   const totalDays = daysInRange(startKey, endKey)
 
+  // 직접 설정을 처음 누르면 최근 7일(직접 설정의 기본 기간)을 날짜 칸에 채워 둠
+  // (빈 날짜 칸은 아이폰에서 아무것도 보이지 않아, 무엇을 넣는 칸인지 알기 어려움)
+  function choosePeriod(key) {
+    if (key === 'custom' && !cs && !ce) {
+      const [a, b] = getRange('custom', '', '')
+      setCs(a)
+      setCe(b)
+    }
+    setPeriod(key)
+  }
+
   return (
     <Card>
       <div className="flex items-center justify-between">
@@ -77,7 +88,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
               'flex-none snap-start rounded-full border px-3 py-2 text-xs font-bold whitespace-nowrap',
               period === p.key ? 'border-brand-strong bg-brand-strong text-white' : 'border-line bg-surface-2 text-dim',
             )}
-            onClick={() => setPeriod(p.key)}
+            onClick={() => choosePeriod(p.key)}
           >
             {p.label}
           </button>
@@ -88,24 +99,9 @@ export default function Leaderboard({ members, myId, myName, records }) {
         // 날짜 칸은 폰(특히 아이폰)이 글자 폭만큼 최소 너비를 잡아 카드 밖으로 넘치므로, 최소 너비를 없애고 두 칸이 폭을 나눠 가짐
         // 칸 폭이 17rem(272px)보다 좁으면(폭 320px 폰) 날짜가 잘리지 않게 위아래로 쌓음
         <div className="@container mt-3">
-          <div className="grid grid-cols-1 items-center gap-2 @[17rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-            <Input
-              type="date"
-              className="min-w-0 appearance-none px-2 py-2 text-center"
-              value={cs}
-              max={todayKey()}
-              onChange={(e) => setCs(e.target.value)}
-              aria-label="시작 날짜"
-            />
-            <Sub className="hidden @[17rem]:block">~</Sub>
-            <Input
-              type="date"
-              className="min-w-0 appearance-none px-2 py-2 text-center"
-              value={ce}
-              max={todayKey()}
-              onChange={(e) => setCe(e.target.value)}
-              aria-label="끝 날짜"
-            />
+          <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-2">
+            <DateField label="시작일" value={cs} max={ce || todayKey()} onChange={setCs} />
+            <DateField label="종료일" value={ce} min={cs} max={todayKey()} onChange={setCe} />
           </div>
         </div>
       )}
@@ -122,5 +118,22 @@ export default function Leaderboard({ members, myId, myName, records }) {
         </>
       )}
     </Card>
+  )
+}
+
+// 날짜 칸 하나: 위에 무슨 날짜인지 이름을 붙임 (빈 칸만으로는 무엇을 넣는지 알기 어려움)
+function DateField({ label, value, min, max, onChange }) {
+  return (
+    <label className="flex min-w-0 flex-col gap-1">
+      <span className="text-xs text-dim">{label}</span>
+      <Input
+        type="date"
+        className="min-w-0 appearance-none px-2 py-2"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </label>
   )
 }
