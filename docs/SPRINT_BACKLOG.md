@@ -45,7 +45,8 @@
 
 **스프린트 1** (진행 중): 1단계와 2단계
 
-- 진행 (2026-11-15): API 서버 뼈대, 토큰 확인 미들웨어, `GET /api/me` 완료. 다음은 공지 주소와 `fetchActiveAnnouncement` 연결, 미리보기 배포 확인
+- 진행 (2026-11-15): API 서버 뼈대, 토큰 확인 미들웨어, `GET /api/me` 완료
+- 진행 (2026-11-16): 공지 주소 `GET /api/announcements/active` 와 앱의 `fetchActiveAnnouncement` 연결 완료 (Supabase 를 직접 부르지 않음). 남은 일은 미리보기 배포 확인, main 에 합치기, 공지 테이블의 직접 접근 닫기는 6단계에서
 
 - 만들 주소: `GET /api/announcements/active` (누구나), `GET /api/me` (로그인 필수, 토큰 확인 연습용)
 - 새 서버가 실패하면 공지 배너만 안 보이고 앱은 정상 동작 (예전 방식으로 대신 요청하지 않음)

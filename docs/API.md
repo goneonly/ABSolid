@@ -143,6 +143,7 @@ Supabase 앞에 둔 Hono 서버입니다. 코드는 `server/app.js`, 배포 입�
 |---|---|---|
 | `GET /api/health` | 없음 | 서버가 살아 있는지 확인. `{ ok: true }` |
 | `GET /api/me` | 로그인 토큰 | 내 아이디와 이메일. `{ id, email }` |
+| `GET /api/announcements/active` | 없음 | 켜진 공지 중 가장 최근 1건. `{ announcement: { id, message } }`, 없으면 `{ announcement: null }`. Supabase 에서 읽지 못하면 503. 앱의 `fetchActiveAnnouncement` 가 사용 |
 
 로그인이 필요한 주소는 `Authorization: Bearer <로그인 토큰>` 헤더를 받습니다. 토큰이 없거나 틀리면 401, Supabase 에 연결하지 못하면 503 과 `{ error }` 를 돌려줍니다.
 
@@ -176,7 +177,7 @@ Supabase 앞에 둔 Hono 서버입니다. 코드는 `server/app.js`, 배포 입�
 | 응원 | `sendCheer`, `notifyCheer`, `fetchTodayCheers`, `fetchReceivedCheers` |
 | 차단 | `fetchBlockedIds`, `blockUser`, `unblockUser`, `fetchMyBlocks` |
 | 신고 | `submitReport` |
-| 공지, 설정 | `fetchActiveAnnouncement`, `getPlaylistId` |
+| 공지, 설정 | `fetchActiveAnnouncement`(자체 API 서버 사용, 실패하면 `null`), `getPlaylistId` |
 
 ### `src/server/admin.js` (관리자 화면)
 

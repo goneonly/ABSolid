@@ -34,6 +34,9 @@
 - `supabase/v0.12-group-kick.sql` 실행 필요: 참여 막은 사람 표(`group_bans`)와 `kick_member`, `group_bans_of`, `unban_member` 함수, 막힌 사람을 거절하는 `join_group`
 
 **내부**
+- 자체 백엔드 2단계: 공지 조회 주소 `GET /api/announcements/active` 추가 (`server/app.js`). 로그인 없이 비회원 신분으로 읽고, 켜진 공지 중 가장 최근 1건의 id 와 message 만 돌려줌. 못 읽으면 503
+- 자체 백엔드 3단계: 홈 배너의 공지를 Supabase 대신 자체 API 서버에서 받음 (`fetchActiveAnnouncement`). 서버가 실패하거나 오프라인이면 배너만 안 보이고 앱은 그대로
+- 테스트 추가: 공지 주소 5개 (`server/app.test.js`), 앱의 공지 받기 5개 (`src/server/api.test.js`)
 - DB 보안 테스트 추가 (`supabase/tests/09_group_kick.test.sql`, 25개): 그룹장만 내보내기, 자기 자신과 멤버가 아닌 사람 거절, 막힌 사람의 재참여 거절, 막기 풀기, 그룹장 위임 뒤 권한 이동
 
 ## 0.8.0 (2026-11-15)
