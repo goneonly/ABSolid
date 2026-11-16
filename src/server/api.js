@@ -510,19 +510,19 @@ export async function submitReport(targetUserId, targetDate, reason) {
 
 // ── 공지, 앱 설정 (누구나 조회) ────────────────
 // 홈 배너에 띄울 공지 1건 (없으면 null)
+// 백엔드 3단계: Supabase 대신 자체 API 서버에 물음 (server/app.js 의 GET /api/announcements/active)
+// 서버가 실패하거나 연결이 끊기면 null — 배너만 안 보이고 앱은 그대로 동작 (예전 방식으로 대신 묻지 않음)
 export async function fetchActiveAnnouncement() {
-  if (!supabase) return null
   try {
-    const { data } = await supabase
-      .from('announcements')
-      .select('id, message')
-      .eq('active', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    return data || null
+    // 1. 서버에 요청 (개발에서는 Vite 가 8787 서버로, 배포에서는 Vercel 이 서버 함수로 넘겨줌)
+    const res = await fetch('/api/announcements/active')
+    // 2. 성공(200번대)이 아니면(503 등) 배너 없이 넘어감
+    if (!res.ok) return null
+    // 3. 본문 { announcement: { id, message } | null } 에서 공지만 꺼냄
+    const body = await res.json()
+    return body.announcement
   } catch {
-    return null
+    return null // 오프라인 등으로 요청 자체가 실패
   }
 }
 

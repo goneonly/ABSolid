@@ -18,8 +18,15 @@ vi.mock('./supabase.js', () => {
   return { supabase: client, currentUser, currentUserId: async () => (await currentUser())?.id || null }
 })
 
-const { completeWorkout, retryPendingCompletions, fetchBlockedIds, blockUser, unblockUser, fetchGroupStatus } =
-  await import('./api.js')
+const {
+  completeWorkout,
+  retryPendingCompletions,
+  fetchBlockedIds,
+  blockUser,
+  unblockUser,
+  fetchGroupStatus,
+  fetchActiveAnnouncement,
+} = await import('./api.js')
 const { getRecords, saveRecord, todayKey } = await import('../lib/storage.js')
 
 const UID = 'u-1'
@@ -213,5 +220,42 @@ describe('일회용 이메일 확인', async () => {
   it('확인에 실패하면(SQL 미적용 등) 가입을 막지 않는다 — 서버가 가입 때 다시 검사', async () => {
     client.rpc.mockResolvedValueOnce({ data: null, error: { code: 'PGRST202' } })
     await expect(isDisposableEmail('me@gmail.com')).resolves.toBe(false)
+  })
+})
+
+// 백엔드 3단계: 공지는 Supabase 를 직접 부르지 않고 자체 API 서버(/api/announcements/active)에서 받음
+describe('홈 배너 공지 (자체 API 서버)', () => {
+  const NOTICE = { id: 7, message: '이번 주 이벤트!' }
+  // 가짜 fetch: 주어진 상태 코드와 본문으로 답함
+  const reply = (status, body) =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(body), { status })),
+    )
+
+  it('서버가 공지를 주면 { id, message } 를 돌려준다', async () => {
+    reply(200, { announcement: NOTICE })
+    expect(await fetchActiveAnnouncement()).toEqual(NOTICE)
+    expect(fetch).toHaveBeenCalledWith('/api/announcements/active')
+  })
+  it('공지가 없으면 null', async () => {
+    reply(200, { announcement: null })
+    expect(await fetchActiveAnnouncement()).toBeNull()
+  })
+  it('서버가 실패(503)하면 null — 배너만 안 보이고 앱은 그대로', async () => {
+    reply(503, { error: '공지를 불러오지 못했어요.' })
+    expect(await fetchActiveAnnouncement()).toBeNull()
+  })
+  it('연결이 끊겨도(오프라인) 오류를 던지지 않고 null', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Promise.reject(new TypeError('Failed to fetch'))),
+    )
+    expect(await fetchActiveAnnouncement()).toBeNull()
+  })
+  it('Supabase 를 직접 부르지 않는다', async () => {
+    reply(200, { announcement: NOTICE })
+    await fetchActiveAnnouncement()
+    expect(client.from).not.toHaveBeenCalled()
   })
 })

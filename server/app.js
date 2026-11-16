@@ -5,6 +5,7 @@
 // 설계와 진행 상황은 docs/SPRINT_BACKLOG.md 의 1번 참고
 import { Hono } from 'hono'
 import { requireUser } from './auth.js'
+import { supabaseFor } from './supabase.js'
 
 const app = new Hono().basePath('/api')
 
@@ -15,6 +16,30 @@ app.get('/health', (c) => c.json({ ok: true }))
 app.get('/me', requireUser, (c) => {
   const user = c.get('user')
   return c.json({ id: user.id, email: user.email })
+})
+
+// 지금 켜져 있는 공지 1건 (로그인 필요 없음 — 홈 화면 배너용)
+// 응답: 있으면 { announcement: { id, message } }, 없으면 { announcement: null }, Supabase 에서 못 읽으면 503 { error }
+app.get('/announcements/active', async (c) => {
+  // 1. 비회원 신분으로 연결 (토큰을 넘기지 않음 — 공지는 누구나 볼 수 있음)
+  const supabase = supabaseFor()
+
+  // 2. 켜진 공지 중 가장 최근 1건 읽기 (결과와 실패 이유를 함께 받음)
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('id, message')
+    .eq('active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // 3. 못 읽었으면 503 (내부 오류 내용은 보내지 않고 안내 문구만)
+  if (error) {
+    return c.json({ error: '공지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503)
+  }
+
+  // 4. 공지가 있으면 id 와 message 만, 없으면 null
+  return c.json({ announcement: data ? { id: data.id, message: data.message } : null })
 })
 
 // 없는 주소: 앱이 읽기 쉬운 JSON 으로 404
