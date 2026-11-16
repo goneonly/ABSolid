@@ -11,6 +11,9 @@ import {
   fetchTodayCheers,
   blockUser,
   submitReport,
+  kickMember,
+  fetchGroupBans,
+  unbanMember,
 } from '../../server/api.js'
 import { toast } from '../../lib/toast.js'
 import Leaderboard from '../../components/Leaderboard.jsx'
@@ -22,12 +25,14 @@ import {
   EmptyState,
   GroupPhoto,
   LinkButton,
+  MiniButton,
   Page,
   Skeleton,
   Sub,
   ChevronIcon,
 } from '../../components/ui.jsx'
 import { CameraArt } from '../../components/EmptyArt.jsx'
+import MemberActions from './MemberActions.jsx'
 import MemberRow from './MemberRow.jsx'
 
 export default function GroupDetail({ group, records, myId, myName, myDates, onBack, onChanged, onLeft }) {
@@ -39,6 +44,8 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   const [copied, setCopied] = useState(false)
   const [cheers, setCheers] = useState({ counts: {}, byMe: new Set() })
   const [cheering, setCheering] = useState(null) // 응원 보내는 중인 멤버 id
+  const [menuFor, setMenuFor] = useState(null) // 더보기를 연 멤버
+  const [bans, setBans] = useState([]) // 그룹장이 참여를 막은 사람
   const isOwner = group.created_by === myId
   // 실제 멤버 수: 차단해 숨긴 멤버도 포함. 아직 불러오기 전이면 목록에서 받은 수
   const memberCount = members.length + hiddenCount || group.memberCount
@@ -71,12 +78,13 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
       setPhotos(photos)
       setHiddenCount(hiddenCount || 0)
       setCheers(await fetchTodayCheers(members.map((m) => m.id)))
+      if (isOwner) setBans(await fetchGroupBans(group.id).catch(() => []))
     } catch {
       /* 네트워크 오류 시 조용히 패스 */
     }
     setLoaded(true)
     setBusy(false)
-  }, [group.id])
+  }, [group.id, isOwner])
 
   useEffect(() => {
     load()
@@ -136,6 +144,37 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
     }
   }
 
+  // 그룹장: 내보내기 (ban 이면 같은 초대 코드로 다시 들어오지 못하게)
+  async function kick(m, ban) {
+    const msg = ban
+      ? `${m.name}님을 내보내고 다시 들어오지 못하게 할까요?\n아래 '참여를 막은 사람'에서 언제든 풀 수 있어요.`
+      : `${m.name}님을 그룹에서 내보낼까요?\n초대 코드가 있으면 다시 참여할 수 있어요.`
+    if (!confirm(msg)) return
+    setBusy(true)
+    try {
+      await kickMember(group.id, m.id, { ban })
+      toast(`${m.name}님을 그룹에서 내보냈어요.`)
+      setMenuFor(null)
+      await load()
+      onChanged() // 그룹 목록의 멤버 수 갱신
+    } catch (e) {
+      toast(e.message)
+      setBusy(false)
+    }
+  }
+
+  async function unban(b) {
+    const name = b.nickname || '이름 없음'
+    if (!confirm(`${name}님의 참여 막기를 풀까요? 초대 코드로 다시 참여할 수 있게 돼요.`)) return
+    try {
+      await unbanMember(group.id, b.user_id)
+      setBans((prev) => prev.filter((x) => x.user_id !== b.user_id))
+      toast(`${name}님의 참여 막기를 풀었어요.`)
+    } catch (e) {
+      toast(e.message)
+    }
+  }
+
   function copyCode() {
     const done = () => {
       setCopied(true)
@@ -164,7 +203,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
         <div className="flex items-center gap-4">
           <GroupPhotoEditor group={group} editable={isOwner} onChanged={onChanged} />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-xl font-bold tracking-tight">{group.name}</h2>
+            <h2 className="line-clamp-2 text-xl font-bold tracking-tight">{group.name}</h2>
             <div className="mt-1 text-xs text-dim">
               멤버 {memberCount}/{group.max_members}명{isOwner && ' · 내가 그룹장'}
             </div>
@@ -198,12 +237,23 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
                   busy: cheering === m.id,
                   onCheer: () => cheerFor(m),
                 }}
-                onBlock={m.id === myId ? undefined : () => blockMember(m)}
+                onMore={m.id === myId ? undefined : () => setMenuFor(m)}
               />
             ))}
           </div>
         )}
         {hiddenCount > 0 && <Sub className="mt-2">차단한 멤버 {hiddenCount}명은 표시되지 않아요. (설정에서 해제)</Sub>}
+        {isOwner && bans.length > 0 && (
+          <div className="mt-4 border-t border-line pt-3">
+            <Sub className="text-xs">참여를 막은 사람 {bans.length}명</Sub>
+            {bans.map((b) => (
+              <div key={b.user_id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="min-w-0 truncate">{b.nickname || '이름 없음'}</span>
+                <MiniButton onClick={() => unban(b)}>막기 풀기</MiniButton>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="mt-3 flex items-center gap-4 text-xs text-dim">
           <span>
             <i className="mr-2 inline-block size-2.5 rounded-full bg-brand" />
@@ -282,6 +332,20 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
           그룹 나가기
         </LinkButton>
       </div>
+      {menuFor && (
+        <MemberActions
+          member={menuFor}
+          isOwner={isOwner}
+          busy={busy}
+          onBlock={() => {
+            const m = menuFor
+            setMenuFor(null)
+            blockMember(m)
+          }}
+          onKick={(ban) => kick(menuFor, ban)}
+          onClose={() => setMenuFor(null)}
+        />
+      )}
     </Page>
   )
 }

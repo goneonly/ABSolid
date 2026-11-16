@@ -4,16 +4,25 @@ import { Modal, ModalText, ModalTitle, cx, ChevronIcon } from './ui.jsx'
 const ONB_BTN = 'rounded-md border px-6 py-3 text-sm font-bold active:scale-[.97]'
 
 // 가입 완료 후 첫 진입 시 1회 보여주는 기능 소개 팝업
+// 그림은 선 아이콘. 상자 폭(약 280px)에 맞춰 커지므로 선 두께를 0.9 로 두어 화면에서는 약 3px 로 보임
 const SLIDES = [
   {
     title: '매일 운동 시작',
     desc: 'Day 1~30 영상으로 매일 운동하고 streak을 쌓아요. 영상을 끝까지 보면 자동으로 완료 처리돼요.',
     art: (
-      <svg viewBox="0 0 84 56" aria-hidden="true">
-        <rect x="4" y="4" width="76" height="40" rx="6" fill="var(--color-surface-2)" stroke="var(--color-line)" />
-        <circle cx="42" cy="24" r="10" fill="var(--color-brand)" />
-        <path d="M39 19.5 L48 24 L39 28.5 Z" fill="#fff" />
-        <rect x="10" y="48" width="30" height="4" rx="2" fill="var(--color-dot)" />
+      <svg
+        viewBox="0 0 84 56"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="4" y="4" width="76" height="40" rx="6" />
+        <circle cx="42" cy="24" r="10" />
+        <path d="M39 19.5 47.5 24 39 28.5Z" />
+        <path d="M10 50h30" />
       </svg>
     ),
   },
@@ -21,14 +30,22 @@ const SLIDES = [
     title: '그룹으로 함께',
     desc: '초대 코드로 친구들과 그룹을 만들고, 서로의 운동 현황을 매일 확인하며 함께 꾸준해져요.',
     art: (
-      <svg viewBox="0 0 84 56" aria-hidden="true">
-        <rect x="4" y="4" width="76" height="48" rx="6" fill="var(--color-surface-2)" stroke="var(--color-line)" />
-        <circle cx="16" cy="16" r="6" fill="var(--color-brand)" />
-        <rect x="26" y="12" width="34" height="4" rx="2" fill="var(--color-dot)" />
-        <circle cx="16" cy="32" r="6" fill="var(--color-dot)" />
-        <rect x="26" y="28" width="26" height="4" rx="2" fill="var(--color-dot)" />
-        <circle cx="16" cy="46" r="6" fill="var(--color-brand)" />
-        <rect x="26" y="44" width="30" height="4" rx="2" fill="var(--color-dot)" />
+      <svg
+        viewBox="0 0 84 56"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="4" y="4" width="76" height="48" rx="6" />
+        <circle cx="16" cy="16" r="5" />
+        <path d="M26 16h34" />
+        <circle cx="16" cy="30" r="5" />
+        <path d="M26 30h26" />
+        <circle cx="16" cy="44" r="5" />
+        <path d="M26 44h30" />
       </svg>
     ),
   },
@@ -36,13 +53,21 @@ const SLIDES = [
     title: '인증샷 공유',
     desc: "운동 완료 후 인증샷을 올리면 그룹의 '오늘의 인증샷'에 공유돼요. 프로필 사진도 꾸며보세요.",
     art: (
-      <svg viewBox="0 0 84 56" aria-hidden="true">
-        <rect x="6" y="6" width="22" height="22" rx="4" fill="var(--color-brand)" opacity=".85" />
-        <rect x="31" y="6" width="22" height="22" rx="4" fill="var(--color-surface-2)" stroke="var(--color-line)" />
-        <rect x="56" y="6" width="22" height="22" rx="4" fill="var(--color-surface-2)" stroke="var(--color-line)" />
-        <rect x="6" y="31" width="22" height="22" rx="4" fill="var(--color-surface-2)" stroke="var(--color-line)" />
-        <circle cx="17" cy="17" r="5" fill="#fff" opacity=".9" />
-        <rect x="31" y="31" width="22" height="22" rx="4" fill="var(--color-dot)" opacity=".5" />
+      <svg
+        viewBox="0 0 84 56"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="6" y="6" width="22" height="20" rx="4" />
+        <rect x="31" y="6" width="22" height="20" rx="4" />
+        <rect x="56" y="6" width="22" height="20" rx="4" />
+        <rect x="6" y="30" width="22" height="20" rx="4" />
+        <rect x="31" y="30" width="22" height="20" rx="4" />
+        <circle cx="17" cy="16" r="4" />
       </svg>
     ),
   },
@@ -64,7 +89,7 @@ export default function OnboardingModal({ onClose }) {
       <ModalTitle>환영해요!</ModalTitle>
       <ModalText>ABSolid에서 이런 걸 할 수 있어요</ModalText>
 
-      <div className="mt-5 rounded-lg border border-line bg-bg px-7 py-5 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
+      <div className="mt-5 rounded-lg border border-line bg-bg px-7 py-5 text-dim [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
         {slide.art}
       </div>
       <strong className="mt-4 block text-center text-base font-bold">{slide.title}</strong>

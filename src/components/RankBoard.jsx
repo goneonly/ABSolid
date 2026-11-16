@@ -29,7 +29,7 @@ export default function RankBoard({ rows, myId, myName, totalDays }) {
               </span>
               <MemberAvatar name={r.name} avatar={r.avatar} active={r.rank === 1 && r.count > 0} />
               <div className="min-w-0 flex-1">
-                <span className={cx('text-sm font-bold', r.id === myId && 'text-brand')}>
+                <span className={cx('block truncate text-sm font-bold', r.id === myId && 'text-brand')}>
                   {r.id === myId ? myName || r.name : r.name}
                   {r.id === myId ? ' (나)' : ''}
                 </span>

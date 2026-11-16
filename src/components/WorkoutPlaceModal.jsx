@@ -4,15 +4,21 @@ import { Modal, ModalText, ModalTitle, HomeIcon, cx } from './ui.jsx'
 // - 집에서: 지금의 영상 운동 화면으로 (onHome)
 // - 헬스장에서: 아직 준비 중이라 눌리지 않음 (헬스장 루틴이 생기면 disabled 를 풀고 onClick 연결)
 
-// 아령 아이콘 (속이 찬 모양, 집 아이콘과 같은 스타일)
+// 아령 아이콘 (선 아이콘, 집 아이콘과 같은 스타일)
 function DumbbellIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <rect x="1.5" y="9" width="3" height="6" rx="1" />
-      <rect x="5" y="6" width="3.5" height="12" rx="1.2" />
-      <rect x="8.5" y="10.75" width="7" height="2.5" />
-      <rect x="15.5" y="6" width="3.5" height="12" rx="1.2" />
-      <rect x="19.5" y="9" width="3" height="6" rx="1" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="5" y="6.5" width="3.5" height="11" rx="1" />
+      <rect x="15.5" y="6.5" width="3.5" height="11" rx="1" />
+      <path d="M8.5 12h7M2.5 9.5v5M21.5 9.5v5" />
     </svg>
   )
 }

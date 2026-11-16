@@ -67,10 +67,13 @@ ABSolid 는 별도 백엔드 서버 없이 **Supabase** 를 서버로 씁니다.
 | 함수 | 인자 | 반환 | 설명 |
 |---|---|---|---|
 | `create_group` | `p_name`, `p_max_members`(2~50), `p_members_only` | 그룹 행 | 그룹과 내 멤버십, 초대 코드(6자리)를 한 번에 생성. 한 사람당 하루 5개 |
-| `join_group` | `code` | 그룹 행 (틀린 코드면 빈 결과) | 정원, 회원 제한 확인 후 참여. 틀린 코드는 1시간에 10번까지 |
+| `join_group` | `code` | 그룹 행 (틀린 코드면 빈 결과) | 정원, 회원 제한 확인 후 참여. 틀린 코드는 1시간에 10번까지. 그룹장이 참여를 막은 사람은 거절 |
 | `leave_group` | `p_gid` | 그룹이 삭제됐는지 (boolean) | 그룹장이 나가면 가장 먼저 참여한 멤버에게 위임, 마지막 멤버면 그룹 삭제 |
 | `set_group_photo` | `p_gid`, `p_url`(null 이면 삭제) | 없음 | 그룹장만. 주소는 `group-photos` 버킷의 그 그룹 폴더여야 함 |
 | `get_group_profiles` | `gid` | `[{ id, nickname, avatar_url }]` | 같은 그룹 멤버의 닉네임, 프로필 사진만 (이름, 전화번호는 주지 않음) |
+| `kick_member` | `p_gid`, `p_target`, `p_ban`(기본 false) | 없음 | 그룹장만. 멤버를 내보냄. `p_ban` 이면 같은 초대 코드로 다시 참여하지 못하게 막음. 자기 자신, 멤버가 아닌 사람은 거절 |
+| `group_bans_of` | `p_gid` | `[{ user_id, nickname, created_at }]` | 그룹장만. 참여를 막은 사람 목록 |
+| `unban_member` | `p_gid`, `p_target` | 없음 | 그룹장만. 참여 막기 풀기 |
 
 `join_group` 은 틀린 코드에 오류를 내지 않고 빈 결과를 줍니다. 오류를 내면 "틀린 횟수" 기록까지 함께 되돌려지기 때문입니다. 앱은 빈 결과를 "초대 코드를 찾을 수 없어요"로 보여줍니다.
 
@@ -107,6 +110,7 @@ ABSolid 는 별도 백엔드 서버 없이 **Supabase** 를 서버로 씁니다.
 | `group_members` | 멤버십 | 조회: 같은 그룹 멤버. 참여, 나가기는 함수만 |
 | `cheers` | 응원 (`from_user`, `to_user`, `date`, `kind`) | 조회: 보낸 사람, 받은 사람, 받은 사람과 같은 그룹 멤버. 생성은 `send_cheer` 만 |
 | `user_blocks` | 차단 (`blocker`, `blocked`) | 조회: 내가 한 차단만. 추가, 해제는 함수 |
+| `group_bans` | 그룹장이 참여를 막은 사람 (`group_id`, `user_id`, `banned_by`) | 조회: 그 그룹의 그룹장만. 추가, 삭제는 함수 |
 | `reports` | 인증샷 신고 | 생성: 본인 이름으로만 (하루 20건, 같은 인증샷 중복 불가). 조회, 처리는 관리자 |
 | `announcements` | 공지 | 조회: 누구나. 생성, 수정, 삭제는 관리자 |
 | `app_config` | 앱 설정 (`playlist_id`) | 조회: 누구나. 수정은 관리자 |
@@ -168,7 +172,7 @@ Supabase 앞에 둔 Hono 서버입니다. 코드는 `server/app.js`, 배포 입�
 | 운동 기록 | `startWorkoutSession`, `completeWorkout`, `retryPendingCompletions`, `fetchServerRecords`, `resetServerWorkouts` |
 | 인증샷 | `uploadPhoto`, `cleanupOldServerPhotos`, `signPhotoPaths` |
 | 내 프로필 | `fetchMyRole`, `saveNickname`, `fetchMyProfileInfo`, `updateMyProfileInfo`, `uploadAvatar`, `fetchMyAvatarUrl`, `deleteAvatar` |
-| 그룹 | `fetchMyGroups`, `createGroup`, `joinGroup`, `leaveGroup`, `uploadGroupPhoto`, `removeGroupPhoto`, `fetchGroupStatus`, `fetchGroupWorkoutDates` |
+| 그룹 | `fetchMyGroups`, `createGroup`, `joinGroup`, `leaveGroup`, `uploadGroupPhoto`, `removeGroupPhoto`, `kickMember`, `fetchGroupBans`, `unbanMember`, `fetchGroupStatus`, `fetchGroupWorkoutDates` |
 | 응원 | `sendCheer`, `notifyCheer`, `fetchTodayCheers`, `fetchReceivedCheers` |
 | 차단 | `fetchBlockedIds`, `blockUser`, `unblockUser`, `fetchMyBlocks` |
 | 신고 | `submitReport` |

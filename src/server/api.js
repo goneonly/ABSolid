@@ -202,12 +202,17 @@ export async function cleanupOldServerPhotos(keepDays = 30) {
 }
 
 // ── 내 프로필 ────────────────────────────────
-// 역할, 활성 여부 (관리자 메뉴 노출, 이용 제한 계정 확인) — 비회원은 일반 사용자로 취급
+// 역할, 활성 여부, 서버에 저장된 닉네임 (관리자 메뉴 노출, 이용 제한 계정 확인, 다른 기기에서 바꾼 닉네임 받아 오기)
+// 비회원은 일반 사용자로 취급. nickname 은 불러오지 못했으면 null
 export async function fetchMyRole() {
   const userId = await uid()
-  if (!userId) return { role: 'user', isActive: true }
-  const { data } = await supabase.from('profiles').select('role, is_active').eq('id', userId).maybeSingle()
-  return { role: data?.role || 'user', isActive: data?.is_active !== false }
+  if (!userId) return { role: 'user', isActive: true, nickname: null }
+  const { data } = await supabase.from('profiles').select('role, is_active, nickname').eq('id', userId).maybeSingle()
+  return {
+    role: data?.role || 'user',
+    isActive: data?.is_active !== false,
+    nickname: data ? data.nickname || '' : null,
+  }
 }
 
 // 닉네임 저장 (그룹에서 보이는 이름)
@@ -323,6 +328,25 @@ export async function leaveGroup(group) {
   if (group.memberCount <= 1 && group.photo_url) await removeGroupPhotoFile(group.id)
   const { error } = await supabase.rpc('leave_group', { p_gid: group.id })
   if (error) throw new Error('그룹 나가기에 실패했어요. 잠시 후 다시 시도해 주세요.')
+}
+
+// ── 그룹장의 멤버 관리 (v0.12 SQL) ─────────────
+// 내보내기. ban 이면 같은 초대 코드로 다시 들어오지 못하게 막음 (그룹장만, 서버가 확인)
+export async function kickMember(groupId, userId, { ban = false } = {}) {
+  const { error } = await supabase.rpc('kick_member', { p_gid: groupId, p_target: userId, p_ban: ban })
+  if (error) throw new Error(reasonOf(error, '멤버를 내보내지 못했어요. 잠시 후 다시 시도해 주세요.'))
+}
+
+// 참여를 막은 사람 [{ user_id, nickname, created_at }] (그룹장만)
+export async function fetchGroupBans(groupId) {
+  const { data, error } = await supabase.rpc('group_bans_of', { p_gid: groupId })
+  if (error) throw new Error(reasonOf(error, '참여를 막은 사람 목록을 불러오지 못했어요.'))
+  return data || []
+}
+
+export async function unbanMember(groupId, userId) {
+  const { error } = await supabase.rpc('unban_member', { p_gid: groupId, p_target: userId })
+  if (error) throw new Error(reasonOf(error, '참여 막기를 풀지 못했어요. 잠시 후 다시 시도해 주세요.'))
 }
 
 // 그룹 사진 (그룹장만). 새 사진 주소를 돌려줌

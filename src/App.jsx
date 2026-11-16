@@ -28,6 +28,7 @@ import {
   markPushConsentAsked,
   isServerCleanupDoneToday,
   markServerCleanupDone,
+  syncNicknameFromServer,
 } from './lib/storage.js'
 import { useAuth } from './hooks/useAuth.js'
 import { hideSplash } from './lib/splash.js'
@@ -107,7 +108,8 @@ export default function App() {
     }
   }, [userId])
 
-  // 로그인 시: 역할 확인 (관리자 메뉴 노출) + 비활성 계정 차단
+  // 로그인 시: 역할 확인 (관리자 메뉴 노출) + 비활성 계정 차단 + 다른 기기에서 바꾼 닉네임 받아 오기
+  // (닉네임은 기기에도 저장해 두고 쓰므로, 받아 오지 않으면 예전 닉네임과 그 닉네임의 기본 사진이 계속 보임)
   useEffect(() => {
     if (!userId) {
       setIsAdmin(false)
@@ -115,7 +117,7 @@ export default function App() {
     }
     let alive = true
     fetchMyRole()
-      .then(({ role, isActive }) => {
+      .then(({ role, isActive, nickname }) => {
         if (!alive) return
         if (!isActive) {
           alert('이용이 제한된 계정이에요. 문의가 필요하면 관리자에게 연락해 주세요.')
@@ -123,12 +125,13 @@ export default function App() {
           return
         }
         setIsAdmin(role === 'admin')
+        if (syncNicknameFromServer(nickname)) refresh()
       })
       .catch(() => {})
     return () => {
       alive = false
     }
-  }, [userId])
+  }, [userId, refresh])
 
   // 로그인되면: 연결 문제로 못 남긴 완료 기록 재시도 + 서버 기록 내려받아 병합
   // (비회원 시절 기록은 시청 확인이 없어 서버로 올리지 않음 — 기기에만 남음)

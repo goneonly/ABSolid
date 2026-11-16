@@ -1,22 +1,33 @@
-// 멤버 한 줄: 프로필 사진, 이름, 최근 7일 운동 여부, 응원/차단 버튼
+// 멤버 한 줄: 프로필 사진, 이름, 최근 7일 운동 여부, 응원 버튼, 더보기(차단, 그룹장의 내보내기)
+// 좁은 폰(폭 320px)에서도 글자가 세로로 쪼개지지 않게, 오른쪽 칸을 따로 두지 않고 세 줄로 쌓음
+//   1줄: 이름 ............ 오늘 완료 / 아직
+//   2줄: 최근 7일 점
+//   3줄: 응원 버튼, 받은 응원 수 ....... 더보기
 import { todayKey, lastNDays } from '../../lib/storage.js'
 import { CheckIcon, MemberAvatar, cx } from '../../components/ui.jsx'
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토']
 
 // cheer: { count, sent, busy, onCheer } — 로그인 상태의 그룹 화면에서만 전달
-// onBlock: 다른 멤버 행에서만 전달 (차단하기)
-export default function MemberRow({ name, isMe, dates, avatar, cheer, onBlock }) {
+// onMore: 다른 멤버 행에서만 전달 (더보기: 차단, 그룹장이면 내보내기)
+export default function MemberRow({ name, isMe, dates, avatar, cheer, onMore }) {
   const days = lastNDays(7, {})
   const doneToday = dates.has(todayKey())
+  const showActions = (cheer && (!isMe || cheer.count > 0)) || onMore
   return (
     <div className="flex items-start gap-3 border-b border-line py-3 last:border-b-0">
       <MemberAvatar name={name} avatar={avatar} active={doneToday} className="mt-1" />
-      <div className="flex-1">
-        <span className="text-base font-bold">
-          {name}
-          {isMe ? ' (나)' : ''}
-        </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-base font-bold">
+            {name}
+            {isMe ? ' (나)' : ''}
+          </span>
+          <span className={cx('flex-none text-xs whitespace-nowrap', doneToday ? 'font-bold text-brand' : 'text-dim')}>
+            {doneToday ? '오늘 완료' : '아직'}
+          </span>
+        </div>
+
         <div className="mt-2 flex gap-2">
           {days.map((d) => (
             <div key={d.key} className="text-center">
@@ -25,41 +36,47 @@ export default function MemberRow({ name, isMe, dates, avatar, cheer, onBlock })
             </div>
           ))}
         </div>
-      </div>
-      <div className="flex flex-col items-end gap-3">
-        <span className={cx('text-xs', doneToday ? 'font-bold text-brand' : 'text-dim')}>
-          {doneToday ? '오늘 완료' : '아직'}
-        </span>
-        {cheer &&
-          (isMe ? (
-            cheer.count > 0 && <span className="text-xs text-dim">응원 {cheer.count}개 받음</span>
-          ) : (
-            <button
-              className={cx(
-                'hit inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold disabled:opacity-60',
-                cheer.sent ? 'border-line bg-surface-2 text-dim' : 'border-line bg-surface-2 text-fg',
-              )}
-              disabled={cheer.sent || cheer.busy}
-              onClick={cheer.onCheer}
-              aria-label={`${name}님 응원하기`}
-            >
-              {cheer.sent ? (
-                <>
-                  <CheckIcon className="size-3" />
-                  응원함
-                </>
-              ) : doneToday ? (
-                '잘했어요'
-              ) : (
-                '힘내요'
-              )}
-              {cheer.count > 0 && <span className="ml-1 opacity-70">{cheer.count}</span>}
-            </button>
-          ))}
-        {onBlock && (
-          <button className="hit text-xs text-dim underline" onClick={onBlock} aria-label={`${name}님 차단하기`}>
-            차단
-          </button>
+
+        {showActions && (
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <span className="flex min-w-0 items-center gap-2">
+              {cheer &&
+                (isMe ? (
+                  <span className="text-xs whitespace-nowrap text-dim">응원 {cheer.count}개 받음</span>
+                ) : (
+                  <button
+                    className={cx(
+                      'hit inline-flex items-center gap-1 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-bold whitespace-nowrap disabled:opacity-60',
+                      cheer.sent ? 'text-dim' : 'text-fg',
+                    )}
+                    disabled={cheer.sent || cheer.busy}
+                    onClick={cheer.onCheer}
+                    aria-label={`${name}님 응원하기`}
+                  >
+                    {cheer.sent ? (
+                      <>
+                        <CheckIcon className="size-3" />
+                        응원함
+                      </>
+                    ) : doneToday ? (
+                      '잘했어요'
+                    ) : (
+                      '힘내요'
+                    )}
+                    {cheer.count > 0 && <span className="ml-1 opacity-70">{cheer.count}</span>}
+                  </button>
+                ))}
+            </span>
+            {onMore && (
+              <button
+                className="hit flex-none text-xs whitespace-nowrap text-dim underline"
+                onClick={onMore}
+                aria-label={`${name}님 더보기`}
+              >
+                더보기
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

@@ -13,6 +13,7 @@ import {
   clearAllAppData,
   getProfile,
   saveProfile,
+  syncNicknameFromServer,
   isGuestChosen,
   setGuestChosen,
   isReminderDismissedToday,
@@ -229,5 +230,20 @@ describe('기기 데이터 정리', () => {
     clearAllAppData()
     const left = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i))
     expect(left).toEqual(['other.app'])
+  })
+})
+
+describe('다른 기기에서 바꾼 닉네임 받아 오기', () => {
+  it('서버 닉네임이 다르면 기기 닉네임을 바꾸고, 프로필 사진 등 다른 값은 그대로 둔다', () => {
+    saveProfile({ nickname: '푸앙이', avatar: 'data:image/jpeg;base64,AAAA' })
+    expect(syncNicknameFromServer('민준')).toBe(true)
+    expect(getProfile()).toEqual({ nickname: '민준', avatar: 'data:image/jpeg;base64,AAAA' })
+  })
+  it('같거나, 서버 값이 비어 있거나, 불러오지 못했으면 바꾸지 않는다', () => {
+    saveProfile({ nickname: '민준' })
+    expect(syncNicknameFromServer('민준')).toBe(false)
+    expect(syncNicknameFromServer('')).toBe(false)
+    expect(syncNicknameFromServer(null)).toBe(false)
+    expect(getProfile().nickname).toBe('민준')
   })
 })

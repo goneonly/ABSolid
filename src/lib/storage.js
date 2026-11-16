@@ -188,6 +188,16 @@ export function saveProfile(p) {
   writeJson(KEYS.profile, p)
 }
 
+// 서버의 닉네임을 이 기기에 맞춰 넣음 (다른 기기에서 닉네임을 바꿨을 때). 바뀌었으면 true
+// 서버 값이 비어 있으면(가입 직후 등) 기기 값을 그대로 둠
+export function syncNicknameFromServer(serverNickname) {
+  const nick = (serverNickname || '').trim()
+  const profile = getProfile()
+  if (!nick || nick === profile.nickname) return false
+  saveProfile({ ...profile, nickname: nick })
+  return true
+}
+
 // 서버 기록을 로컬로 병합 (로컬에만 있는 사진 등은 유지)
 export function mergeRecords(server) {
   if (!server) return
