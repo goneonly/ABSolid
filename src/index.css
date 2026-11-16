@@ -85,6 +85,16 @@
   html,
   body {
     @apply bg-bg font-sans text-base text-fg antialiased;
+    /* 한글을 낱자 사이에서 끊지 않고 띄어쓰기 단위로 줄바꿈 (긴 닉네임처럼 띄어쓰기가 없으면 그때만 중간에서 끊음) */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  /* 문단 마지막 줄에 한 단어만 남지 않게 (지원하는 브라우저에서만) */
+  p,
+  h1,
+  h2,
+  h3 {
+    text-wrap: pretty;
   }
   /* 홈 화면 앱(standalone)은 viewport-fit=cover 로 상태표시줄 아래까지 그려져서 그만큼 띄움 (브라우저 탭에선 0) */
   #root {

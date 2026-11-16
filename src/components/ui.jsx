@@ -194,8 +194,9 @@ export function ModalText({ className, ...props }) {
 // ── 아바타 ───────────────────────────────────
 function PersonIcon({ className }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4.2 0-8 2.2-8 5.4V21h16v-1.6c0-3.2-3.8-5.4-8-5.4Z" />
+    <svg className={className} viewBox="0 0 24 24" {...STROKE} strokeWidth={2}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4.5 20.5c.8-4 3.8-6.5 7.5-6.5s6.7 2.5 7.5 6.5" />
     </svg>
   )
 }
@@ -271,11 +272,12 @@ export function CloseIcon({ className = 'size-[1em]' }) {
   )
 }
 
-// 집 모양 (속이 찬 모양, 가운데 문은 비워 둠) — 하단 탭 홈 버튼, 운동 장소의 '집에서'
+// 집 모양 (선 아이콘) — 하단 탭 홈 버튼, 운동 장소의 '집에서'
 export function HomeIcon({ className }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M11.3 2.9a1.1 1.1 0 0 1 1.4 0l8 6.7c.2.2.3.5.3.8V20a1 1 0 0 1-1 1h-5.2v-5.6a1 1 0 0 0-1-1h-3.6a1 1 0 0 0-1 1V21H4a1 1 0 0 1-1-1v-9.6c0-.3.1-.6.3-.8Z" />
+    <svg className={className} viewBox="0 0 24 24" {...STROKE} strokeWidth={2}>
+      <path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-9.5Z" />
+      <path d="M9.5 21v-6h5v6" />
     </svg>
   )
 }

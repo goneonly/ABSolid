@@ -5,6 +5,10 @@ import { createGroup, joinGroup } from '../../server/api.js'
 import { toast } from '../../lib/toast.js'
 import { Button, Card, Input, Sub, cx } from '../../components/ui.jsx'
 
+const MODES = [
+  { key: 'join', label: '코드로 참여' },
+  { key: 'create', label: '그룹 만들기' },
+]
 const OPTION_ROW = 'flex items-center justify-between gap-3 border-b border-line py-3 text-sm last:border-b-0'
 
 export default function JoinCreateCard({ onDone }) {
@@ -40,34 +44,32 @@ export default function JoinCreateCard({ onDone }) {
 
   return (
     <Card>
-      <div className="mb-3 flex gap-2">
-        <Button
-          variant="secondary"
-          className={cx('flex-1', mode !== 'join' && 'opacity-50')}
-          onClick={() => {
-            setMode('join')
-            setError('')
-          }}
-        >
-          초대 코드로 참여
-        </Button>
-        <Button
-          variant="secondary"
-          className={cx('flex-1', mode !== 'create' && 'opacity-50')}
-          onClick={() => {
-            setMode('create')
-            setError('')
-          }}
-        >
-          그룹 만들기
-        </Button>
+      {/* 참여, 만들기 전환 (설정의 화면 테마 고르기와 같은 모양. 좁은 폰에서도 한 줄) */}
+      <div className="mb-3 flex gap-1 rounded-md bg-surface-2 p-1" role="tablist" aria-label="그룹 참여 또는 만들기">
+        {MODES.map((m) => (
+          <button
+            key={m.key}
+            role="tab"
+            aria-selected={mode === m.key}
+            className={cx(
+              'flex-1 rounded-sm py-3 text-sm font-bold whitespace-nowrap transition-colors',
+              mode === m.key ? 'bg-surface text-fg shadow-sm' : 'text-dim',
+            )}
+            onClick={() => {
+              setMode(m.key)
+              setError('')
+            }}
+          >
+            {m.label}
+          </button>
+        ))}
       </div>
       <Input
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder={mode === 'join' ? '초대 코드 6자리 (예: AB3K7Q)' : '그룹 이름 (예: 중앙대학교)'}
+        placeholder={mode === 'join' ? '초대 코드 6자리' : '그룹 이름 (예: 중앙대학교)'}
         maxLength={mode === 'join' ? 6 : 20}
-        className={mode === 'join' ? 'uppercase tracking-widest' : undefined}
+        className={mode === 'join' ? 'tracking-widest uppercase placeholder:tracking-normal' : undefined}
       />
       {mode === 'create' && (
         <div className="mt-3 border-t border-line">

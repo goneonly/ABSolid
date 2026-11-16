@@ -3,26 +3,39 @@ import { FEATURES } from '../content.js'
 import { Reveal } from '../motion.jsx'
 import { SectionTitle } from './parts.jsx'
 
-// 속을 채운 단순한 아이콘 (브랜드 빨강 한 색). 구멍은 evenodd 로 뚫음
+// 선으로 그린 단순한 아이콘 (브랜드 빨강 선)
 export const ICONS = {
   camera: (
-    <path d="M9 4.5 7.6 7H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2.6L15 4.5H9Zm3 5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" />
+    <>
+      <path d="M8.5 7 10 4.5h4L15.5 7" />
+      <rect x="3" y="7" width="18" height="13" rx="2.5" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </>
   ),
   bell: (
     <>
-      <path d="M12 3a6 6 0 0 0-6 6v4.5L4.3 16a1 1 0 0 0 .8 1.6h13.8a1 1 0 0 0 .8-1.6L18 13.5V9a6 6 0 0 0-6-6Z" />
-      <path d="M9.8 19a2.3 2.3 0 0 0 4.4 0H9.8Z" />
+      <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15l1.5-2Z" />
+      <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
     </>
   ),
-  bolt: <path d="M13.5 2.5 4.5 13.5H10l-1.5 8 9-11H12l1.5-8Z" />,
+  bolt: <path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z" />,
   phone: (
-    <path d="M8.5 2A2.5 2.5 0 0 0 6 4.5v15A2.5 2.5 0 0 0 8.5 22h7a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 15.5 2h-7Zm2 16.5h3a.75.75 0 0 1 0 1.5h-3a.75.75 0 0 1 0-1.5Z" />
+    <>
+      <rect x="6.5" y="2.5" width="11" height="19" rx="2.5" />
+      <path d="M10.5 18.5h3" />
+    </>
   ),
   shield: (
-    <path d="M12 2.5 4.5 5.5v5.7c0 4.6 3.1 8.4 7.5 9.8 4.4-1.4 7.5-5.2 7.5-9.8V5.5L12 2.5Zm3.9 6.9 1.2 1.2-5.6 5.6-3.1-3.1 1.2-1.2 1.9 1.9 4.4-4.4Z" />
+    <>
+      <path d="M12 3 5 5.8v5.4c0 4.3 2.9 7.9 7 9.3 4.1-1.4 7-5 7-9.3V5.8L12 3Z" />
+      <path d="m9 12 2.2 2.2L15.2 10" />
+    </>
   ),
   sheet: (
-    <path d="M6 3.5A2.5 2.5 0 0 0 3.5 6v12A2.5 2.5 0 0 0 6 20.5h12a2.5 2.5 0 0 0 2.5-2.5V6A2.5 2.5 0 0 0 18 3.5H6Zm-.5 6h4V13h-4V9.5Zm6 0h7V13h-7V9.5Zm-6 5.5h4v3.5H6a.5.5 0 0 1-.5-.5v-3Zm6 0h7v3a.5.5 0 0 1-.5.5h-6.5V15Z" />
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M4 10h16M4 15h16M10 4v16" />
+    </>
   ),
 }
 
@@ -42,8 +55,11 @@ export default function Features() {
             <svg
               className="size-8 text-brand"
               viewBox="0 0 24 24"
-              fill="currentColor"
-              fillRule="evenodd"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               aria-hidden="true"
             >
               {ICONS[item.icon]}
