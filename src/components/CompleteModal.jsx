@@ -1,3 +1,4 @@
+import { t, tSplit } from '../lib/i18n.js'
 import { useEffect, useRef, useState } from 'react'
 import { Button, CheckIcon, Modal, ModalTitle } from './ui.jsx'
 import { compressImage } from '../lib/image.js'
@@ -27,6 +28,7 @@ function CountUp({ from, to }) {
 }
 
 export default function CompleteModal({ day, streak, busy, onSave, onSkip }) {
+  const [streakBefore, streakAfter] = tSplit('연속 {n}일째,', 'n', { n: streak.to })
   const fileRef = useRef(null)
   const [photo, setPhoto] = useState(null)
 
@@ -41,35 +43,39 @@ export default function CompleteModal({ day, streak, busy, onSave, onSkip }) {
   }
 
   return (
-    <Modal label={`Day ${day} 운동 완료`}>
+    <Modal label={t('Day {day} 운동 완료', { day })}>
       {/* 축하: 튀어나오는 체크 + 연속 기록 숫자 올라가기 + 문구 */}
       <div className="mx-auto size-16" aria-hidden="true">
         <span className="flex size-16 items-center justify-center rounded-full bg-brand text-white motion-safe:animate-pop">
           <CheckIcon className="size-8" />
         </span>
       </div>
-      <ModalTitle className="mt-4">Day {day} 운동 완료!</ModalTitle>
+      <ModalTitle className="mt-4">{t('Day {day} 운동 완료!', { day })}</ModalTitle>
       <p className="mt-2 text-center text-sm text-dim">
-        연속{' '}
+        {streakBefore}
         <strong className="inline-block text-xl font-extrabold text-brand tabular-nums motion-safe:animate-pop">
           <CountUp from={streak.from} to={streak.to} />
         </strong>
-        일째, {cheerMessage(day, streak.to)}
+        {streakAfter} {cheerMessage(day, streak.to)}
       </p>
 
       <button
         className="mt-6 flex min-h-40 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-line bg-surface-2 text-center text-base font-bold text-dim"
         onClick={() => fileRef.current?.click()}
       >
-        {photo ? <img className="block w-full" src={photo} alt="인증샷 미리보기" /> : '탭하여 인증샷 첨부 (선택)'}
+        {photo ? (
+          <img className="block w-full" src={photo} alt={t('인증샷 미리보기')} />
+        ) : (
+          t('탭하여 인증샷 첨부 (선택)')
+        )}
       </button>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
 
       <Button className="mt-5" disabled={busy} onClick={() => onSave(photo)}>
-        {busy ? '기록하는 중…' : photo ? '사진과 함께 업로드' : '완료 기록하기'}
+        {busy ? t('기록하는 중…') : photo ? t('사진과 함께 업로드') : t('완료 기록하기')}
       </Button>
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={onSkip}>
-        사진 없이 완료
+        {t('사진 없이 완료')}
       </Button>
     </Modal>
   )

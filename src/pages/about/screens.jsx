@@ -2,6 +2,7 @@
 // 캡처 사진이 아니라 앱의 실제 부품(StreakCard, WeeklyReport, MemberRow, RankBoard, CompleteModal, BottomNav)을
 // 가짜 데이터로 그린 것이라, 부품의 모양이 바뀌면 여기도 저절로 따라 바뀜.
 // 화면의 구성(어떤 부품을 어떤 순서로 놓는지)이 바뀌면 이 파일만 고치면 됨
+import { t } from '../../lib/i18n.js'
 import { useState } from 'react'
 import BottomNav from '../../components/BottomNav.jsx'
 import CompleteModal from '../../components/CompleteModal.jsx'
@@ -65,7 +66,7 @@ function AppShell({ view = 'home', children }) {
       <StatusBar />
       <header className="flex items-center justify-between px-5 pt-2 pb-3">
         <Logo className="text-xl" />
-        <span className="rounded-sm bg-surface-2 px-2 py-1 text-xs font-bold text-dim">로그인됨</span>
+        <span className="rounded-sm bg-surface-2 px-2 py-1 text-xs font-bold text-dim">{t('로그인됨')}</span>
       </header>
       {children}
       <BottomNav view={view} onChange={noop} />
@@ -79,8 +80,8 @@ export function HomeScreen({ doneToday = true, celebrating = false }) {
   return (
     <AppShell view="home">
       <Page as="div">
-        <PageTitle>오늘도 복근 챙기기</PageTitle>
-        <Sub>Day {todayWorkoutDay()} 운동이 준비되어 있어요.</Sub>
+        <PageTitle>{t('오늘도 복근 챙기기')}</PageTitle>
+        <Sub>{t('Day {day} 운동이 준비되어 있어요.', { day: todayWorkoutDay() })}</Sub>
         <StreakCard streak={computeStreak(records)} doneToday={doneToday} celebrating={celebrating} />
         <WeeklyReport records={records} />
       </Page>
@@ -94,8 +95,8 @@ export function CompleteScreen({ active = true }) {
   return (
     <AppShell view="workout">
       <Page as="div">
-        <PageTitle>Day {todayWorkoutDay()} 복근 운동</PageTitle>
-        <Sub>영상이 끝나면 자동으로 운동 완료 처리돼요.</Sub>
+        <PageTitle>{t('Day {day} 복근 운동', { day: todayWorkoutDay() })}</PageTitle>
+        <Sub>{t('영상이 끝나면 자동으로 운동 완료 처리돼요.')}</Sub>
         <StreakCard streak={computeStreak(records)} doneToday={false} />
       </Page>
       {active && (
@@ -120,12 +121,12 @@ function GroupHeader({ memberCount }) {
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-xl font-bold tracking-tight">{DEMO_GROUP.name}</h2>
           <div className="mt-1 text-xs text-dim">
-            멤버 {memberCount}/{DEMO_GROUP.max_members}명
+            {t('멤버 {count}/{max}명', { count: memberCount, max: DEMO_GROUP.max_members })}
           </div>
         </div>
       </div>
       <div className="mt-4 rounded-md bg-surface-2 px-4 py-3 text-xs text-dim">
-        초대 코드 <strong className="ml-1 tracking-wider text-fg">{DEMO_GROUP.invite_code}</strong>
+        {t('초대 코드')} <strong className="ml-1 tracking-wider text-fg">{DEMO_GROUP.invite_code}</strong>
       </div>
     </Card>
   )
@@ -147,7 +148,7 @@ export function GroupScreen() {
       <Page as="div">
         <GroupHeader memberCount={members.length} />
         <Card>
-          <CardTitle>멤버 현황</CardTitle>
+          <CardTitle>{t('멤버 현황')}</CardTitle>
           <div className="mt-2">
             {members.map((m) => (
               <MemberRow
@@ -180,12 +181,12 @@ export function LeaderboardScreen() {
         <GroupHeader memberCount={rows.length} />
         <Card>
           <div className="flex items-center justify-between">
-            <CardTitle>리더보드</CardTitle>
-            <span className="text-xs text-dim">최근 7일</span>
+            <CardTitle>{t('리더보드')}</CardTitle>
+            <span className="text-xs text-dim">{t('최근 7일')}</span>
           </div>
           <RankBoard rows={rows} myId={DEMO_ME} totalDays={totalDays} />
           <Sub className="mt-3 text-xs">
-            기간 내 인증 횟수 기준이에요. 삼각형은 직전 {totalDays}일 대비 순위 변동이에요.
+            {t('기간 내 인증 횟수 기준이에요. 삼각형은 직전 {days}일 대비 순위 변동이에요.', { days: totalDays })}
           </Sub>
         </Card>
       </Page>

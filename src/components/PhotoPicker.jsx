@@ -1,4 +1,5 @@
 // 사진 고르기 공통 부품 — 프로필 사진(설정)과 그룹 사진(그룹 상세)에서 함께 사용
+import { t } from '../lib/i18n.js'
 import { compressImage } from '../lib/image.js'
 import { Button, Modal, ModalTitle, cx } from './ui.jsx'
 
@@ -10,8 +11,8 @@ export async function readPickedImage(event, { max = 512, quality = 0.85 } = {})
   const file = event.target.files?.[0]
   event.target.value = '' // 같은 파일을 다시 골라도 onChange 가 불리게
   if (!file) return null
-  if (!file.type.startsWith('image/')) throw new Error('이미지 파일만 업로드할 수 있어요.')
-  if (file.size > MAX_FILE_BYTES) throw new Error('10MB 이하의 사진만 업로드할 수 있어요.')
+  if (!file.type.startsWith('image/')) throw new Error(t('이미지 파일만 업로드할 수 있어요.'))
+  if (file.size > MAX_FILE_BYTES) throw new Error(t('10MB 이하의 사진만 업로드할 수 있어요.'))
   return compressImage(file, { max, quality })
 }
 
@@ -47,13 +48,13 @@ export function PhotoActionSheet({ title, busy, onReplace, onRemove, onClose }) 
     <Modal label={title} onBackdrop={onClose}>
       <ModalTitle>{title}</ModalTitle>
       <Button variant="secondary" className="mt-5" disabled={busy} onClick={onReplace}>
-        사진 교체
+        {t('사진 교체')}
       </Button>
       <Button variant="danger" className="mt-3" disabled={busy} onClick={onRemove}>
-        사진 삭제
+        {t('사진 삭제')}
       </Button>
       <Button variant="secondary" className="mt-3" onClick={onClose}>
-        취소
+        {t('취소')}
       </Button>
     </Modal>
   )

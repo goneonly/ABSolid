@@ -1,4 +1,5 @@
 // 사진을 긴 변 max px 이하 JPEG dataURL로 압축 (업로드, localStorage 용량 보호)
+import { t } from './i18n.js'
 export function compressImage(file, { max = 720, quality = 0.8 } = {}) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
@@ -14,7 +15,7 @@ export function compressImage(file, { max = 720, quality = 0.8 } = {}) {
     }
     img.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error('이미지를 불러오지 못했어요.'))
+      reject(new Error(t('이미지를 불러오지 못했어요.')))
     }
     img.src = url
   })

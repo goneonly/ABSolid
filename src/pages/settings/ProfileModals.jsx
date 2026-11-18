@@ -1,4 +1,5 @@
 // 설정의 내 프로필 변경 모달 3종: 닉네임 / 이름, 전화번호 / 비밀번호
+import { t } from '../../lib/i18n.js'
 import { useEffect, useState } from 'react'
 import { getProfile, saveProfile } from '../../lib/storage.js'
 import { updatePassword } from '../../server/auth.js'
@@ -25,21 +26,21 @@ export function NicknameModal({ session, initial, onSaved, onClose }) {
     if (session) await saveNickname(nick)
     setBusy(false)
     onSaved(nick)
-    toast('닉네임을 변경했어요.')
+    toast(t('닉네임을 변경했어요.'))
     onClose()
   }
 
   return (
-    <Modal label="닉네임 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>닉네임 변경</ModalTitle>
-      <ModalText>그룹에서 다른 멤버에게 보이는 이름이에요.</ModalText>
+    <Modal label={t('닉네임 변경')} onBackdrop={busy ? undefined : onClose}>
+      <ModalTitle>{t('닉네임 변경')}</ModalTitle>
+      <ModalText>{t('그룹에서 다른 멤버에게 보이는 이름이에요.')}</ModalText>
       <Field
         id="nick"
-        label="닉네임 (2~12자, 한글, 영문, 숫자, _)"
+        label={t('닉네임 (2~12자, 한글, 영문, 숫자, _)')}
         className="mt-3"
         autoFocus
         value={value}
-        placeholder="그룹에 표시될 이름"
+        placeholder={t('그룹에 표시될 이름')}
         maxLength={12}
         error={error}
         onChange={(e) => {
@@ -51,10 +52,10 @@ export function NicknameModal({ session, initial, onSaved, onClose }) {
         }}
       />
       <Button className="mt-4" disabled={busy} onClick={submit}>
-        {busy ? '저장 중…' : '저장'}
+        {busy ? t('저장 중…') : t('저장')}
       </Button>
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
-        취소
+        {t('취소')}
       </Button>
     </Modal>
   )
@@ -95,7 +96,7 @@ export function ProfileInfoModal({ onClose }) {
     setBusy(true)
     try {
       await updateMyProfileInfo({ fullName: fullName.trim(), phone: phone ? formatPhone(phone) : '' })
-      toast('이름과 전화번호를 저장했어요.')
+      toast(t('이름과 전화번호를 저장했어요.'))
       onClose()
     } catch (e) {
       setErrors({ phone: e.message })
@@ -104,20 +105,20 @@ export function ProfileInfoModal({ onClose }) {
   }
 
   return (
-    <Modal label="이름과 전화번호 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>이름과 전화번호 변경</ModalTitle>
-      <ModalText>그룹 멤버에게는 보이지 않아요. '회원만 받기' 그룹에 참여하려면 둘 다 필요해요.</ModalText>
+    <Modal label={t('이름과 전화번호 변경')} onBackdrop={busy ? undefined : onClose}>
+      <ModalTitle>{t('이름과 전화번호 변경')}</ModalTitle>
+      <ModalText>{t("그룹 멤버에게는 보이지 않아요. '회원만 받기' 그룹에 참여하려면 둘 다 필요해요.")}</ModalText>
       {!loaded ? (
-        <Sub className={cx('mt-4 text-center', loadError && 'text-danger')}>{loadError || '불러오는 중…'}</Sub>
+        <Sub className={cx('mt-4 text-center', loadError && 'text-danger')}>{loadError || t('불러오는 중…')}</Sub>
       ) : (
         <>
           <Field
             id="full-name"
-            label="이름"
+            label={t('이름')}
             className="mt-3"
             value={fullName}
             maxLength={20}
-            placeholder="홍길동"
+            placeholder={t('홍길동')}
             autoComplete="name"
             error={errors.fullName}
             onChange={(e) => {
@@ -127,7 +128,7 @@ export function ProfileInfoModal({ onClose }) {
           />
           <Field
             id="phone"
-            label="전화번호"
+            label={t('전화번호')}
             type="tel"
             value={phone}
             maxLength={13}
@@ -143,10 +144,10 @@ export function ProfileInfoModal({ onClose }) {
         </>
       )}
       <Button className="mt-4" disabled={busy || !loaded} onClick={submit}>
-        {busy ? '저장 중…' : '저장'}
+        {busy ? t('저장 중…') : t('저장')}
       </Button>
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
-        취소
+        {t('취소')}
       </Button>
     </Modal>
   )
@@ -163,10 +164,10 @@ export function ChangePasswordModal({ email, onClose }) {
 
   async function submit() {
     const errs = {
-      current: current ? '' : '현재 비밀번호를 입력해 주세요.',
+      current: current ? '' : t('현재 비밀번호를 입력해 주세요.'),
       next:
-        validatePassword(next) || (next && next === current ? '현재 비밀번호와 다른 비밀번호를 입력해 주세요.' : ''),
-      confirmPw: next === confirmPw ? '' : '새 비밀번호가 서로 달라요.',
+        validatePassword(next) || (next && next === current ? t('현재 비밀번호와 다른 비밀번호를 입력해 주세요.') : ''),
+      confirmPw: next === confirmPw ? '' : t('새 비밀번호가 서로 달라요.'),
     }
     setErrors(errs)
     if (Object.values(errs).some(Boolean)) return
@@ -175,7 +176,7 @@ export function ChangePasswordModal({ email, onClose }) {
     if (failed) {
       setBusy(false)
       // 비밀번호가 틀린 경우만 문구를 바꾸고, 연결 실패 등은 원래 안내 그대로
-      setErrors({ current: failed === INVALID_CREDENTIALS ? '현재 비밀번호가 올바르지 않아요.' : failed })
+      setErrors({ current: failed === INVALID_CREDENTIALS ? t('현재 비밀번호가 올바르지 않아요.') : failed })
       return
     }
     const res = await updatePassword(next)
@@ -184,18 +185,18 @@ export function ChangePasswordModal({ email, onClose }) {
       setErrors({ next: res.error })
       return
     }
-    toast('비밀번호를 변경했어요.')
+    toast(t('비밀번호를 변경했어요.'))
     onClose()
   }
 
   const clear = (key) => setErrors((p) => ({ ...p, [key]: '' }))
 
   return (
-    <Modal label="비밀번호 변경" onBackdrop={busy ? undefined : onClose}>
-      <ModalTitle>비밀번호 변경</ModalTitle>
+    <Modal label={t('비밀번호 변경')} onBackdrop={busy ? undefined : onClose}>
+      <ModalTitle>{t('비밀번호 변경')}</ModalTitle>
       <Field
         id="pw-current"
-        label="현재 비밀번호"
+        label={t('현재 비밀번호')}
         className="mt-3"
         type="password"
         autoFocus
@@ -209,7 +210,7 @@ export function ChangePasswordModal({ email, onClose }) {
       />
       <Field
         id="pw-next"
-        label="새 비밀번호 (8자 이상, 영문+숫자)"
+        label={t('새 비밀번호 (8자 이상, 영문+숫자)')}
         type="password"
         autoComplete="new-password"
         value={next}
@@ -221,7 +222,7 @@ export function ChangePasswordModal({ email, onClose }) {
       />
       <Field
         id="pw-confirm"
-        label="새 비밀번호 확인"
+        label={t('새 비밀번호 확인')}
         type="password"
         autoComplete="new-password"
         value={confirmPw}
@@ -236,10 +237,10 @@ export function ChangePasswordModal({ email, onClose }) {
       />
       {pwCheck.widget}
       <Button className="mt-4" disabled={busy} onClick={submit}>
-        {busy ? '변경 중…' : '비밀번호 변경'}
+        {busy ? t('변경 중…') : t('비밀번호 변경')}
       </Button>
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
-        취소
+        {t('취소')}
       </Button>
     </Modal>
   )

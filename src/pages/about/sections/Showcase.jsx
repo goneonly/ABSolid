@@ -1,5 +1,6 @@
 // 2. 기능 소개 — 휴대폰을 화면에 고정해 두고, 스크롤하는 동안 설명과 휴대폰 속 화면이 한 단계씩 바뀜
 // 단계 수만큼 긴 구간(단계마다 화면 한 장 높이)을 만들고, 그 안에서 지나온 비율로 지금 단계를 정함
+import { t } from '../../../lib/i18n.js'
 import { useState } from 'react'
 import { cx } from '../../../components/ui.jsx'
 import { SHOWCASE } from '../content.js'
@@ -36,7 +37,7 @@ export default function Showcase() {
       ref={ref}
       className="relative mt-24 md:mt-40"
       style={{ height: `${STEPS * 100}svh` }}
-      aria-label="주요 기능"
+      aria-label={t('주요 기능')}
     >
       <div className="sticky top-0 flex h-svh flex-col items-center gap-6 overflow-hidden px-5 pt-[calc(4rem+env(safe-area-inset-top))] pb-6 md:flex-row md:justify-center md:gap-20 md:px-10 md:pt-14 md:pb-0">
         {/* 휴대폰: 좁은 화면에서는 위, 넓은 화면에서는 오른쪽 */}
@@ -58,7 +59,7 @@ export default function Showcase() {
                     inert={usable ? undefined : ''}
                     aria-hidden={usable ? undefined : true}
                     role={usable ? 'group' : undefined}
-                    aria-label={usable ? `${step.label} 화면 예시` : undefined}
+                    aria-label={usable ? t('{label} 화면 예시', { label: step.label }) : undefined}
                   >
                     {screen.render(shown)}
                   </div>
@@ -95,13 +96,13 @@ export default function Showcase() {
           </div>
 
           {/* 단계 점: 지금 단계는 길고 빨갛게 (로딩 화면의 단계 막대와 같은 모양). 누르면 그 단계로 이동 */}
-          <div className="mt-4 flex gap-2 md:mt-8" role="tablist" aria-label="기능 단계">
+          <div className="mt-4 flex gap-2 md:mt-8" role="tablist" aria-label={t('기능 단계')}>
             {SHOWCASE.map((step, i) => (
               <button
                 key={step.key}
                 role="tab"
                 aria-selected={i === active}
-                aria-label={`${i + 1}번째: ${step.label}`}
+                aria-label={t('{n}번째: {label}', { n: i + 1, label: step.label })}
                 className="hit flex h-6 items-center"
                 onClick={() => goTo(i)}
               >

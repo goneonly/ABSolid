@@ -4,6 +4,7 @@
 // 규칙
 // - 비회원(또는 서버 미연결)이면 조회 함수는 빈 값(null, [], {})을 돌려주고 조용히 넘어감
 // - 사용자가 직접 누른 동작(그룹 참여, 차단 등)이 실패하면 한국어 문구를 담은 Error 를 던짐. 화면에서는 toast(e.message) 로 보여 줌
+import { t, tServer } from '../lib/i18n.js'
 import { supabase, currentUserId as uid } from './supabase.js'
 import { getRecords, saveRecord, todayKey } from '../lib/storage.js'
 import {
@@ -17,11 +18,11 @@ import {
 } from './storagePaths.js'
 import { PLAYLIST_ID } from '../lib/youtube.js'
 
-const LOGIN_REQUIRED = '로그인이 필요해요.'
-export const NO_NAME = '이름 없음' // 닉네임을 정하지 않은 멤버 (admin.js 도 같은 문구 사용)
+const LOGIN_REQUIRED = t('로그인이 필요해요.')
+export const NO_NAME = t('이름 없음') // 닉네임을 정하지 않은 멤버 (admin.js 도 같은 문구 사용)
 
 // 서버 함수가 직접 알려준 거절 사유(raise exception, 코드 P0001)는 그대로 보여주고, 그 외 오류는 일반 안내
-const reasonOf = (error, fallback) => (error.code === 'P0001' && error.message ? error.message : fallback)
+const reasonOf = (error, fallback) => (error.code === 'P0001' && error.message ? tServer(error.message) : fallback)
 
 async function requireUid() {
   const id = await uid()
@@ -95,13 +96,13 @@ export async function completeWorkout(sessionId) {
     res = await supabase.rpc('complete_workout', { p_session: sessionId })
   } catch {
     // 요청 자체가 끊김(오프라인 등)
-    const e = new Error('서버에 연결할 수 없어요.')
+    const e = new Error(t('서버에 연결할 수 없어요.'))
     e.retryable = true
     throw e
   }
   const { data, error } = res
   if (error) {
-    const e = new Error(error.message || '운동 기록에 실패했어요.')
+    const e = new Error(error.message ? tServer(error.message) : t('운동 기록에 실패했어요.'))
     e.retryable = error.code !== 'P0001' // P0001 = 서버가 판단해 거절 (시청 시간 부족 등)이라 다시 시도해도 같음
     throw e
   }
@@ -227,14 +228,14 @@ export async function fetchMyProfileInfo() {
   const userId = await uid()
   if (!userId) return null
   const { data, error } = await supabase.from('profiles').select('full_name, phone').eq('id', userId).maybeSingle()
-  if (error) throw new Error('회원 정보를 불러오지 못했어요.')
+  if (error) throw new Error(t('회원 정보를 불러오지 못했어요.'))
   return { fullName: data?.full_name || '', phone: data?.phone || '' }
 }
 
 export async function updateMyProfileInfo({ fullName, phone }) {
   const userId = await requireUid()
   const { error } = await supabase.from('profiles').update({ full_name: fullName, phone }).eq('id', userId)
-  if (error) throw new Error('회원 정보 저장에 실패했어요.')
+  if (error) throw new Error(t('회원 정보 저장에 실패했어요.'))
 }
 
 // 프로필 사진 올리기. 새 사진 주소를 돌려줌 (실패하면 null)
@@ -276,7 +277,7 @@ export async function deleteAvatar() {
 export async function fetchMyGroups() {
   const userId = await uid()
   if (!userId) return []
-  const FAILED = '그룹 목록을 불러오지 못했어요.'
+  const FAILED = t('그룹 목록을 불러오지 못했어요.')
   const { data: mine, error: mineErr } = await supabase.from('group_members').select('group_id').eq('user_id', userId)
   if (mineErr) throw new Error(FAILED)
   if (!mine?.length) return []
@@ -301,7 +302,7 @@ export async function createGroup(name, nickname, { maxMembers, membersOnly } = 
     p_max_members: Number(maxMembers),
     p_members_only: !!membersOnly,
   })
-  const FAILED = '그룹 생성에 실패했어요. 잠시 후 다시 시도해 주세요.'
+  const FAILED = t('그룹 생성에 실패했어요. 잠시 후 다시 시도해 주세요.')
   if (error) throw new Error(reasonOf(error, FAILED))
   const group = firstRow(data)
   if (!group) throw new Error(FAILED)
@@ -312,13 +313,13 @@ export async function createGroup(name, nickname, { maxMembers, membersOnly } = 
 export async function joinGroup(code, nickname) {
   await requireUid()
   const clean = (code || '').trim().toUpperCase()
-  if (clean.length !== 6) throw new Error('초대 코드는 6자리예요.')
+  if (clean.length !== 6) throw new Error(t('초대 코드는 6자리예요.'))
   await saveNickname(nickname)
   const { data, error } = await supabase.rpc('join_group', { code: clean })
-  if (error) throw new Error(reasonOf(error, '참여에 실패했어요. 잠시 후 다시 시도해 주세요.'))
+  if (error) throw new Error(reasonOf(error, t('참여에 실패했어요. 잠시 후 다시 시도해 주세요.')))
   const group = firstRow(data)
   // 틀린 코드는 오류가 아니라 빈 결과로 옴 (서버가 틀린 횟수를 세기 위해 — v0.11 SQL)
-  if (!group) throw new Error('초대 코드를 찾을 수 없어요. 다시 확인해 주세요.')
+  if (!group) throw new Error(t('초대 코드를 찾을 수 없어요. 다시 확인해 주세요.'))
   return group
 }
 
@@ -327,41 +328,41 @@ export async function leaveGroup(group) {
   // 마지막 멤버가 나가면 그룹이 사라지므로 그룹 사진을 먼저 정리 (그룹장만 지울 수 있음)
   if (group.memberCount <= 1 && group.photo_url) await removeGroupPhotoFile(group.id)
   const { error } = await supabase.rpc('leave_group', { p_gid: group.id })
-  if (error) throw new Error('그룹 나가기에 실패했어요. 잠시 후 다시 시도해 주세요.')
+  if (error) throw new Error(t('그룹 나가기에 실패했어요. 잠시 후 다시 시도해 주세요.'))
 }
 
 // ── 그룹장의 멤버 관리 (v0.12 SQL) ─────────────
 // 내보내기. ban 이면 같은 초대 코드로 다시 들어오지 못하게 막음 (그룹장만, 서버가 확인)
 export async function kickMember(groupId, userId, { ban = false } = {}) {
   const { error } = await supabase.rpc('kick_member', { p_gid: groupId, p_target: userId, p_ban: ban })
-  if (error) throw new Error(reasonOf(error, '멤버를 내보내지 못했어요. 잠시 후 다시 시도해 주세요.'))
+  if (error) throw new Error(reasonOf(error, t('멤버를 내보내지 못했어요. 잠시 후 다시 시도해 주세요.')))
 }
 
 // 참여를 막은 사람 [{ user_id, nickname, created_at }] (그룹장만)
 export async function fetchGroupBans(groupId) {
   const { data, error } = await supabase.rpc('group_bans_of', { p_gid: groupId })
-  if (error) throw new Error(reasonOf(error, '참여를 막은 사람 목록을 불러오지 못했어요.'))
+  if (error) throw new Error(reasonOf(error, t('참여를 막은 사람 목록을 불러오지 못했어요.')))
   return data || []
 }
 
 export async function unbanMember(groupId, userId) {
   const { error } = await supabase.rpc('unban_member', { p_gid: groupId, p_target: userId })
-  if (error) throw new Error(reasonOf(error, '참여 막기를 풀지 못했어요. 잠시 후 다시 시도해 주세요.'))
+  if (error) throw new Error(reasonOf(error, t('참여 막기를 풀지 못했어요. 잠시 후 다시 시도해 주세요.')))
 }
 
 // 그룹 사진 (그룹장만). 새 사진 주소를 돌려줌
 export async function uploadGroupPhoto(groupId, dataUrl) {
   const path = groupPhotoPath(groupId)
-  if (await uploadJpeg(BUCKET.groupPhotos, path, dataUrl)) throw new Error('그룹 사진 업로드에 실패했어요.')
+  if (await uploadJpeg(BUCKET.groupPhotos, path, dataUrl)) throw new Error(t('그룹 사진 업로드에 실패했어요.'))
   const url = publicUrl(BUCKET.groupPhotos, path)
   const { error } = await supabase.rpc('set_group_photo', { p_gid: groupId, p_url: url })
-  if (error) throw new Error(reasonOf(error, '그룹 사진 저장에 실패했어요.'))
+  if (error) throw new Error(reasonOf(error, t('그룹 사진 저장에 실패했어요.')))
   return url
 }
 
 export async function removeGroupPhoto(groupId) {
   const { error } = await supabase.rpc('set_group_photo', { p_gid: groupId, p_url: null })
-  if (error) throw new Error(reasonOf(error, '그룹 사진 삭제에 실패했어요.'))
+  if (error) throw new Error(reasonOf(error, t('그룹 사진 삭제에 실패했어요.')))
   await removeGroupPhotoFile(groupId)
 }
 
@@ -428,7 +429,7 @@ export async function fetchGroupWorkoutDates(memberIds, startKey, endKey) {
 // 같은 그룹 멤버에게 하루 한 번. 새 응원 id 를 돌려줌 (오늘 이미 응원했으면 null)
 export async function sendCheer(groupId, toUserId) {
   const { data, error } = await supabase.rpc('send_cheer', { p_group: groupId, p_to: toUserId })
-  if (error) throw new Error(reasonOf(error, '응원을 보내지 못했어요. 잠시 후 다시 시도해 주세요.'))
+  if (error) throw new Error(reasonOf(error, t('응원을 보내지 못했어요. 잠시 후 다시 시도해 주세요.')))
   return data
 }
 
@@ -468,7 +469,7 @@ export async function fetchReceivedCheers() {
 
 // ── 차단 (v0.9 SQL) ──────────────────────────
 // 차단한 사람은 그룹 화면과 받은 응원에서 숨기고 서로 응원할 수 없음. 상대에게는 알리지 않음.
-const BLOCK_FAILED = '차단 기능을 쓸 수 없어요. 잠시 후 다시 시도해 주세요.'
+const BLOCK_FAILED = t('차단 기능을 쓸 수 없어요. 잠시 후 다시 시도해 주세요.')
 
 // 내가 차단한 사용자 id Set (비회원, 오류면 빈 Set 이라 아무도 숨기지 않음)
 export async function fetchBlockedIds() {
@@ -505,7 +506,7 @@ export async function submitReport(targetUserId, targetDate, reason) {
     target_date: targetDate,
     reason: (reason || '').slice(0, 200),
   })
-  if (error) throw new Error(reasonOf(error, '신고 접수에 실패했어요.'))
+  if (error) throw new Error(reasonOf(error, t('신고 접수에 실패했어요.')))
 }
 
 // ── 공지, 앱 설정 (누구나 조회) ────────────────

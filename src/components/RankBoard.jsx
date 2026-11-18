@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { MemberAvatar, Trend, cx } from './ui.jsx'
 
 // 리더보드의 내 순위와 순위 목록 — 소개 페이지(pages/about/screens.jsx)도 같은 목록을 씀
@@ -9,7 +10,8 @@ export default function RankBoard({ rows, myId, myName, totalDays }) {
     <>
       {me && (
         <div className="mt-3 rounded-md border border-line px-4 py-3 text-sm">
-          내 순위 <strong className="text-base text-brand">{me.rank}위</strong> · 인증 {me.count}회
+          {t('내 순위')} <strong className="text-base text-brand">{t('{rank}위', { rank: me.rank })}</strong> ·{' '}
+          {t('인증 {count}회', { count: me.count })}
           <Trend delta={me.delta} className="ml-2 text-xs" />
         </div>
       )}
@@ -31,7 +33,7 @@ export default function RankBoard({ rows, myId, myName, totalDays }) {
               <div className="min-w-0 flex-1">
                 <span className={cx('block truncate text-sm font-bold', r.id === myId && 'text-brand')}>
                   {r.id === myId ? myName || r.name : r.name}
-                  {r.id === myId ? ' (나)' : ''}
+                  {r.id === myId ? t(' (나)') : ''}
                 </span>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-2">
                   <i
@@ -45,7 +47,7 @@ export default function RankBoard({ rows, myId, myName, totalDays }) {
               </span>
               <span className="w-10 flex-none text-right text-sm font-extrabold tabular-nums">
                 {r.count}
-                <span className="ml-px text-xs font-normal text-dim">회</span>
+                <span className="ml-px text-xs font-normal text-dim">{t('횟수|회')}</span>
               </span>
             </div>
           )

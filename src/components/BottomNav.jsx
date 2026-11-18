@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { HomeIcon, cx } from './ui.jsx'
 
 const NAV_BTN = 'flex h-full flex-col items-center justify-center gap-1 text-xs [&>svg]:size-6'
@@ -25,10 +26,10 @@ export default function BottomNav({ view, onChange }) {
           <path d="M16 4.8a3.3 3.3 0 0 1 0 6.4" />
           <path d="M18 14.3c2 .7 3.2 2.6 3.5 5.7" />
         </svg>
-        그룹
+        {t('그룹')}
       </button>
       {view === 'home' ? (
-        <button className={NAV_START} onClick={() => onChange('workout')} aria-label="운동 시작">
+        <button className={NAV_START} onClick={() => onChange('workout')} aria-label={t('운동 시작')}>
           <span className={NAV_START_CIRCLE}>
             <svg
               viewBox="0 0 24 24"
@@ -41,14 +42,14 @@ export default function BottomNav({ view, onChange }) {
               <path d="M8 5.5v13l11-6.5z" />
             </svg>
           </span>
-          시작
+          {t('시작')}
         </button>
       ) : (
-        <button className={NAV_START} onClick={() => onChange('home')} aria-label="홈으로">
+        <button className={NAV_START} onClick={() => onChange('home')} aria-label={t('홈으로')}>
           <span className={NAV_START_CIRCLE}>
             <HomeIcon />
           </span>
-          홈
+          {t('홈')}
         </button>
       )}
       <button
@@ -68,7 +69,7 @@ export default function BottomNav({ view, onChange }) {
           <path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.6h-4l-.4 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.4-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
-        설정
+        {t('설정')}
       </button>
     </nav>
   )

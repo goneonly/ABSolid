@@ -1,4 +1,5 @@
 // 설정의 기타 메뉴에 있는 알림 켜기/끄기 줄 (회원 전용)
+import { t } from '../../lib/i18n.js'
 import { useEffect, useState } from 'react'
 import { isPushSupported, isPushConfigured, getPushEnabled, enablePush, disablePush } from '../../server/push.js'
 import { isStandalone, isIOS } from '../../lib/install.js'
@@ -21,8 +22,8 @@ export default function PushToggleRow({ session, onNeedInstall }) {
     // 아이폰은 홈 화면에 추가한 앱에서만 알림 API 가 열려서 방법을 안내
     if (!isIOS() || isStandalone()) return null
     return (
-      <RowButton hint="홈 화면에 추가하면 켤 수 있어요" onClick={onNeedInstall}>
-        알림 (리마인더, 응원)
+      <RowButton hint={t('홈 화면에 추가하면 켤 수 있어요')} onClick={onNeedInstall}>
+        {t('알림 (리마인더, 응원)')}
       </RowButton>
     )
   }
@@ -33,21 +34,21 @@ export default function PushToggleRow({ session, onNeedInstall }) {
       if (enabled) {
         await disablePush()
         setEnabled(false)
-        toast('알림을 껐어요.')
+        toast(t('알림을 껐어요.'))
       } else {
         await enablePush()
         setEnabled(true)
-        toast('운동 안 한 날 저녁 리마인더와 응원 알림을 보내드릴게요.')
+        toast(t('운동 안 한 날 저녁 리마인더와 응원 알림을 보내드릴게요.'))
       }
     } catch (e) {
-      toast(e.message || '알림 설정에 실패했어요.')
+      toast(e.message || t('알림 설정에 실패했어요.'))
     }
     setBusy(false)
   }
 
   return (
-    <RowButton disabled={busy} hint={busy ? '처리 중…' : enabled ? '켜짐' : '꺼짐'} onClick={toggle}>
-      알림 (리마인더, 응원)
+    <RowButton disabled={busy} hint={busy ? t('처리 중…') : enabled ? t('켜짐') : t('꺼짐')} onClick={toggle}>
+      {t('알림 (리마인더, 응원)')}
     </RowButton>
   )
 }

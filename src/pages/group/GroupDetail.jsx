@@ -1,4 +1,5 @@
 // 그룹 상세 화면: 그룹 정보, 멤버 현황, 리더보드, 오늘의 인증샷
+import { t } from '../../lib/i18n.js'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { todayKey, getProfile } from '../../lib/storage.js'
 import {
@@ -56,9 +57,9 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
       const cheerId = await sendCheer(group.id, member.id)
       if (cheerId) {
         notifyCheer(cheerId) // 받은 사람에게 푸시 (기다리지 않음)
-        toast(`${member.name}님에게 응원을 보냈어요!`)
+        toast(t('{name}님에게 응원을 보냈어요!', { name: member.name }))
       } else {
-        toast('오늘은 이미 응원했어요. 내일 또 응원해 주세요!')
+        toast(t('오늘은 이미 응원했어요. 내일 또 응원해 주세요!'))
       }
       setCheers((prev) => ({
         counts: cheerId ? { ...prev.counts, [member.id]: (prev.counts[member.id] || 0) + 1 } : prev.counts,
@@ -93,15 +94,15 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   async function onLeave() {
     const msg =
       memberCount <= 1
-        ? '마지막 멤버라 나가면 그룹이 삭제돼요. 나갈까요?'
+        ? t('마지막 멤버라 나가면 그룹이 삭제돼요. 나갈까요?')
         : isOwner
-          ? '그룹에서 나갈까요? 그룹장은 가장 먼저 참여한 멤버에게 넘어가요. 내 운동 기록은 사라지지 않아요.'
-          : '그룹에서 나갈까요? 내 운동 기록은 사라지지 않아요.'
+          ? t('그룹에서 나갈까요? 그룹장은 가장 먼저 참여한 멤버에게 넘어가요. 내 운동 기록은 사라지지 않아요.')
+          : t('그룹에서 나갈까요? 내 운동 기록은 사라지지 않아요.')
     if (!confirm(msg)) return
     setBusy(true)
     try {
       await leaveGroup({ ...group, memberCount })
-      toast(`'${group.name}' 그룹에서 나왔어요.`)
+      toast(t("'{name}' 그룹에서 나왔어요.", { name: group.name }))
       onLeft()
     } catch (e) {
       toast(e.message)
@@ -110,16 +111,17 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   }
 
   async function reportPhoto(p) {
-    const reason = prompt(`${p.name}의 인증샷을 신고할까요?\n사유를 입력해 주세요. (선택)`)
+    const reason = prompt(t('{name}의 인증샷을 신고할까요?\n사유를 입력해 주세요. (선택)', { name: p.name }))
     if (reason === null) return // 취소
     try {
       await submitReport(p.id, todayKey(), reason)
-      toast('신고가 접수됐어요. 관리자가 확인 후 처리할게요.')
+      toast(t('신고가 접수됐어요. 관리자가 확인 후 처리할게요.'))
     } catch (e) {
       toast(e.message)
       return
     }
-    if (confirm(`${p.name}님을 차단할까요?\n이 멤버의 기록과 인증샷이 더 이상 보이지 않아요.`)) blockMember(p, true)
+    if (confirm(t('{name}님을 차단할까요?\n이 멤버의 기록과 인증샷이 더 이상 보이지 않아요.', { name: p.name })))
+      blockMember(p, true)
   }
 
   // 차단: 그룹 화면(멤버, 리더보드, 인증샷)과 받은 응원에서 숨기고, 서로 응원 불가. 상대에게는 알리지 않음.
@@ -127,17 +129,21 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
     if (
       !confirmed &&
       !confirm(
-        `${m.name}님을 차단할까요?\n\n` +
-          '• 그룹 화면에서 이 멤버의 기록과 인증샷이 보이지 않아요.\n' +
-          '• 서로 응원을 보낼 수 없어요.\n' +
-          '• 상대에게는 알리지 않아요.\n\n' +
-          '설정의 차단한 사용자에서 언제든 해제할 수 있어요.',
+        [
+          t('{name}님을 차단할까요?', { name: m.name }),
+          '',
+          t('• 그룹 화면에서 이 멤버의 기록과 인증샷이 보이지 않아요.'),
+          t('• 서로 응원을 보낼 수 없어요.'),
+          t('• 상대에게는 알리지 않아요.'),
+          '',
+          t('설정의 차단한 사용자에서 언제든 해제할 수 있어요.'),
+        ].join('\n'),
       )
     )
       return
     try {
       await blockUser(m.id)
-      toast(`${m.name}님을 차단했어요.`)
+      toast(t('{name}님을 차단했어요.', { name: m.name }))
       load()
     } catch (e) {
       toast(e.message)
@@ -147,13 +153,15 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   // 그룹장: 내보내기 (ban 이면 같은 초대 코드로 다시 들어오지 못하게)
   async function kick(m, ban) {
     const msg = ban
-      ? `${m.name}님을 내보내고 다시 들어오지 못하게 할까요?\n아래 '참여를 막은 사람'에서 언제든 풀 수 있어요.`
-      : `${m.name}님을 그룹에서 내보낼까요?\n초대 코드가 있으면 다시 참여할 수 있어요.`
+      ? t("{name}님을 내보내고 다시 들어오지 못하게 할까요?\n아래 '참여를 막은 사람'에서 언제든 풀 수 있어요.", {
+          name: m.name,
+        })
+      : t('{name}님을 그룹에서 내보낼까요?\n초대 코드가 있으면 다시 참여할 수 있어요.', { name: m.name })
     if (!confirm(msg)) return
     setBusy(true)
     try {
       await kickMember(group.id, m.id, { ban })
-      toast(`${m.name}님을 그룹에서 내보냈어요.`)
+      toast(t('{name}님을 그룹에서 내보냈어요.', { name: m.name }))
       setMenuFor(null)
       await load()
       onChanged() // 그룹 목록의 멤버 수 갱신
@@ -164,12 +172,12 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   }
 
   async function unban(b) {
-    const name = b.nickname || '이름 없음'
-    if (!confirm(`${name}님의 참여 막기를 풀까요? 초대 코드로 다시 참여할 수 있게 돼요.`)) return
+    const name = b.nickname || t('이름 없음')
+    if (!confirm(t('{name}님의 참여 막기를 풀까요? 초대 코드로 다시 참여할 수 있게 돼요.', { name }))) return
     try {
       await unbanMember(group.id, b.user_id)
       setBans((prev) => prev.filter((x) => x.user_id !== b.user_id))
-      toast(`${name}님의 참여 막기를 풀었어요.`)
+      toast(t('{name}님의 참여 막기를 풀었어요.', { name }))
     } catch (e) {
       toast(e.message)
     }
@@ -180,7 +188,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     }
-    const fail = () => toast(`복사하지 못했어요. 초대 코드: ${group.invite_code}`)
+    const fail = () => toast(t('복사하지 못했어요. 초대 코드: {code}', { code: group.invite_code }))
     if (!navigator.clipboard?.writeText) return fail()
     navigator.clipboard.writeText(group.invite_code).then(done, fail)
   }
@@ -189,14 +197,14 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
   const myLocalPhoto = records[todayKey()]?.photo
   const todayPhotos = [...photos]
   if (myId && myLocalPhoto && !todayPhotos.some((p) => p.id === myId)) {
-    todayPhotos.unshift({ id: myId, name: myName || '나', url: myLocalPhoto })
+    todayPhotos.unshift({ id: myId, name: myName || t('나'), url: myLocalPhoto })
   }
 
   return (
     <Page>
       <button className="hit -ml-1 flex items-center gap-1 py-1 text-sm text-dim" onClick={onBack}>
         <ChevronIcon left className="size-4.5" />
-        그룹 목록
+        {t('그룹 목록')}
       </button>
 
       <Card className="mt-2">
@@ -205,21 +213,22 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
           <div className="min-w-0 flex-1">
             <h2 className="line-clamp-2 text-xl font-bold tracking-tight">{group.name}</h2>
             <div className="mt-1 text-xs text-dim">
-              멤버 {memberCount}/{group.max_members}명{isOwner && ' · 내가 그룹장'}
+              {t('멤버 {count}/{max}명', { count: memberCount, max: group.max_members })}
+              {isOwner && t(' · 내가 그룹장')}
             </div>
           </div>
         </div>
         <LinkButton className="mt-4 w-full rounded-md bg-surface-2 px-4 py-3 text-left text-sm" onClick={copyCode}>
-          초대 코드 <strong className="ml-1 tracking-wider text-fg">{group.invite_code}</strong>
+          {t('초대 코드')} <strong className="ml-1 tracking-wider text-fg">{group.invite_code}</strong>
           <span className="float-right inline-flex items-center gap-1">
             {copied && <CheckIcon className="size-3.5" />}
-            {copied ? '복사됨' : '복사'}
+            {copied ? t('복사됨') : t('복사')}
           </span>
         </LinkButton>
       </Card>
 
       <Card>
-        <CardTitle>멤버 현황</CardTitle>
+        <CardTitle>{t('멤버 현황')}</CardTitle>
         {!loaded ? (
           <Skeleton inCard lines={3} />
         ) : (
@@ -242,14 +251,18 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
             ))}
           </div>
         )}
-        {hiddenCount > 0 && <Sub className="mt-2">차단한 멤버 {hiddenCount}명은 표시되지 않아요. (설정에서 해제)</Sub>}
+        {hiddenCount > 0 && (
+          <Sub className="mt-2">
+            {t('차단한 멤버 {count}명은 표시되지 않아요. (설정에서 해제)', { count: hiddenCount })}
+          </Sub>
+        )}
         {isOwner && bans.length > 0 && (
           <div className="mt-4 border-t border-line pt-3">
-            <Sub className="text-xs">참여를 막은 사람 {bans.length}명</Sub>
+            <Sub className="text-xs">{t('참여를 막은 사람 {count}명', { count: bans.length })}</Sub>
             {bans.map((b) => (
               <div key={b.user_id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                <span className="min-w-0 truncate">{b.nickname || '이름 없음'}</span>
-                <MiniButton onClick={() => unban(b)}>막기 풀기</MiniButton>
+                <span className="min-w-0 truncate">{b.nickname || t('이름 없음')}</span>
+                <MiniButton onClick={() => unban(b)}>{t('막기 풀기')}</MiniButton>
               </div>
             ))}
           </div>
@@ -257,11 +270,11 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
         <div className="mt-3 flex items-center gap-4 text-xs text-dim">
           <span>
             <i className="mr-2 inline-block size-2.5 rounded-full bg-brand" />
-            운동 함
+            {t('운동 함')}
           </span>
           <span>
             <i className="mr-2 inline-block size-2.5 rounded-full bg-dot" />
-            아직 안 함
+            {t('아직 안 함')}
           </span>
         </div>
       </Card>
@@ -269,7 +282,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
       {loaded && <Leaderboard members={members} myId={myId} myName={myName} records={records} />}
 
       <Card>
-        <CardTitle>오늘의 인증샷</CardTitle>
+        <CardTitle>{t('오늘의 인증샷')}</CardTitle>
         {todayPhotos.length ? (
           <div className="mt-4 grid max-h-87 grid-cols-3 gap-2 overflow-y-auto overscroll-contain">
             {todayPhotos.map((p) => (
@@ -277,22 +290,22 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
                 <img
                   className="aspect-square w-full rounded-md border border-line bg-surface-2 object-cover"
                   src={p.url}
-                  alt={`${p.name}의 오늘 인증샷`}
+                  alt={t('{name}의 오늘 인증샷', { name: p.name })}
                   loading="lazy"
                 />
                 <figcaption className="mt-1 text-center text-xs text-dim">
                   <span className="block truncate">{p.id === myId ? myName || p.name : p.name}</span>
                   {p.id !== myId && (
                     <span className="mt-1 flex justify-center gap-4">
-                      <button className="hit underline" onClick={() => reportPhoto(p)} aria-label="이 사진 신고">
-                        신고
+                      <button className="hit underline" onClick={() => reportPhoto(p)} aria-label={t('이 사진 신고')}>
+                        {t('신고')}
                       </button>
                       <button
                         className="hit underline"
                         onClick={() => blockMember(p)}
-                        aria-label={`${p.name}님 차단하기`}
+                        aria-label={t('{name}님 차단하기', { name: p.name })}
                       >
-                        차단
+                        {t('차단')}
                       </button>
                     </span>
                   )}
@@ -301,8 +314,8 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
             ))}
           </div>
         ) : (
-          <EmptyState className="mt-2" art={<CameraArt />} title="아직 오늘의 인증샷이 없어요">
-            운동을 마치고 첫 인증샷의 주인공이 되어 보세요!
+          <EmptyState className="mt-2" art={<CameraArt />} title={t('아직 오늘의 인증샷이 없어요')}>
+            {t('운동을 마치고 첫 인증샷의 주인공이 되어 보세요!')}
           </EmptyState>
         )}
       </Card>
@@ -312,8 +325,8 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
           className="flex size-11 items-center justify-center rounded-full border border-line bg-surface-2 text-dim active:scale-[.94] disabled:opacity-50"
           onClick={load}
           disabled={busy}
-          aria-label="새로고침"
-          title="새로고침"
+          aria-label={t('새로고침')}
+          title={t('새로고침')}
         >
           <svg
             className="size-4"
@@ -329,7 +342,7 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
           </svg>
         </button>
         <LinkButton className="px-1 py-3 underline" onClick={onLeave} disabled={busy}>
-          그룹 나가기
+          {t('그룹 나가기')}
         </LinkButton>
       </div>
       {menuFor && (
@@ -379,13 +392,13 @@ function GroupPhotoEditor({ group, editable, onChanged }) {
       const dataUrl = await readPickedImage(e)
       if (!dataUrl) return false // 아무것도 고르지 않음
       await uploadGroupPhoto(group.id, dataUrl)
-    }, '그룹 사진을 바꿨어요.')
+    }, t('그룹 사진을 바꿨어요.'))
 
   return (
     <>
       <button
         className="relative flex-none rounded-full disabled:opacity-60"
-        aria-label={group.photo_url ? '그룹 사진 관리' : '그룹 사진 추가'}
+        aria-label={group.photo_url ? t('그룹 사진 관리') : t('그룹 사진 추가')}
         disabled={busy}
         onClick={() => (group.photo_url ? setShowSheet(true) : fileRef.current?.click())}
       >
@@ -395,7 +408,7 @@ function GroupPhotoEditor({ group, editable, onChanged }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
       {showSheet && (
         <PhotoActionSheet
-          title="그룹 사진"
+          title={t('그룹 사진')}
           busy={busy}
           onReplace={() => fileRef.current?.click()}
           onRemove={() => run(() => removeGroupPhoto(group.id))}

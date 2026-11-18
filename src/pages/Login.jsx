@@ -1,3 +1,4 @@
+import { LANGUAGES, currentLanguage, setLanguage, t } from '../lib/i18n.js'
 import { Suspense, lazy, useState } from 'react'
 import { signIn, signUp, sendPasswordReset, resendSignupEmail, isDisposableEmail } from '../server/auth.js'
 import { EMAIL_NOT_CONFIRMED } from '../server/authErrors.js'
@@ -8,7 +9,7 @@ import { TERMS_VERSION } from '../lib/terms.js'
 // 약관 본문은 길어서 열 때만 받아 옴 (로그인 화면을 빨리 띄우기 위해)
 const PrivacyModal = lazy(() => import('../components/LegalModals.jsx').then((m) => ({ default: m.PrivacyModal })))
 const TermsModal = lazy(() => import('../components/LegalModals.jsx').then((m) => ({ default: m.TermsModal })))
-import { Button, Field, FieldError, LinkButton, Logo, Sub } from '../components/ui.jsx'
+import { Button, Field, FieldError, LinkButton, Logo, Sub, cx } from '../components/ui.jsx'
 import { useCaptcha, CAPTCHA_WAIT } from '../components/Captcha.jsx'
 
 // 앱 첫 화면 — 로그인 / 회원가입 / 비회원으로 시작
@@ -28,7 +29,7 @@ export default function Login({ onDone, onGuest }) {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [resetBusy, setResetBusy] = useState(false)
-  const [canResend, setCanResend] = useState(false) // 가입 직후, 미인증 로그인 시 '인증 메일 다시 보내기' 노출
+  const [canResend, setCanResend] = useState(false) // 가입 직후, 미인증 로그인 시 t('인증 메일 다시 보내기') 노출
   const [resendBusy, setResendBusy] = useState(false)
   const captcha = useCaptcha() // 로그인, 가입, 메일 요청 모두 같은 확인란 사용 (토큰은 요청마다 새로)
   const [showPrivacy, setShowPrivacy] = useState(false)
@@ -55,9 +56,9 @@ export default function Login({ onDone, onGuest }) {
       errs.fullName = validateName(fullName)
       errs.phone = validatePhone(phone)
       errs.password = validatePassword(password)
-      errs.agreed = allAgreed ? '' : '필수 항목에 모두 동의해 주세요.'
+      errs.agreed = allAgreed ? '' : t('필수 항목에 모두 동의해 주세요.')
     } else {
-      errs.password = password ? '' : '비밀번호를 입력해 주세요.'
+      errs.password = password ? '' : t('비밀번호를 입력해 주세요.')
     }
     setFieldErrors(errs)
     return !Object.values(errs).some(Boolean)
@@ -99,7 +100,7 @@ export default function Login({ onDone, onGuest }) {
 
   async function submitSignUp() {
     if (await isDisposableEmail(email)) {
-      setFieldErrors((p) => ({ ...p, email: '일회용(임시) 이메일로는 가입할 수 없어요.' }))
+      setFieldErrors((p) => ({ ...p, email: t('일회용(임시) 이메일로는 가입할 수 없어요.') }))
       return
     }
     // 온보딩 표시는 가입 요청 "전"에 저장 — 가입에 성공하면 응답보다 세션 발급(App 의 팝업 확인)이 먼저 일어남
@@ -124,7 +125,7 @@ export default function Login({ onDone, onGuest }) {
     // 이메일 인증이 필요한 경우: 로그인 화면으로 돌려 인증 후 바로 로그인할 수 있게
     setMode('signin')
     setPassword('')
-    setNotice('가입 확인 메일을 보냈어요. 메일의 링크를 누르면 바로 로그인돼요.')
+    setNotice(t('가입 확인 메일을 보냈어요. 메일의 링크를 누르면 바로 로그인돼요.'))
     setCanResend(true)
   }
 
@@ -146,33 +147,33 @@ export default function Login({ onDone, onGuest }) {
   }
 
   const resendEmail = () =>
-    sendMail(resendSignupEmail, setResendBusy, '인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.')
+    sendMail(resendSignupEmail, setResendBusy, t('인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.'))
   const forgotPassword = () =>
     sendMail(
       sendPasswordReset,
       setResetBusy,
-      '비밀번호 재설정 메일을 보냈어요. 메일의 링크를 열면 새 비밀번호를 정할 수 있어요.',
+      t('비밀번호 재설정 메일을 보냈어요. 메일의 링크를 열면 새 비밀번호를 정할 수 있어요.'),
     )
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
       <Logo size={48} className="justify-center gap-3 text-3xl" />
-      <Sub className="mt-2 text-center">10분의 꾸준함이 만드는 단단함</Sub>
+      <Sub className="mt-2 text-center">{t('10분의 꾸준함이 만드는 단단함')}</Sub>
 
       <form
         className="mt-8 w-full rounded-2xl border border-line bg-surface px-5 pt-6 pb-5"
         onSubmit={submit}
         noValidate
       >
-        <h2 className="text-xl font-bold">{signup ? '회원가입' : '로그인'}</h2>
+        <h2 className="text-xl font-bold">{signup ? t('회원가입') : t('로그인')}</h2>
         {signup && (
           <>
             <Field
               id="name"
-              label="이름"
+              label={t('이름')}
               value={fullName}
               maxLength={20}
-              placeholder="홍길동"
+              placeholder={t('홍길동')}
               autoComplete="name"
               error={fieldErrors.fullName}
               onBlur={() => setFieldErrors((p) => ({ ...p, fullName: fullName ? validateName(fullName) : '' }))}
@@ -183,7 +184,7 @@ export default function Login({ onDone, onGuest }) {
             />
             <Field
               id="phone"
-              label="전화번호"
+              label={t('전화번호')}
               type="tel"
               value={phone}
               maxLength={13}
@@ -201,7 +202,7 @@ export default function Login({ onDone, onGuest }) {
         )}
         <Field
           id="login-email"
-          label="이메일"
+          label={t('이메일')}
           type="email"
           value={email}
           placeholder="name@example.com"
@@ -214,7 +215,7 @@ export default function Login({ onDone, onGuest }) {
         />
         <Field
           id="login-pw"
-          label={signup ? '비밀번호 (8자 이상, 영문+숫자)' : '비밀번호'}
+          label={signup ? t('비밀번호 (8자 이상, 영문+숫자)') : t('비밀번호')}
           type="password"
           value={password}
           autoComplete={signup ? 'new-password' : 'current-password'}
@@ -230,7 +231,7 @@ export default function Login({ onDone, onGuest }) {
 
         {!signup && (
           <LinkButton type="button" className="mt-3 underline" disabled={resetBusy} onClick={forgotPassword}>
-            {resetBusy ? '메일 보내는 중…' : '비밀번호를 잊으셨나요?'}
+            {resetBusy ? t('메일 보내는 중…') : t('비밀번호를 잊으셨나요?')}
           </LinkButton>
         )}
         {signup && (
@@ -246,12 +247,12 @@ export default function Login({ onDone, onGuest }) {
                   clearFieldError('agreed')
                 }}
               />
-              전체 동의
+              {t('전체 동의')}
             </label>
             {[
-              ['age', '(필수) 만 14세 이상입니다'],
-              ['terms', '(필수) 이용약관 동의', () => setShowTerms(true)],
-              ['privacy', '(필수) 개인정보 수집, 이용 및 국외 이전 동의', () => setShowPrivacy(true)],
+              ['age', t('(필수) 만 14세 이상입니다')],
+              ['terms', t('(필수) 이용약관 동의'), () => setShowTerms(true)],
+              ['privacy', t('(필수) 개인정보 수집, 이용 및 국외 이전 동의'), () => setShowPrivacy(true)],
             ].map(([key, label, onView]) => (
               <div key={key} className="mt-3 flex items-center gap-2 text-sm">
                 <label className="flex flex-1 cursor-pointer items-center gap-2">
@@ -268,7 +269,7 @@ export default function Login({ onDone, onGuest }) {
                 </label>
                 {onView && (
                   <LinkButton type="button" className="flex-none underline" onClick={onView}>
-                    보기
+                    {t('보기')}
                   </LinkButton>
                 )}
               </div>
@@ -282,22 +283,37 @@ export default function Login({ onDone, onGuest }) {
         {notice && <Sub className="mt-3">{notice}</Sub>}
         {canResend && !signup && (
           <LinkButton type="button" className="mt-2 underline" disabled={resendBusy} onClick={resendEmail}>
-            {resendBusy ? '메일 보내는 중…' : '인증 메일 다시 보내기'}
+            {resendBusy ? t('메일 보내는 중…') : t('인증 메일 다시 보내기')}
           </LinkButton>
         )}
 
         <Button type="submit" className="mt-5" disabled={busy}>
-          {busy ? '처리 중…' : signup ? '가입하기' : '로그인하기'}
+          {busy ? t('처리 중…') : signup ? t('가입하기') : t('로그인하기')}
         </Button>
         <LinkButton type="button" className="mx-auto mt-4 block px-2 py-1 text-base" onClick={switchMode}>
-          {signup ? '이미 계정이 있나요?' : '계정이 없나요?'}{' '}
-          <span className="underline">{signup ? '로그인' : '회원가입'}</span>
+          {signup ? t('이미 계정이 있나요?') : t('계정이 없나요?')}{' '}
+          <span className="underline">{signup ? t('로그인') : t('회원가입')}</span>
         </LinkButton>
       </form>
 
       <LinkButton className="mt-5 px-2 py-1 underline" onClick={onGuest}>
-        비회원으로 시작하기
+        {t('비회원으로 시작하기')}
       </LinkButton>
+
+      {/* 첫 화면에서 바로 언어 바꾸기 — 지금과 다른 언어를 그 언어로 보여 줌 */}
+      <div className="mt-6 flex gap-4 text-xs text-dim">
+        {LANGUAGES.map((l) => (
+          <button
+            key={l.key}
+            lang={l.key}
+            className={cx('hit', currentLanguage() === l.key ? 'font-bold text-fg' : 'underline')}
+            aria-pressed={currentLanguage() === l.key}
+            onClick={() => currentLanguage() !== l.key && setLanguage(l.key)}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
 
       <Suspense fallback={null}>
         {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}

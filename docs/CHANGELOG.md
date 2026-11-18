@@ -10,6 +10,8 @@
 ## 다음 버전
 
 **추가**
+- 언어 설정: 설정의 언어 카드와 첫 로그인 화면 아래에서 한국어, 영어를 고를 수 있음 (기본값 한국어). 영어를 고르면 화면 문구, 안내, 오류, 확인 창, 화면 낭독기용 이름, 소개 페이지, 로딩 화면, 문서 제목까지 모두 영어로 바뀜 (`src/lib/i18n.js`, `src/lib/i18n.en.js`, `src/pages/settings/LanguagePicker.jsx`)
+- 개인정보 처리방침과 이용약관 영어판 (한국어 원문이 우선한다는 안내 포함) (`src/components/legal/`)
 - 그룹장의 멤버 관리: 멤버 줄의 "더보기"에서 그룹에서 내보내기, 내보내고 다시 못 들어오게 하기. 참여를 막은 사람은 멤버 현황 아래에 보이고 "막기 풀기"로 풀 수 있음. 그룹장이 아니면 "더보기"에는 차단하기만 있음 (`src/pages/group/MemberActions.jsx`, `GroupDetail.jsx`)
 
 **수정**
@@ -34,6 +36,9 @@
 - `supabase/v0.12-group-kick.sql` 실행 필요: 참여 막은 사람 표(`group_bans`)와 `kick_member`, `group_bans_of`, `unban_member` 함수, 막힌 사람을 거절하는 `join_group`
 
 **내부**
+- 서버(DB 함수, Edge Function, 자체 API 서버)가 보내는 한국어 오류를 영어 화면에서는 영어로 바꿔 보여 줌. 모르는 문구는 한국어 대신 일반 안내로 (`tServer`)
+- 번역 검사 테스트 추가 (`src/lib/i18n.test.js`): 화면 코드에 번역을 거치지 않은 한국어가 남았는지, 모든 문구에 영어가 있는지, 서버 문구가 모두 영어로 바뀌는지 저장소 전체를 검사
+- 스프린트 백로그에 10번 언어 기능 추가 (남은 일: 푸시 알림, 인증 메일, 앱 설치 이름의 영어)
 - 자체 백엔드 2단계: 공지 조회 주소 `GET /api/announcements/active` 추가 (`server/app.js`). 로그인 없이 비회원 신분으로 읽고, 켜진 공지 중 가장 최근 1건의 id 와 message 만 돌려줌. 못 읽으면 503
 - 자체 백엔드 3단계: 홈 배너의 공지를 Supabase 대신 자체 API 서버에서 받음 (`fetchActiveAnnouncement`). 서버가 실패하거나 오프라인이면 배너만 안 보이고 앱은 그대로
 - 테스트 추가: 공지 주소 5개 (`server/app.test.js`), 앱의 공지 받기 5개 (`src/server/api.test.js`)

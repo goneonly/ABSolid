@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { useState } from 'react'
 import { Modal, ModalText, ModalTitle, cx, ChevronIcon } from './ui.jsx'
 
@@ -7,8 +8,8 @@ const ONB_BTN = 'rounded-md border px-6 py-3 text-sm font-bold active:scale-[.97
 // 그림은 선 아이콘. 상자 폭(약 280px)에 맞춰 커지므로 선 두께를 0.9 로 두어 화면에서는 약 3px 로 보임
 const SLIDES = [
   {
-    title: '매일 운동 시작',
-    desc: 'Day 1~30 영상으로 매일 운동하고 streak을 쌓아요. 영상을 끝까지 보면 자동으로 완료 처리돼요.',
+    title: t('매일 운동 시작'),
+    desc: t('Day 1~30 영상으로 매일 운동하고 streak을 쌓아요. 영상을 끝까지 보면 자동으로 완료 처리돼요.'),
     art: (
       <svg
         viewBox="0 0 84 56"
@@ -27,8 +28,8 @@ const SLIDES = [
     ),
   },
   {
-    title: '그룹으로 함께',
-    desc: '초대 코드로 친구들과 그룹을 만들고, 서로의 운동 현황을 매일 확인하며 함께 꾸준해져요.',
+    title: t('그룹으로 함께'),
+    desc: t('초대 코드로 친구들과 그룹을 만들고, 서로의 운동 현황을 매일 확인하며 함께 꾸준해져요.'),
     art: (
       <svg
         viewBox="0 0 84 56"
@@ -50,8 +51,8 @@ const SLIDES = [
     ),
   },
   {
-    title: '인증샷 공유',
-    desc: "운동 완료 후 인증샷을 올리면 그룹의 '오늘의 인증샷'에 공유돼요. 프로필 사진도 꾸며보세요.",
+    title: t('인증샷 공유'),
+    desc: t("운동 완료 후 인증샷을 올리면 그룹의 '오늘의 인증샷'에 공유돼요. 프로필 사진도 꾸며보세요."),
     art: (
       <svg
         viewBox="0 0 84 56"
@@ -79,15 +80,15 @@ export default function OnboardingModal({ onClose }) {
   const slide = SLIDES[i]
 
   return (
-    <Modal label="ABSolid 기능 소개">
+    <Modal label={t('ABSolid 기능 소개')}>
       {/* 진행 표시: 팝업 맨 위, 둥근 직사각형 막대 (현재 항목은 넓고 브랜드 색) */}
       <div className="mb-4 flex justify-center gap-2" aria-label={`${i + 1} / ${SLIDES.length}`}>
         {SLIDES.map((_, d) => (
           <i key={d} className={cx('h-1.5 rounded-sm transition-all', d === i ? 'w-6 bg-brand' : 'w-3 bg-dot')} />
         ))}
       </div>
-      <ModalTitle>환영해요!</ModalTitle>
-      <ModalText>ABSolid에서 이런 걸 할 수 있어요</ModalText>
+      <ModalTitle>{t('환영해요!')}</ModalTitle>
+      <ModalText>{t('ABSolid에서 이런 걸 할 수 있어요')}</ModalText>
 
       <div className="mt-5 rounded-lg border border-line bg-bg px-7 py-5 text-dim [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
         {slide.art}
@@ -104,18 +105,18 @@ export default function OnboardingModal({ onClose }) {
           )}
           onClick={() => setI(i - 1)}
           disabled={i === 0}
-          aria-label="이전 소개 보기"
+          aria-label={t('이전 소개 보기')}
         >
           <ChevronIcon left className="size-4" />
-          이전
+          {t('이전')}
         </button>
         {last ? (
           <button className={cx(ONB_BTN, 'border-brand-strong bg-brand-strong text-white')} onClick={onClose}>
-            확인
+            {t('확인')}
           </button>
         ) : (
           <button className={cx(ONB_BTN, 'border-line bg-surface-2 text-fg')} onClick={() => setI(i + 1)}>
-            다음
+            {t('다음')}
           </button>
         )}
       </div>
