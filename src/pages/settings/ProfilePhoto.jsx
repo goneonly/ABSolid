@@ -1,5 +1,6 @@
 // 설정 상단의 프로필 사진 + 닉네임
 // 회원: 사진이 없으면 누르면 바로 고르기 / 있으면 교체, 삭제 선택지. 비회원: 기본 아이콘 고정
+import { t } from '../../lib/i18n.js'
 import { useEffect, useRef, useState } from 'react'
 import { getProfile, saveProfile } from '../../lib/storage.js'
 import { uploadAvatar, deleteAvatar, fetchMyAvatarUrl } from '../../server/api.js'
@@ -31,11 +32,11 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
   if (!session) {
     return (
       <div className="flex flex-col items-center pt-2">
-        <div className={CIRCLE} aria-label="기본 프로필 사진">
+        <div className={CIRCLE} aria-label={t('기본 프로필 사진')}>
           <DefaultAvatar nickname={nickname} iconClassName="size-12" />
         </div>
         <ProfileName nickname={nickname} />
-        <div className="mt-1 text-xs text-dim">프로필 사진은 로그인 후 설정할 수 있어요</div>
+        <div className="mt-1 text-xs text-dim">{t('프로필 사진은 로그인 후 설정할 수 있어요')}</div>
       </div>
     )
   }
@@ -48,11 +49,11 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
         // 기기에 먼저 저장하고 서버에도 올림 — 서버 업로드가 실패해도 이 기기에서는 보임
         saveProfile({ ...getProfile(), avatar: dataUrl })
         setAvatar(dataUrl)
-        if (!(await uploadAvatar(dataUrl))) toast('서버 업로드에 실패했어요. 사진은 이 기기에서만 보여요.')
+        if (!(await uploadAvatar(dataUrl))) toast(t('서버 업로드에 실패했어요. 사진은 이 기기에서만 보여요.'))
         onChanged()
       }
     } catch (err) {
-      toast(err.message || '사진을 불러오지 못했어요. 다른 사진으로 시도해 주세요.')
+      toast(err.message || t('사진을 불러오지 못했어요. 다른 사진으로 시도해 주세요.'))
     }
     setBusy(false)
     setShowSheet(false)
@@ -74,12 +75,12 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
     <div className="flex flex-col items-center pt-2">
       <button
         className={`${CIRCLE} disabled:opacity-60`}
-        aria-label={avatar ? '프로필 사진 관리' : '프로필 사진 업로드'}
+        aria-label={avatar ? t('프로필 사진 관리') : t('프로필 사진 업로드')}
         disabled={busy}
         onClick={() => (avatar ? setShowSheet(true) : fileRef.current?.click())}
       >
         {avatar ? (
-          <img className="block size-full rounded-full object-cover" src={avatar} alt="프로필 사진" />
+          <img className="block size-full rounded-full object-cover" src={avatar} alt={t('프로필 사진')} />
         ) : (
           <DefaultAvatar nickname={nickname} iconClassName="size-12" />
         )}
@@ -91,7 +92,7 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
       {showSheet && (
         <PhotoActionSheet
-          title="프로필 사진"
+          title={t('프로필 사진')}
           busy={busy}
           onReplace={() => fileRef.current?.click()}
           onRemove={removePhoto}
@@ -103,5 +104,5 @@ export default function ProfilePhoto({ nickname, session, onChanged }) {
 }
 
 function ProfileName({ nickname }) {
-  return <div className="mt-3 text-base font-bold">{nickname?.trim() || '닉네임을 설정해 주세요'}</div>
+  return <div className="mt-3 text-base font-bold">{nickname?.trim() || t('닉네임을 설정해 주세요')}</div>
 }

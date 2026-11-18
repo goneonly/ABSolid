@@ -1,4 +1,5 @@
 // 그룹 탭: 내 그룹 목록, 그룹을 누르면 상세 화면 (비회원에게는 로그인 안내)
+import { t } from '../lib/i18n.js'
 import { useEffect, useState, useCallback } from 'react'
 import { lastNDays, getProfile } from '../lib/storage.js'
 import { supabase } from '../server/supabase.js'
@@ -52,18 +53,18 @@ export default function Group({ records, session, onRequestLogin }) {
   if (!supabase || !session) {
     return (
       <Page>
-        <PageTitle>그룹</PageTitle>
+        <PageTitle>{t('그룹')}</PageTitle>
         <Card>
-          <MemberRow name={myNick || '나'} isMe={!!myNick} dates={myDates} />
+          <MemberRow name={myNick || t('나')} isMe={!!myNick} dates={myDates} />
         </Card>
         <Card>
-          <EmptyState art={<LockArt />} title="그룹은 로그인 후 이용할 수 있어요">
-            로그인하면 초대 코드로 친구들과 함께할 수 있어요.
+          <EmptyState art={<LockArt />} title={t('그룹은 로그인 후 이용할 수 있어요')}>
+            {t('로그인하면 초대 코드로 친구들과 함께할 수 있어요.')}
           </EmptyState>
           {/* 서버 연결이 없으면(로컬 개발 등) 로그인 자체가 불가해 버튼을 숨김 */}
           {supabase && (
             <Button className="mt-4" onClick={onRequestLogin}>
-              로그인 / 회원가입
+              {t('로그인 / 회원가입')}
             </Button>
           )}
         </Card>
@@ -94,11 +95,11 @@ export default function Group({ records, session, onRequestLogin }) {
   // ── 그룹 홈: 내 그룹 목록 + 참여/생성 ──
   return (
     <Page>
-      <PageTitle>그룹</PageTitle>
+      <PageTitle>{t('그룹')}</PageTitle>
       <Sub>
         {groups.length
-          ? `참여 중인 그룹이 ${groups.length}개 있어요. 그룹을 눌러 현황을 확인하세요.`
-          : '초대 코드로 참여하거나 새 그룹을 만들어 보세요.'}
+          ? t('참여 중인 그룹이 {count}개 있어요. 그룹을 눌러 현황을 확인하세요.', { count: groups.length })
+          : t('초대 코드로 참여하거나 새 그룹을 만들어 보세요.')}
       </Sub>
 
       {loading && !groups.length ? (
@@ -107,13 +108,13 @@ export default function Group({ records, session, onRequestLogin }) {
         <Card>
           <Sub className="text-danger">{loadError}</Sub>
           <Button variant="secondary" className="mt-3" onClick={loadGroups}>
-            다시 시도
+            {t('다시 시도')}
           </Button>
         </Card>
       ) : groups.length === 0 ? (
         <Card>
-          <EmptyState art={<GroupArt />} title="아직 참여한 그룹이 없어요">
-            친구에게 받은 초대 코드로 참여하거나, 새 그룹을 만들어 친구를 초대해 보세요.
+          <EmptyState art={<GroupArt />} title={t('아직 참여한 그룹이 없어요')}>
+            {t('친구에게 받은 초대 코드로 참여하거나, 새 그룹을 만들어 친구를 초대해 보세요.')}
           </EmptyState>
         </Card>
       ) : (
@@ -128,7 +129,8 @@ export default function Group({ records, session, onRequestLogin }) {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-base font-bold">{g.name}</div>
                 <div className="mt-1 text-xs text-dim">
-                  멤버 {g.memberCount}/{g.max_members}명{g.created_by === myId && ' · 그룹장'}
+                  {t('멤버 {count}/{max}명', { count: g.memberCount, max: g.max_members })}
+                  {g.created_by === myId && t(' · 그룹장')}
                 </div>
               </div>
               <ChevronIcon className="size-5 text-dim" />

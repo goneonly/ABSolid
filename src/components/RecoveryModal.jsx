@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { useState } from 'react'
 import { updatePassword } from '../server/auth.js'
 import { validatePassword } from '../lib/validation.js'
@@ -18,7 +19,7 @@ export default function RecoveryModal({ onClose }) {
       return
     }
     if (pw !== pw2) {
-      setErr('비밀번호가 서로 달라요.')
+      setErr(t('비밀번호가 서로 달라요.'))
       return
     }
     setBusy(true)
@@ -28,24 +29,24 @@ export default function RecoveryModal({ onClose }) {
       setErr(res.error)
       return
     }
-    toast('비밀번호를 변경했어요. 새 비밀번호로 이용해 주세요.')
+    toast(t('비밀번호를 변경했어요. 새 비밀번호로 이용해 주세요.'))
     onClose()
   }
 
   // 닫아도 로그인은 유지되고 비밀번호는 그대로. 설정의 '비밀번호 변경'은 현재 비밀번호가 필요해서
   // 비밀번호를 잊은 경우엔 재설정 메일을 다시 받아야 한다는 점을 알려줌
   function later() {
-    toast('비밀번호는 그대로예요. 바꾸려면 재설정 메일을 다시 받아 주세요.')
+    toast(t('비밀번호는 그대로예요. 바꾸려면 재설정 메일을 다시 받아 주세요.'))
     onClose()
   }
 
   return (
-    <Modal label="새 비밀번호 설정">
-      <ModalTitle>새 비밀번호 설정</ModalTitle>
-      <ModalText>안전한 새 비밀번호를 입력해 주세요. (8자 이상, 영문+숫자)</ModalText>
+    <Modal label={t('새 비밀번호 설정')}>
+      <ModalTitle>{t('새 비밀번호 설정')}</ModalTitle>
+      <ModalText>{t('안전한 새 비밀번호를 입력해 주세요. (8자 이상, 영문+숫자)')}</ModalText>
       <Field
         id="rec-pw"
-        label="새 비밀번호"
+        label={t('새 비밀번호')}
         className="mt-3"
         type="password"
         autoFocus
@@ -58,7 +59,7 @@ export default function RecoveryModal({ onClose }) {
       />
       <Field
         id="rec-pw2"
-        label="새 비밀번호 확인"
+        label={t('새 비밀번호 확인')}
         type="password"
         autoComplete="new-password"
         value={pw2}
@@ -72,11 +73,11 @@ export default function RecoveryModal({ onClose }) {
         }}
       />
       <Button className="mt-4" disabled={busy} onClick={submit}>
-        {busy ? '변경 중…' : '비밀번호 변경'}
+        {busy ? t('변경 중…') : t('비밀번호 변경')}
       </Button>
       {/* 실수로 링크를 눌렀거나 지금 바꾸기 싫을 때. 바깥 탭으로는 안 닫힘(입력 중 실수로 닫히지 않게) */}
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={later}>
-        나중에 하기
+        {t('나중에 하기')}
       </Button>
     </Modal>
   )

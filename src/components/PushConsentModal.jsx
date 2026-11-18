@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { useState } from 'react'
 import { enablePush } from '../server/push.js'
 import { toast } from '../lib/toast.js'
@@ -13,30 +14,30 @@ export default function PushConsentModal({ onClose }) {
     setBusy(true)
     try {
       await enablePush()
-      toast('알림을 켰어요. 운동 안 한 날 저녁과 응원받을 때 알려드릴게요.')
+      toast(t('알림을 켰어요. 운동 안 한 날 저녁과 응원받을 때 알려드릴게요.'))
     } catch (e) {
-      toast(e.message || '알림을 켜지 못했어요. 설정에서 다시 시도할 수 있어요.')
+      toast(e.message || t('알림을 켜지 못했어요. 설정에서 다시 시도할 수 있어요.'))
     }
     setBusy(false)
     onClose()
   }
 
   function later() {
-    toast('알림은 설정의 기타 메뉴에서 언제든 켤 수 있어요.')
+    toast(t('알림은 설정의 기타 메뉴에서 언제든 켤 수 있어요.'))
     onClose()
   }
 
   return (
-    <Modal label="운동 알림" onBackdrop={busy ? undefined : later}>
-      <ModalTitle>운동 알림 받을까요?</ModalTitle>
+    <Modal label={t('운동 알림')} onBackdrop={busy ? undefined : later}>
+      <ModalTitle>{t('운동 알림 받을까요?')}</ModalTitle>
       <ModalText>
-        운동을 안 한 날 저녁과 그룹 멤버가 응원을 보냈을 때 알려드려요. 꾸준한 streak에 도움이 돼요.
+        {t('운동을 안 한 날 저녁과 그룹 멤버가 응원을 보냈을 때 알려드려요. 꾸준한 streak에 도움이 돼요.')}
       </ModalText>
       <Button className="mt-5" disabled={busy} onClick={agree}>
-        {busy ? '설정 중…' : '알림 받기'}
+        {busy ? t('설정 중…') : t('알림 받기')}
       </Button>
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={later}>
-        나중에
+        {t('나중에')}
       </Button>
     </Modal>
   )

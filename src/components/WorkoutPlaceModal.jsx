@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { Modal, ModalText, ModalTitle, HomeIcon, cx } from './ui.jsx'
 
 // 운동 시작 전에 장소 고르기
@@ -44,12 +45,12 @@ function PlaceButton({ icon, title, hint, disabled, onClick }) {
 
 export default function WorkoutPlaceModal({ onHome, onClose }) {
   return (
-    <Modal label="운동 장소 선택" onBackdrop={onClose}>
-      <ModalTitle>어디서 운동할까요?</ModalTitle>
-      <ModalText>장소에 맞는 운동을 준비해 드릴게요.</ModalText>
+    <Modal label={t('운동 장소 선택')} onBackdrop={onClose}>
+      <ModalTitle>{t('어디서 운동할까요?')}</ModalTitle>
+      <ModalText>{t('장소에 맞는 운동을 준비해 드릴게요.')}</ModalText>
       <div className="mt-6 flex gap-3">
-        <PlaceButton icon={<HomeIcon />} title="집에서" hint="영상 보며 따라 하기" onClick={onHome} />
-        <PlaceButton icon={<DumbbellIcon />} title="헬스장에서" hint="준비 중이에요" disabled />
+        <PlaceButton icon={<HomeIcon />} title={t('집에서')} hint={t('영상 보며 따라 하기')} onClick={onHome} />
+        <PlaceButton icon={<DumbbellIcon />} title={t('헬스장에서')} hint={t('준비 중이에요')} disabled />
       </div>
     </Modal>
   )

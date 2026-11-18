@@ -1,5 +1,6 @@
 // 4. 테마 비교 — 같은 화면의 다크와 라이트를 겹쳐 두고, 가운데 선을 끌어 비교
 // 아래에는 다크, 위에는 라이트 화면을 깔고, 위 화면을 선의 오른쪽만 보이게 잘라 냄
+import { t } from '../../../lib/i18n.js'
 import { useRef, useState } from 'react'
 import { cx } from '../../../components/ui.jsx'
 import { THEME } from '../content.js'
@@ -93,8 +94,8 @@ export default function ThemeCompare() {
             onChange={(e) => setSplit(Number(e.target.value))}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            aria-label="다크와 라이트 화면 비교"
-            aria-valuetext={`다크 ${split}%, 라이트 ${100 - split}%`}
+            aria-label={t('다크와 라이트 화면 비교')}
+            aria-valuetext={t('다크 {dark}%, 라이트 {light}%', { dark: split, light: 100 - split })}
           />
         </div>
         <div className="mt-4 flex justify-between px-4 text-xs font-bold text-dim" aria-hidden="true">

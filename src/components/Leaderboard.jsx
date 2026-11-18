@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { useEffect, useMemo, useState } from 'react'
 import { todayKey } from '../lib/storage.js'
 import { fetchGroupWorkoutDates } from '../server/api.js'
@@ -6,10 +7,10 @@ import RankBoard from './RankBoard.jsx'
 import { Card, CardTitle, Input, Sub, cx } from './ui.jsx'
 
 const PERIODS = [
-  { key: 'week', label: '이번 주' },
-  { key: 'month', label: '이번 달' },
-  { key: '30d', label: '최근 30일' },
-  { key: 'custom', label: '직접 설정' },
+  { key: 'week', label: t('이번 주') },
+  { key: 'month', label: t('이번 달') },
+  { key: '30d', label: t('최근 30일') },
+  { key: 'custom', label: t('직접 설정') },
 ]
 
 export default function Leaderboard({ members, myId, myName, records }) {
@@ -73,7 +74,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <CardTitle>리더보드</CardTitle>
+        <CardTitle>{t('리더보드')}</CardTitle>
         <span className="text-xs text-dim">
           {shortDate(startKey)} ~ {shortDate(endKey)}
         </span>
@@ -100,20 +101,20 @@ export default function Leaderboard({ members, myId, myName, records }) {
         // 칸 폭이 17rem(272px)보다 좁으면(폭 320px 폰) 날짜가 잘리지 않게 위아래로 쌓음
         <div className="@container mt-3">
           <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-2">
-            <DateField label="시작일" value={cs} max={ce || todayKey()} onChange={setCs} />
-            <DateField label="종료일" value={ce} min={cs} max={todayKey()} onChange={setCe} />
+            <DateField label={t('시작일')} value={cs} max={ce || todayKey()} onChange={setCs} />
+            <DateField label={t('종료일')} value={ce} min={cs} max={todayKey()} onChange={setCe} />
           </div>
         </div>
       )}
 
       {!rows || (loading && !cur) ? (
-        <Sub className="mt-3">집계 중…</Sub>
+        <Sub className="mt-3">{t('집계 중…')}</Sub>
       ) : (
         <>
           <RankBoard rows={rows} myId={myId} myName={myName} totalDays={totalDays} />
 
           <Sub className="mt-3 text-xs">
-            기간 내 인증 횟수 기준이에요. 삼각형은 직전 {totalDays}일 대비 순위 변동이에요.
+            {t('기간 내 인증 횟수 기준이에요. 삼각형은 직전 {days}일 대비 순위 변동이에요.', { days: totalDays })}
           </Sub>
         </>
       )}

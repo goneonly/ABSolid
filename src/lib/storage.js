@@ -11,6 +11,8 @@ const KEYS = {
   guest: 'absolid.guest.v1', // 첫 화면에서 '비회원으로 시작하기'를 골랐는지
   // 화면 테마 — 기기 설정이라 'absolid.' 접두사 밖에 둬서 앱 데이터를 지워도 유지 (index.html 첫 스크립트도 같은 키 사용)
   theme: 'absolid-theme', // 'light' | 'dark' (없으면 기본값 시스템)
+  // 화면 언어 — 테마처럼 기기 설정 (index.html 첫 스크립트도 같은 키 사용)
+  language: 'absolid-lang', // 'en' (없으면 기본값 한국어)
 }
 
 // 단순 값 읽기, 쓰기 (프라이빗 모드 등에서 localStorage 접근이 실패해도 앱이 죽지 않게)
@@ -133,6 +135,10 @@ export const getThemeMode = () => {
 }
 export const saveThemeMode = (mode) =>
   mode === 'light' || mode === 'dark' ? write(KEYS.theme, mode) : remove(KEYS.theme)
+
+// 화면 언어: 'ko' | 'en' — 기본값은 한국어 (저장값이 없거나 잘못되면 한국어)
+export const getLanguage = () => (read(KEYS.language) === 'en' ? 'en' : 'ko')
+export const saveLanguage = (lang) => (lang === 'en' ? write(KEYS.language, 'en') : remove(KEYS.language))
 
 // 저녁 리마인더 배너 닫기 (하루 1회)
 export const isReminderDismissedToday = () => read(KEYS.remindDismissed) === todayKey()

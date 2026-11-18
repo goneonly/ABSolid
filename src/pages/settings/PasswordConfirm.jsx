@@ -1,4 +1,5 @@
 // 본인 확인 — 되돌릴 수 없는 작업(기록 초기화, 탈퇴, 비밀번호 변경) 전에 비밀번호를 다시 확인
+import { t } from '../../lib/i18n.js'
 import { useState } from 'react'
 import { signIn } from '../../server/auth.js'
 import { useCaptcha, CAPTCHA_WAIT } from '../../components/Captcha.jsx'
@@ -20,14 +21,14 @@ export function usePasswordCheck(email) {
 
 // 비밀번호를 입력받아 맞으면 onVerified 실행
 // onVerified: 작업을 수행하고, 실패하면 오류 문구를 반환 (성공하면 아무것도 반환하지 않음)
-export default function PasswordConfirmModal({ title, text, confirmLabel = '확인', email, onVerified, onClose }) {
+export default function PasswordConfirmModal({ title, text, confirmLabel = t('확인'), email, onVerified, onClose }) {
   const [pw, setPw] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const pwCheck = usePasswordCheck(email)
 
   async function submit() {
-    if (!pw) return setError('비밀번호를 입력해 주세요.')
+    if (!pw) return setError(t('비밀번호를 입력해 주세요.'))
     setBusy(true)
     const failed = (await pwCheck.check(pw)) || (await onVerified())
     setBusy(false)
@@ -40,7 +41,7 @@ export default function PasswordConfirmModal({ title, text, confirmLabel = '확�
       <ModalText>{text}</ModalText>
       <Field
         id="confirm-pw"
-        label="비밀번호"
+        label={t('비밀번호')}
         className="mt-3"
         type="password"
         autoFocus
@@ -57,10 +58,10 @@ export default function PasswordConfirmModal({ title, text, confirmLabel = '확�
       />
       {pwCheck.widget}
       <Button className="mt-4" disabled={busy} onClick={submit}>
-        {busy ? '확인 중…' : confirmLabel}
+        {busy ? t('확인 중…') : confirmLabel}
       </Button>
       <Button variant="secondary" className="mt-3" disabled={busy} onClick={onClose}>
-        취소
+        {t('취소')}
       </Button>
     </Modal>
   )

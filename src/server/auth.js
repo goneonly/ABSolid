@@ -1,11 +1,12 @@
 // 계정 — 가입, 로그인, 비밀번호, 탈퇴
 // 모든 함수는 { data } 또는 { error: '사용자에게 보여줄 한국어 문구' } 를 돌려줌 (예외를 던지지 않음)
+import { t } from '../lib/i18n.js'
 import { supabase } from './supabase.js'
 import { clearLocalUserData, clearAllAppData } from '../lib/storage.js'
 import { authErrorMessage } from './authErrors.js'
 import { disablePush } from './push.js'
 
-const NO_SERVER = { error: '서버가 연결되어 있지 않아요.' }
+const NO_SERVER = { error: t('서버가 연결되어 있지 않아요.') }
 // Supabase 응답을 { data } | { error } 로 통일
 const result = ({ data, error }) => (error ? { error: authErrorMessage(error) } : { data: data ?? true })
 // 메일 링크를 누르면 앱으로 돌아오게
@@ -90,7 +91,7 @@ export async function isDisposableEmail(email) {
 export async function deleteAccount() {
   if (!supabase) return NO_SERVER
   const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' })
-  if (error) return { error: '탈퇴 처리에 실패했어요. 잠시 후 다시 시도하거나 관리자에게 문의해 주세요.' }
+  if (error) return { error: t('탈퇴 처리에 실패했어요. 잠시 후 다시 시도하거나 관리자에게 문의해 주세요.') }
   clearAllAppData() // 이 기기에 남은 값 정리 후 로그아웃
   await supabase.auth.signOut()
   return { data: true }

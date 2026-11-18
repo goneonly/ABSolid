@@ -1,4 +1,5 @@
 // 화면 테마 선택 — 세 가지를 한눈에 보이게 펼친 버튼 묶음 (메뉴를 한 번 더 열 필요 없이 바로 선택)
+import { t } from '../../lib/i18n.js'
 import { useState } from 'react'
 import { getThemeMode } from '../../lib/storage.js'
 import { THEME_MODES, setThemeMode } from '../../lib/theme.js'
@@ -14,8 +15,8 @@ export default function ThemePicker() {
 
   return (
     <>
-      <CardTitle>화면 테마</CardTitle>
-      <div className="mt-3 flex gap-1 rounded-md bg-surface-2 p-1" role="radiogroup" aria-label="화면 테마">
+      <CardTitle>{t('화면 테마')}</CardTitle>
+      <div className="mt-3 flex gap-1 rounded-md bg-surface-2 p-1" role="radiogroup" aria-label={t('화면 테마')}>
         {THEME_MODES.map((m) => (
           <button
             key={m.key}
@@ -32,7 +33,9 @@ export default function ThemePicker() {
         ))}
       </div>
       {/* 시스템을 골랐을 때만 안내. 버튼 아래에 두어 문구가 나타나고 사라져도 버튼 위치는 그대로 */}
-      {mode === 'system' && <Sub className="mt-2">시스템을 고르면 휴대폰의 라이트 또는 다크 모드 설정을 따라가요.</Sub>}
+      {mode === 'system' && (
+        <Sub className="mt-2">{t('시스템을 고르면 휴대폰의 라이트 또는 다크 모드 설정을 따라가요.')}</Sub>
+      )}
     </>
   )
 }

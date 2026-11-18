@@ -1,11 +1,12 @@
 // 화면 테마 (시스템 설정 따름 / 라이트 / 다크)
 // 첫 그림 전 적용은 index.html 의 인라인 스크립트가 하고(깜빡임 방지), 여기서는 설정 변경, 시스템 변경을 반영
+import { t } from './i18n.js'
 import { getThemeMode, saveThemeMode } from './storage.js'
 
 export const THEME_MODES = [
-  { key: 'system', label: '시스템' },
-  { key: 'light', label: '라이트' },
-  { key: 'dark', label: '다크' },
+  { key: 'system', label: t('시스템') },
+  { key: 'light', label: t('라이트') },
+  { key: 'dark', label: t('다크') },
 ]
 
 // 상태표시줄, 브라우저 주소창 색 (index.css 의 --color-bg 와 같은 값)

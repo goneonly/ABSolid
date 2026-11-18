@@ -1,5 +1,6 @@
 // 브라우저 푸시 알림 구독 관리 (Web Push + Supabase)
 // 사용 조건: HTTPS(또는 localhost), 로그인 상태, .env에 VITE_VAPID_PUBLIC_KEY 설정
+import { t } from '../lib/i18n.js'
 import { supabase, currentUserId } from './supabase.js'
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
@@ -35,12 +36,12 @@ export async function getPushEnabled() {
 
 // 푸시 켜기: 권한 요청, 구독, 서버 저장 순서
 export async function enablePush() {
-  if (!isPushSupported()) throw new Error('이 브라우저는 푸시 알림을 지원하지 않아요.')
-  if (!(await currentUserId())) throw new Error('로그인 후 사용할 수 있어요.')
+  if (!isPushSupported()) throw new Error(t('이 브라우저는 푸시 알림을 지원하지 않아요.'))
+  if (!(await currentUserId())) throw new Error(t('로그인 후 사용할 수 있어요.'))
 
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') {
-    throw new Error('알림 권한이 거부됐어요. 브라우저 설정에서 허용해 주세요.')
+    throw new Error(t('알림 권한이 거부됐어요. 브라우저 설정에서 허용해 주세요.'))
   }
 
   const reg = await navigator.serviceWorker.register('/sw.js')
@@ -55,7 +56,7 @@ export async function enablePush() {
     p_p256dh: json.keys.p256dh,
     p_auth: json.keys.auth,
   })
-  if (error) throw new Error('알림 등록에 실패했어요. 잠시 후 다시 시도해 주세요.')
+  if (error) throw new Error(t('알림 등록에 실패했어요. 잠시 후 다시 시도해 주세요.'))
   return true
 }
 

@@ -1,4 +1,5 @@
 // 설정의 차단한 사용자 — 목록 확인과 차단 해제
+import { t } from '../../lib/i18n.js'
 import { useEffect, useState } from 'react'
 import { fetchMyBlocks, unblockUser } from '../../server/api.js'
 import { toast } from '../../lib/toast.js'
@@ -20,12 +21,17 @@ export default function BlockedUsersModal({ onClose }) {
   }, [])
 
   async function unblock(u) {
-    if (!confirm(`${u.nickname}님의 차단을 해제할까요?\n그룹 화면에서 다시 보이고, 서로 응원할 수 있어요.`)) return
+    if (
+      !confirm(
+        t('{name}님의 차단을 해제할까요?\n그룹 화면에서 다시 보이고, 서로 응원할 수 있어요.', { name: u.nickname }),
+      )
+    )
+      return
     setBusyId(u.id)
     try {
       await unblockUser(u.id)
       setList((prev) => prev.filter((x) => x.id !== u.id))
-      toast(`${u.nickname}님의 차단을 해제했어요.`)
+      toast(t('{name}님의 차단을 해제했어요.', { name: u.nickname }))
     } catch (e) {
       toast(e.message)
     }
@@ -33,17 +39,17 @@ export default function BlockedUsersModal({ onClose }) {
   }
 
   return (
-    <Modal label="차단한 사용자" onBackdrop={onClose}>
-      <ModalTitle>차단한 사용자</ModalTitle>
+    <Modal label={t('차단한 사용자')} onBackdrop={onClose}>
+      <ModalTitle>{t('차단한 사용자')}</ModalTitle>
       <ModalText>
-        차단한 멤버는 그룹 화면과 받은 응원에서 보이지 않고, 서로 응원할 수 없어요. 상대에게는 알리지 않아요.
+        {t('차단한 멤버는 그룹 화면과 받은 응원에서 보이지 않고, 서로 응원할 수 없어요. 상대에게는 알리지 않아요.')}
       </ModalText>
       {error ? (
         <Sub className="mt-4 text-center text-danger">{error}</Sub>
       ) : list === null ? (
         <Skeleton inCard lines={2} />
       ) : list.length === 0 ? (
-        <Sub className="mt-4 text-center">차단한 사용자가 없어요.</Sub>
+        <Sub className="mt-4 text-center">{t('차단한 사용자가 없어요.')}</Sub>
       ) : (
         <div className="mt-3 max-h-72 overflow-y-auto overscroll-contain">
           {list.map((u) => (
@@ -57,14 +63,14 @@ export default function BlockedUsersModal({ onClose }) {
                 disabled={busyId === u.id}
                 onClick={() => unblock(u)}
               >
-                {busyId === u.id ? '해제 중…' : '차단 해제'}
+                {busyId === u.id ? t('해제 중…') : t('차단 해제')}
               </button>
             </div>
           ))}
         </div>
       )}
       <Button variant="secondary" className="mt-4" onClick={onClose}>
-        닫기
+        {t('닫기')}
       </Button>
     </Modal>
   )

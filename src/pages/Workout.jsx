@@ -1,3 +1,4 @@
+import { t, tSplit } from '../lib/i18n.js'
 import { useEffect, useRef, useState } from 'react'
 import { loadYouTubeAPI } from '../lib/youtube.js'
 import { PROGRAM_DAYS, todayWorkoutDay, todayKey, saveRecord, getRecords, computeStreak } from '../lib/storage.js'
@@ -21,6 +22,9 @@ export default function Workout({ onDone, session }) {
   const [streak, setStreak] = useState({ from: 0, to: 0 }) // 완료 팝업에서 올라갈 연속 기록
   const day = todayWorkoutDay()
   const [doneCount] = useState(() => Object.values(getRecords()).filter((r) => r?.completed).length)
+  // 숫자만 강조하고 문장은 언어에 맞게
+  const [dayBefore, dayAfter] = tSplit('{day} / {total}일차', 'day', { total: PROGRAM_DAYS })
+  const [doneBefore, doneAfter] = tSplit('지금까지 {n} 완주했어요.', 'n')
 
   useEffect(() => {
     let cancelled = false
@@ -131,7 +135,7 @@ export default function Workout({ onDone, session }) {
     const sessionId = await sessionRef.current?.catch(() => null)
     if (!sessionId) {
       record(todayKey())
-      toast('시청 기록을 서버에 남기지 못해 이 기기에만 저장했어요.')
+      toast(t('시청 기록을 서버에 남기지 못해 이 기기에만 저장했어요.'))
       return closeAndReturn()
     }
     try {
@@ -139,7 +143,7 @@ export default function Workout({ onDone, session }) {
       record(dateKey)
       if (photo) {
         uploadPhoto(dateKey, photo).then((url) => {
-          if (!url) toast('인증샷 서버 업로드에 실패했어요. 사진은 이 기기에만 저장돼요.')
+          if (!url) toast(t('인증샷 서버 업로드에 실패했어요. 사진은 이 기기에만 저장돼요.'))
         })
       }
       closeAndReturn()
@@ -147,7 +151,7 @@ export default function Workout({ onDone, session }) {
       if (e.retryable) {
         // 연결 문제: 기기에 먼저 저장하고 다음 접속 때 다시 기록 (App 의 retryPendingCompletions)
         record(todayKey(), { pendingSession: sessionId })
-        toast('서버 연결이 불안정해 이 기기에 먼저 저장했어요. 다음 접속 때 다시 기록할게요.')
+        toast(t('서버 연결이 불안정해 이 기기에 먼저 저장했어요. 다음 접속 때 다시 기록할게요.'))
         return closeAndReturn()
       }
       // 서버가 거절(시청 시간 부족 등): 기록하지 않고 계속 시청할 수 있게 되돌림
@@ -159,8 +163,8 @@ export default function Workout({ onDone, session }) {
 
   return (
     <Page>
-      <PageTitle>Day {day} 복근 운동</PageTitle>
-      <Sub>영상이 끝나면 자동으로 운동 완료 처리돼요.</Sub>
+      <PageTitle>{t('Day {day} 복근 운동', { day })}</PageTitle>
+      <Sub>{t('영상이 끝나면 자동으로 운동 완료 처리돼요.')}</Sub>
 
       <div className="relative -mx-5 mt-4 bg-black">
         {/* 영상 위 뱃지: 반투명 검정 바탕 + 흰 글자 (빨강 바탕의 작은 흰 글자는 대비 부족) */}
@@ -176,9 +180,11 @@ export default function Workout({ onDone, session }) {
 
       <Card>
         <div className="flex items-baseline justify-between">
-          <CardTitle>30일 프로그램</CardTitle>
+          <CardTitle>{t('30일 프로그램')}</CardTitle>
           <span className="text-sm text-dim">
-            <strong className="text-xl font-extrabold text-fg tabular-nums">{day}</strong> / {PROGRAM_DAYS}일차
+            {dayBefore}
+            <strong className="text-xl font-extrabold text-fg tabular-nums">{day}</strong>
+            {dayAfter}
           </span>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
@@ -187,24 +193,26 @@ export default function Workout({ onDone, session }) {
         <Sub className="mt-3">
           {doneCount > 0 ? (
             <>
-              지금까지 <strong className="text-fg">{doneCount}번</strong> 완주했어요.
+              {doneBefore}
+              <strong className="text-fg">{t('{count}번', { count: doneCount })}</strong>
+              {doneAfter}
             </>
           ) : (
-            '오늘 첫 완주에 도전해요!'
+            t('오늘 첫 완주에 도전해요!')
           )}{' '}
-          중간에 나가면 완료로 기록되지 않으니 끝까지 함께해요!
+          {t('중간에 나가면 완료로 기록되지 않으니 끝까지 함께해요!')}
         </Sub>
       </Card>
 
       {canFinish && (
         <Button className="mt-5" onClick={finish}>
-          운동 완료
+          {t('운동 완료')}
         </Button>
       )}
 
       {import.meta.env.DEV && (
         <button className="mx-auto mt-5 block text-xs text-dim underline" onClick={finish}>
-          (개발용) 영상 끝까지 본 것으로 처리하기
+          {t('(개발용) 영상 끝까지 본 것으로 처리하기')}
         </button>
       )}
 

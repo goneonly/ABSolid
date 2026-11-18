@@ -1,3 +1,4 @@
+import { t } from './lib/i18n.js'
 import { Suspense, useState, useCallback, useEffect } from 'react'
 import Home from './pages/Home.jsx'
 import BottomNav from './components/BottomNav.jsx'
@@ -120,7 +121,7 @@ export default function App() {
       .then(({ role, isActive, nickname }) => {
         if (!alive) return
         if (!isActive) {
-          alert('이용이 제한된 계정이에요. 문의가 필요하면 관리자에게 연락해 주세요.')
+          alert(t('이용이 제한된 계정이에요. 문의가 필요하면 관리자에게 연락해 주세요.'))
           signOut()
           return
         }
@@ -177,10 +178,12 @@ export default function App() {
   return (
     <div className="flex min-h-dvh flex-col pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <header className="flex items-center justify-between px-5 pt-5 pb-3">
-        <button onClick={() => setView('home')} aria-label="홈으로">
+        <button onClick={() => setView('home')} aria-label={t('홈으로')}>
           <Logo className="text-xl" />
         </button>
-        {session && <span className="rounded-sm bg-surface-2 px-2 py-1 text-xs font-bold text-dim">로그인됨</span>}
+        {session && (
+          <span className="rounded-sm bg-surface-2 px-2 py-1 text-xs font-bold text-dim">{t('로그인됨')}</span>
+        )}
       </header>
 
       {/* 따로 받아 오는 화면이 아직 도착하지 않았으면 잠깐 회색 자리표시 */}
@@ -229,8 +232,8 @@ export default function App() {
             <Admin onBack={() => setView('settings')} />
           ) : (
             <Page>
-              <PageTitle>관리자</PageTitle>
-              <Sub>접근 권한이 없어요.</Sub>
+              <PageTitle>{t('관리자')}</PageTitle>
+              <Sub>{t('접근 권한이 없어요.')}</Sub>
             </Page>
           ))}
       </Suspense>

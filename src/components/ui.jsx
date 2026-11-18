@@ -1,4 +1,5 @@
 // 공통 UI 컴포넌트 — 반복되는 Tailwind 클래스 조합을 한 곳에서 관리
+import { t } from '../lib/i18n.js'
 import { extendTailwindMerge } from 'tailwind-merge'
 import { easterEggAvatar } from '../lib/easterEggs.js'
 
@@ -204,7 +205,7 @@ function PersonIcon({ className }) {
 // 프로필 사진이 없을 때의 기본 모습: 사람 아이콘 (닉네임이 '푸앙이'면 푸앙이 — easterEggs.js)
 export function DefaultAvatar({ nickname, iconClassName }) {
   const egg = easterEggAvatar(nickname)
-  if (egg) return <img className="block size-full object-contain" src={egg} alt="푸앙이" />
+  if (egg) return <img className="block size-full object-contain" src={egg} alt={t('푸앙이')} />
   return <PersonIcon className={iconClassName} />
 }
 
@@ -219,7 +220,7 @@ export function MemberAvatar({ name, avatar, active, className }) {
       )}
     >
       {avatar ? (
-        <img className="size-full object-cover" src={avatar} alt={`${name} 프로필 사진`} loading="lazy" />
+        <img className="size-full object-cover" src={avatar} alt={t('{name} 프로필 사진', { name })} loading="lazy" />
       ) : (
         <DefaultAvatar nickname={name} iconClassName="size-4" />
       )}
@@ -237,7 +238,7 @@ export function GroupPhoto({ name, url, className }) {
       )}
     >
       {url ? (
-        <img className="size-full object-cover" src={url} alt={`${name} 그룹 사진`} loading="lazy" />
+        <img className="size-full object-cover" src={url} alt={t('{name} 그룹 사진', { name })} loading="lazy" />
       ) : (
         <span aria-hidden="true">{(name || '?').trim().charAt(0)}</span>
       )}
@@ -309,7 +310,7 @@ export function Trend({ delta, className }) {
     >
       <TrendIcon up={delta > 0} />
       {Math.abs(delta)}
-      <span className="sr-only">{delta > 0 ? '상승' : '하락'}</span>
+      <span className="sr-only">{delta > 0 ? t('상승') : t('하락')}</span>
     </span>
   )
 }
@@ -318,7 +319,7 @@ export function Trend({ delta, className }) {
 // 불러오는 동안 보여줄 회색 자리표시 (lines 줄 수만큼, inCard 면 카드 안의 목록 줄 모양)
 export function Skeleton({ lines = 3, inCard, className }) {
   return (
-    <div className={cx('mt-4 flex flex-col gap-3', className)} role="status" aria-label="불러오는 중">
+    <div className={cx('mt-4 flex flex-col gap-3', className)} role="status" aria-label={t('불러오는 중')}>
       {Array.from({ length: lines }, (_, i) => (
         <div
           key={i}

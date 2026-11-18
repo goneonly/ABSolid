@@ -1,8 +1,7 @@
+import { t, weekdayShort } from '../lib/i18n.js'
 import { useMemo } from 'react'
 import { weeklySummary } from '../lib/stats.js'
 import { Card, CardTitle, CheckIcon, Sub, Trend, cx } from './ui.jsx'
-
-const DOW = ['일', '월', '화', '수', '목', '금', '토']
 
 // 이번 주(월~일) 인증 요약 + 지난주 대비 + 최근 7일 현황
 export default function WeeklyReport({ records }) {
@@ -12,22 +11,22 @@ export default function WeeklyReport({ records }) {
 
   const message =
     count === 0
-      ? '이번 주 첫 운동을 시작해 볼까요?'
+      ? t('이번 주 첫 운동을 시작해 볼까요?')
       : delta > 0
-        ? '지난주보다 더 활발해요!'
+        ? t('지난주보다 더 활발해요!')
         : delta < 0
-          ? '지난주엔 더 열심이었어요. 오늘 한 번 어때요?'
-          : '지난주와 같은 페이스로 꾸준해요.'
+          ? t('지난주엔 더 열심이었어요. 오늘 한 번 어때요?')
+          : t('지난주와 같은 페이스로 꾸준해요.')
 
   return (
     <Card>
-      <CardTitle>주간 리포트</CardTitle>
+      <CardTitle>{t('주간 리포트')}</CardTitle>
       <Sub className="mt-1 text-xs">{range}</Sub>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <Stat value={count} unit="회" label="인증" />
-        <Stat value={streak} unit="일" label="연속 streak" />
-        <Stat value={rate} unit="%" label="달성률" />
+        <Stat value={count} unit={t('횟수|회')} label={t('인증')} />
+        <Stat value={streak} unit={t('일수|일')} label={t('연속 streak')} />
+        <Stat value={rate} unit="%" label={t('달성률')} />
       </div>
 
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
@@ -38,12 +37,12 @@ export default function WeeklyReport({ records }) {
       </div>
 
       <Sub className="mt-3">
-        지난주 {lastCount}회
+        {t('지난주 {count}회', { count: lastCount })}
         <Trend delta={delta} className="ml-2 text-xs" />. {message}
       </Sub>
 
       <div className="mt-5 border-t border-line pt-4">
-        <Sub className="mb-3">최근 7일</Sub>
+        <Sub className="mb-3">{t('최근 7일')}</Sub>
         {/* 원과 요일 사이 12px (오늘은 바깥 테두리 4px 를 빼고도 8px 은 떨어지게)
             7칸으로 나누고 칸 사이 6px 를 보장. 폭이 좁은 폰(아이폰 확대 화면 등)에서는 원이 32px 보다 작아짐 */}
         <div className="grid grid-cols-7 gap-1.5">
@@ -58,7 +57,7 @@ export default function WeeklyReport({ records }) {
               >
                 {d.done ? <CheckIcon className="size-4" /> : d.date.getDate()}
               </div>
-              {DOW[d.date.getDay()]}
+              {weekdayShort(d.date.getDay())}
             </div>
           ))}
         </div>

@@ -117,11 +117,33 @@
         var splash = document.getElementById('splash')
         var msg = document.getElementById('splash-msg')
         var offline = document.getElementById('splash-offline')
+        // 화면 언어 (키, 기본값은 src/lib/storage.js 와 같게: 'absolid-lang' 이 'en' 일 때만 영어)
+        var en = false
+        try {
+          en = localStorage.getItem('absolid-lang') === 'en'
+        } catch (e) {}
+        var TEXT = en
+          ? {
+              slow: 'This is taking a while…',
+              stuck: 'The connection is unstable. Please check your network.',
+            }
+          : {
+              slow: '조금 오래 걸리고 있어요…',
+              stuck: '연결이 원활하지 않아요. 네트워크를 확인해 주세요.',
+            }
+        if (en) {
+          document.documentElement.lang = 'en'
+          document.title = 'ABSolid: 10 minutes a day, built to last'
+          splash.setAttribute('aria-label', 'Loading ABSolid')
+          splash.querySelector('.sp-tag').textContent = '10 minutes a day, built to last'
+          document.getElementById('splash-retry').textContent = 'Try again'
+          offline.textContent = 'Start offline'
+        }
         var slow = setTimeout(function () {
-          msg.textContent = '조금 오래 걸리고 있어요…'
+          msg.textContent = TEXT.slow
         }, 5000)
         var stuck = setTimeout(function () {
-          msg.textContent = '연결이 원활하지 않아요. 네트워크를 확인해 주세요.'
+          msg.textContent = TEXT.stuck
           offline.hidden = !window.__absolidAppLoaded // 앱 코드조차 못 받았으면 오프라인 시작도 불가
           splash.classList.add('splash-stuck')
         }, 12000)

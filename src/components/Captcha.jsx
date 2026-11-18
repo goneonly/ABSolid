@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 // 봇 가입, 로그인 방지 (Cloudflare Turnstile) — 보통 사용자는 퍼즐 없이 자동 통과
@@ -7,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 const SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY || '').trim()
 const SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
 
-export const CAPTCHA_WAIT = '자동 가입 방지 확인이 끝날 때까지 잠시 기다려 주세요.'
+export const CAPTCHA_WAIT = t('자동 가입 방지 확인이 끝날 때까지 잠시 기다려 주세요.')
 
 let loading = null
 function loadTurnstile() {
