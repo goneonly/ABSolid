@@ -36,6 +36,8 @@
 - `supabase/v0.12-group-kick.sql` 실행 필요: 참여 막은 사람 표(`group_bans`)와 `kick_member`, `group_bans_of`, `unban_member` 함수, 막힌 사람을 거절하는 `join_group`
 
 **내부**
+- 자체 백엔드 3단계 서버 쪽: 운동 시작 `POST /api/workouts/start` 와 운동 완료 `POST /api/workouts/complete` (`server/app.js`). 로그인한 사람 신분으로 DB 함수 `start_workout`, `complete_workout` 을 부르고, DB 가 거절하면 422 와 그 이유, 연결 실패는 503. 앱은 아직 Supabase 를 직접 부름 (3-3 에서 연결)
+- 서버 테스트 10개 추가 (`server/app.test.js`), 새 서버 문구의 영어 번역 (`src/lib/i18n.en.js`)
 - 서버(DB 함수, Edge Function, 자체 API 서버)가 보내는 한국어 오류를 영어 화면에서는 영어로 바꿔 보여 줌. 모르는 문구는 한국어 대신 일반 안내로 (`tServer`)
 - 번역 검사 테스트 추가 (`src/lib/i18n.test.js`): 화면 코드에 번역을 거치지 않은 한국어가 남았는지, 모든 문구에 영어가 있는지, 서버 문구가 모두 영어로 바뀌는지 저장소 전체를 검사
 - 스프린트 백로그에 10번 언어 기능 추가 (남은 일: 푸시 알림, 인증 메일, 앱 설치 이름의 영어)

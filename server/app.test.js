@@ -25,10 +25,13 @@ const query = vi.hoisted(() => {
   return q
 })
 
+// 가짜 서버 함수 호출 (supabase.rpc). 부른 이름과 인자를 기록하고, 결과는 테스트마다 정함
+const rpc = vi.hoisted(() => vi.fn())
+
 vi.mock('./supabase.js', () => ({
   supabaseFor: (token) => {
     db.tokens.push(token)
-    return { auth: { getUser }, from: query.from }
+    return { auth: { getUser }, from: query.from, rpc }
   },
 }))
 
@@ -36,6 +39,7 @@ beforeEach(() => {
   db.calls = []
   db.tokens = []
   db.result = { data: null, error: null }
+  rpc.mockReset()
   getUser.mockReset()
   getUser.mockImplementation(async (token) => {
     if (token === 'good-token')
@@ -135,5 +139,103 @@ describe('GET /api/announcements/active', () => {
     expect(db.calls).toContainEqual(['order', 'created_at', { ascending: false }])
     expect(db.calls).toContainEqual(['limit', 1])
     expect(steps.at(-1)).toBe('maybeSingle')
+  })
+})
+
+// 3-1: 운동 시작 (로그인 필요) — 앱이 영상 재생을 시작하면 시청 세션을 만듦
+describe('POST /api/workouts/start', () => {
+  // 로그인한 사용자로 본문을 보내는 요청 (본문은 객체를 JSON 글자로 바꿔 보냄)
+  const start = (body, token = 'good-token') =>
+    app.request('/api/workouts/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify(body),
+    })
+
+  it('로그인하지 않으면 401, DB 에 묻지 않음', async () => {
+    const res = await start({ videoSeconds: 600 }, null)
+    expect(res.status).toBe(401)
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('영상 길이가 숫자가 아니면 400, DB 에 묻지 않음', async () => {
+    for (const body of [{}, { videoSeconds: '600' }, { videoSeconds: null }]) {
+      const res = await start(body)
+      expect(res.status).toBe(400)
+      expect(typeof (await res.json()).error).toBe('string')
+    }
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('성공하면 200 과 { sessionId }. 로그인한 사람 신분(토큰)으로 start_workout 을 부르고 길이는 정수로', async () => {
+    rpc.mockResolvedValue({ data: 'session-1', error: null })
+    const res = await start({ videoSeconds: 599.6 })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ sessionId: 'session-1' })
+    expect(rpc).toHaveBeenCalledWith('start_workout', { p_video_seconds: 600 })
+    expect(db.tokens).toContain('good-token')
+  })
+
+  it('DB 가 판단해 거절(P0001)하면 422 와 DB 문구 그대로', async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: 'P0001', message: '로그인이 필요해요.' } })
+    const res = await start({ videoSeconds: 600 })
+    expect(res.status).toBe(422)
+    expect(await res.json()).toEqual({ error: '로그인이 필요해요.' })
+  })
+
+  it('그 밖의 DB 오류는 503, 내부 내용은 숨김', async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: '08006', message: 'connection failure' } })
+    const res = await start({ videoSeconds: 600 })
+    expect(res.status).toBe(503)
+    expect((await res.json()).error).not.toContain('connection')
+  })
+})
+
+// 3-2: 운동 완료 (로그인 필요) — 영상을 다 보면 서버가 시청 시간을 확인하고 기록
+describe('POST /api/workouts/complete', () => {
+  const complete = (body, token = 'good-token') =>
+    app.request('/api/workouts/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify(body),
+    })
+
+  it('로그인하지 않으면 401, DB 에 묻지 않음', async () => {
+    const res = await complete({ sessionId: 'session-1' }, null)
+    expect(res.status).toBe(401)
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('세션 번호가 없거나 글자가 아니면 400, DB 에 묻지 않음', async () => {
+    for (const body of [{}, { sessionId: '' }, { sessionId: 123 }]) {
+      const res = await complete(body)
+      expect(res.status).toBe(400)
+      expect(typeof (await res.json()).error).toBe('string')
+    }
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('성공하면 200 과 { date } (DB 가 기록한 날짜). 로그인한 사람 신분으로 complete_workout 을 부름', async () => {
+    rpc.mockResolvedValue({ data: '2026-11-19', error: null })
+    const res = await complete({ sessionId: 'session-1' })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ date: '2026-11-19' })
+    expect(rpc).toHaveBeenCalledWith('complete_workout', { p_session: 'session-1' })
+    expect(db.tokens).toContain('good-token')
+  })
+
+  it('DB 가 판단해 거절(P0001: 시청 시간 부족 등)하면 422 와 DB 문구 그대로', async () => {
+    const message = '영상을 끝까지 시청해야 완료로 기록돼요. 약 3분 남았어요.'
+    rpc.mockResolvedValue({ data: null, error: { code: 'P0001', message } })
+    const res = await complete({ sessionId: 'session-1' })
+    expect(res.status).toBe(422)
+    expect(await res.json()).toEqual({ error: message })
+  })
+
+  it('그 밖의 DB 오류는 503, 내부 내용은 숨김 (앱이 나중에 다시 시도할 수 있는 실패)', async () => {
+    rpc.mockResolvedValue({ data: null, error: { code: '08006', message: 'connection failure' } })
+    const res = await complete({ sessionId: 'session-1' })
+    expect(res.status).toBe(503)
+    expect((await res.json()).error).not.toContain('connection')
   })
 })

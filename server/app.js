@@ -42,6 +42,58 @@ app.get('/announcements/active', async (c) => {
   return c.json({ announcement: data ? { id: data.id, message: data.message } : null })
 })
 
+// 운동 시작 (로그인 필요) — 영상 재생을 시작하면 시청 세션을 만들고 그 id 를 돌려줌
+// 요청 본문: { videoSeconds: 영상 길이(초, 숫자) }
+// 응답: 200 { sessionId } / 400 길이가 숫자가 아님 / 401 로그인 필요 / 422 DB 가 거절 / 503 DB 연결 실패
+app.post('/workouts/start', requireUser, async (c) => {
+  // 1. 본문 { videoSeconds } 에서 영상 길이를 꺼냄
+  const { videoSeconds } = await c.req.json()
+
+  // 2. 숫자가 아니면 400 (잘못된 요청)
+  if (typeof videoSeconds !== 'number') {
+    return c.json({ error: '영상 길이가 올바르지 않아요.' }, 400)
+  }
+
+  // 3. 문지기가 저장해 둔 토큰으로, 로그인한 사람 신분으로 DB 함수를 부름
+  const { data, error } = await supabaseFor(c.get('token')).rpc('start_workout', {
+    p_video_seconds: Math.round(videoSeconds),
+  })
+
+  // 4. DB 가 판단해 거절(P0001)했으면 그 이유를 422 로, 그 밖의 오류는 503
+  if (error) {
+    if (error.code === 'P0001') return c.json({ error: error.message }, 422)
+    return c.json({ error: '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503)
+  }
+
+  // 5. 성공: 시청 세션 번호
+  return c.json({ sessionId: data })
+})
+
+// 운동 완료 (로그인 필요) — 영상을 다 보면 서버가 시작한 지 충분히 지났는지 확인하고 기록
+// 요청 본문: { sessionId: 운동 시작 때 받은 세션 번호(글자) }
+// 응답: 200 { date: 기록된 날짜 } / 400 세션 번호가 없음 / 401 로그인 필요 / 422 DB 가 거절(시청 시간 부족 등) / 503 DB 연결 실패
+app.post('/workouts/complete', requireUser, async (c) => {
+  // 1. 본문 { sessionId } 에서 운동 시작 때 받은 세션 번호를 꺼냄
+  const { sessionId } = await c.req.json()
+
+  // 2. 글자가 아니거나 비어 있으면 400 (잘못된 요청)
+  if (typeof sessionId !== 'string' || !sessionId) {
+    return c.json({ error: '운동 세션 정보가 올바르지 않아요.' }, 400)
+  }
+
+  // 3. 로그인한 사람 신분으로 DB 함수를 부름. DB 가 시작한 지 충분히 지났는지 확인하고 기록함
+  const { data, error } = await supabaseFor(c.get('token')).rpc('complete_workout', { p_session: sessionId })
+
+  // 4. DB 가 판단해 거절(P0001: 시청 시간 부족 등)했으면 그 이유를 422 로, 그 밖의 오류는 503
+  if (error) {
+    if (error.code === 'P0001') return c.json({ error: error.message }, 422)
+    return c.json({ error: '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503)
+  }
+
+  // 5. 성공: DB 가 기록한 날짜
+  return c.json({ date: data })
+})
+
 // 없는 주소: 앱이 읽기 쉬운 JSON 으로 404
 app.notFound((c) => c.json({ error: '없는 주소예요.' }, 404))
 
