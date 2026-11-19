@@ -83,30 +83,65 @@ async function listMyPhotoPaths(userId) {
 
 // ── 운동 기록 ────────────────────────────────
 // 영상 재생을 시작하면 시청 세션을 만들고, 완료할 때 서버가 지난 시간을 확인해 기록 (v0.7 SQL)
-export async function startWorkoutSession(videoSeconds) {
-  if (!(await uid())) return null
-  const { data, error } = await supabase.rpc('start_workout', { p_video_seconds: Math.round(videoSeconds || 0) })
-  return error ? null : data
+// 백엔드 3-3: Supabase 를 직접 부르지 않고 자체 API 서버(server/app.js 의 POST /api/workouts/start, /complete)에 요청
+
+// 자체 API 서버에 보낼 머리글: 본문이 JSON 이라는 표시 + 로그인 토큰 (서버의 requireUser 가 이 토큰으로 누구인지 확인)
+async function authHeaders() {
+  const { data } = await supabase.auth.getSession()
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${data.session?.access_token}`,
+  }
 }
 
-// 반환: 기록된 날짜 키 / 실패하면 Error — retryable=true 면 연결 문제(나중에 다시 시도 가능)
+// 반환: 세션 id / 비회원이거나 실패하면 null (Workout 화면은 null 이면 기기에만 기록)
+export async function startWorkoutSession(videoSeconds) {
+  if (!(await uid())) return null
+  try {
+    // 1. 서버에 POST 로 요청. 두 번째 값에 방법, 머리글, 본문을 담음 (본문은 글자로 바꿔 보냄)
+    const res = await fetch('/api/workouts/start', {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({ videoSeconds: videoSeconds || 0 }),
+    })
+    // 2. 성공(200번대)이 아니면 null
+    if (!res.ok) return null
+    // 3. 본문 { sessionId } 에서 세션 id 만 꺼냄
+    const body = await res.json()
+    return body.sessionId
+  } catch {
+    return null // 오프라인 등으로 요청 자체가 실패
+  }
+}
+
+// 반환: 기록된 날짜 키 / 실패하면 Error, retryable=true 면 나중에 다시 시도 가능
+// 다시 시도: 오프라인, 401(로그인 만료), 503, 500 / 다시 시도 안 함: 422(서버가 거절), 400(요청이 잘못됨)
 export async function completeWorkout(sessionId) {
   let res
   try {
-    res = await supabase.rpc('complete_workout', { p_session: sessionId })
+    // 1. 서버에 POST 로 요청 (startWorkoutSession 과 같은 모양, 본문은 { sessionId })
+    res = await fetch('/api/workouts/complete', {
+      method: 'POST',
+      headers: await authHeaders(),
+      body: JSON.stringify({ sessionId }),
+    })
   } catch {
     // 요청 자체가 끊김(오프라인 등)
     const e = new Error(t('서버에 연결할 수 없어요.'))
     e.retryable = true
     throw e
   }
-  const { data, error } = res
-  if (error) {
-    const e = new Error(error.message ? tServer(error.message) : t('운동 기록에 실패했어요.'))
-    e.retryable = error.code !== 'P0001' // P0001 = 서버가 판단해 거절 (시청 시간 부족 등)이라 다시 시도해도 같음
+  // 2. 실패 응답은 본문이 JSON 이 아닐 수도 있어서(Vercel 오류 화면 등) 읽기에 실패하면 빈 객체로
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    // 3. 서버 문구가 있으면 화면 언어로 바꿔 보여 주고, 없으면 일반 안내
+    const e = new Error(body.error ? tServer(body.error) : t('운동 기록에 실패했어요.'))
+    // 4. 422(서버가 거절), 400(요청이 잘못됨)은 다시 보내도 같으니 다시 시도하지 않음
+    e.retryable = res.status !== 422 && res.status !== 400
     throw e
   }
-  return data
+  // 5. 본문 { date } 에서 기록된 날짜만 꺼냄
+  return body.date
 }
 
 // 연결 문제로 서버에 못 남긴 완료 기록을 다시 시도 (앱 시작 시) — 성공하면 인증샷도 이어서 업로드

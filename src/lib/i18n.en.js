@@ -615,6 +615,10 @@ const EN = {
   '인증 {count}회': ({ count }) => (count === 1 ? '1 check-in' : '{count} check-ins'),
 
   // ── 서버(DB 함수, Edge Function, 자체 API 서버)가 보내는 문구 — tServer() 가 사용 ──
+  '영상 길이가 올바르지 않아요.': 'The video length is invalid.',
+  '운동 세션 정보가 올바르지 않아요.': 'The workout session info is invalid.',
+  '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.':
+    'Couldn\u2019t reach the workout server. Please try again in a moment.',
   'cheerId 가 필요해요.': 'cheerId is required.',
   '가입 정보(이름, 전화번호, 만 14세 동의)가 올바르지 않아요.':
     "Your sign-up info (name, phone number, age 14+ consent) isn't valid.",
