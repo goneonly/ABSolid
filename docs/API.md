@@ -146,6 +146,7 @@ Supabase 앞에 둔 Hono 서버입니다. 코드는 `server/app.js`, 배포 입�
 | `GET /api/announcements/active` | 없음 | 켜진 공지 중 가장 최근 1건. `{ announcement: { id, message } }`, 없으면 `{ announcement: null }`. Supabase 에서 읽지 못하면 503. 앱의 `fetchActiveAnnouncement` 가 사용 |
 | `POST /api/workouts/start` | 로그인 토큰 | 운동 시작. 본문 `{ videoSeconds }`(숫자). 시청 세션을 만들고 `{ sessionId }`. 숫자가 아니면 400. 앱의 `startWorkoutSession` 이 사용 (실패하면 null, 화면은 기기에만 기록) |
 | `POST /api/workouts/complete` | 로그인 토큰 | 운동 완료. 본문 `{ sessionId }`(글자). 시작한 지 영상 길이의 80% 이상 지났으면 기록하고 `{ date }`. 세션 번호가 없으면 400. 앱의 `completeWorkout` 이 사용 (오프라인, 401, 500, 503 은 다음 접속 때 다시 시도, 400, 422 는 다시 시도하지 않음) |
+| `GET /api/groups/:groupId/workouts?start=&end=` | 로그인 토큰 | 리더보드용. 기간 안에 그룹 멤버별로 운동한 날짜 `{ dates: { 멤버id: ['YYYY-MM-DD', ...] } }`. 그룹 id 가 uuid 가 아니거나 기간이 이상하면(날짜 형식, 시작이 끝보다 늦음, 366일 초과) 400, 그 그룹 멤버가 아니면 403. 앱 연결은 아직 (4-3) |
 
 로그인이 필요한 주소는 `Authorization: Bearer <로그인 토큰>` 헤더를 받습니다. 토큰이 없거나 틀리면 401, Supabase 에 연결하지 못하면 503 과 `{ error }` 를 돌려줍니다. DB 함수가 판단해 거절하면(시청 시간 부족 등) 422 와 DB 가 만든 안내 문구 `{ error }` 를 그대로 돌려줍니다.
 

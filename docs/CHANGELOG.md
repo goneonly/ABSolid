@@ -36,6 +36,7 @@
 - `supabase/v0.12-group-kick.sql` 실행 필요: 참여 막은 사람 표(`group_bans`)와 `kick_member`, `group_bans_of`, `unban_member` 함수, 막힌 사람을 거절하는 `join_group`
 
 **내부**
+- 자체 백엔드 4단계 시작: 리더보드 주소 `GET /api/groups/:groupId/workouts` (`server/app.js`). 그 그룹 멤버만 볼 수 있고(403), 그룹 id 와 기간을 DB 에 묻기 전에 검사(400, `server/validate.js`). 앱은 아직 Supabase 를 직접 부름 (4-3 에서 연결)
 - 자체 백엔드 3단계 서버 쪽: 운동 시작 `POST /api/workouts/start` 와 운동 완료 `POST /api/workouts/complete` (`server/app.js`). 로그인한 사람 신분으로 DB 함수 `start_workout`, `complete_workout` 을 부르고, DB 가 거절하면 422 와 그 이유, 연결 실패는 503
 - 자체 백엔드 3단계 앱 쪽: 운동 시작과 완료(`startWorkoutSession`, `completeWorkout`)가 Supabase 를 직접 부르지 않고 위 주소에 로그인 토큰을 실어 요청 (`src/server/api.js`). 오프라인, 로그인 만료(401), 서버 오류(500, 503)는 기기에 먼저 저장하고 다음 접속 때 다시 기록, 서버가 거절(422)하면 그 이유를 보여 줌
 - 서버 테스트 10개 추가 (`server/app.test.js`), 앱 쪽 운동 시작, 완료, 다시 보내기 테스트를 새 주소 기준으로 바꿈 (`src/server/api.test.js`), 새 서버 문구의 영어 번역 (`src/lib/i18n.en.js`)

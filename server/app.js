@@ -6,6 +6,7 @@
 import { Hono } from 'hono'
 import { requireUser } from './auth.js'
 import { supabaseFor } from './supabase.js'
+import { isDateRange, isUuid } from './validate.js'
 
 const app = new Hono().basePath('/api')
 
@@ -92,6 +93,64 @@ app.post('/workouts/complete', requireUser, async (c) => {
 
   // 5. 성공: DB 가 기록한 날짜
   return c.json({ date: data })
+})
+
+// 리더보드: 기간 안에 그룹 멤버별로 운동한 날짜 (로그인 필수, 그 그룹 멤버만)
+// 요청: GET /api/groups/그룹id/workouts?start=2026-11-01&end=2026-11-19
+// 응답: { dates: { 멤버id: ['2026-11-18', '2026-11-19'], ... } }
+//       그룹 id 가 이상하면 400, 기간이 이상하면 400, 멤버가 아니면 403, DB 를 못 읽으면 503
+app.get('/groups/:groupId/workouts', requireUser, async (c) => {
+  // 1. 주소에서 값 꺼내기
+  //    c.req.param('groupId'): 주소 가운데 :groupId 자리에 들어온 값
+  //    c.req.query('start'):   주소 뒤 ?start=... 의 값 (없으면 undefined)
+  const groupId = c.req.param('groupId')
+  const start = c.req.query('start')
+  const end = c.req.query('end')
+
+  // 2. 값 검사 (DB 에 묻기 전에)
+  if (!isUuid(groupId)) return c.json({ error: '그룹 정보가 올바르지 않아요.' }, 400)
+  if (!isDateRange(start, end)) {
+    return c.json({ error: '기간이 올바르지 않아요.' }, 400)
+  }
+
+  // 3. 요청한 사람 신분으로 DB 연결
+  const supabase = supabaseFor(c.get('token'))
+
+  // 4. 그룹 멤버 목록 읽기 (아래 운동 기록과 이름이 겹치지 않게 members, membersError 로 받음). 못 읽으면 503
+  const { data: members, error: membersError } = await supabase
+    .from('group_members')
+    .select('user_id')
+    .eq('group_id', groupId)
+  if (membersError) {
+    return c.json({ error: '그룹 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503)
+  }
+
+  // 5. 멤버 id 만 담은 배열로 바꾸고, 내가 없으면 403
+  const ids = members.map((m) => m.user_id)
+  if (!ids.includes(c.get('user').id)) {
+    return c.json({ error: '그룹 멤버만 볼 수 있어요.' }, 403)
+  }
+
+  // 6. 멤버들의 기간 안 운동 기록 읽기 (start 이상, end 이하). 못 읽으면 503
+  const { data: rows, error } = await supabase
+    .from('workouts')
+    .select('user_id, date')
+    .in('user_id', ids)
+    .gte('date', start)
+    .lte('date', end)
+  if (error) {
+    return c.json({ error: '그룹 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }, 503)
+  }
+
+  // 7. 멤버별로 날짜 묶기: { 멤버id: [날짜, ...] }. 처음 보는 멤버면 빈 배열부터 만듦
+  const dates = {}
+  for (const r of rows) {
+    if (!dates[r.user_id]) {
+      dates[r.user_id] = []
+    }
+    dates[r.user_id].push(r.date)
+  }
+  return c.json({ dates })
 })
 
 // 없는 주소: 앱이 읽기 쉬운 JSON 으로 404

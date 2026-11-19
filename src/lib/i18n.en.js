@@ -619,6 +619,11 @@ const EN = {
   '운동 세션 정보가 올바르지 않아요.': 'The workout session info is invalid.',
   '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.':
     'Couldn\u2019t reach the workout server. Please try again in a moment.',
+  '그룹 정보가 올바르지 않아요.': 'The group info is invalid.',
+  '기간이 올바르지 않아요.': 'The date range is invalid.',
+  '그룹 멤버만 볼 수 있어요.': 'Only group members can see this.',
+  '그룹 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.':
+    "Couldn't reach the group server. Please try again in a moment.",
   'cheerId 가 필요해요.': 'cheerId is required.',
   '가입 정보(이름, 전화번호, 만 14세 동의)가 올바르지 않아요.':
     "Your sign-up info (name, phone number, age 14+ consent) isn't valid.",
