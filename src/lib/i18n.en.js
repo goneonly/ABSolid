@@ -621,6 +621,7 @@ const EN = {
     'Couldn\u2019t reach the workout server. Please try again in a moment.',
   '그룹 정보가 올바르지 않아요.': 'The group info is invalid.',
   '기간이 올바르지 않아요.': 'The date range is invalid.',
+  '날짜가 올바르지 않아요.': 'The date is invalid.',
   '그룹 멤버만 볼 수 있어요.': 'Only group members can see this.',
   '그룹 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.':
     "Couldn't reach the group server. Please try again in a moment.",

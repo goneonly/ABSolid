@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { daysBetween, isDateKey, isDateRange, isUuid } from './validate.js'
+import { addDays, daysBetween, isDateKey, isDateRange, isUuid } from './validate.js'
 
 describe('isUuid', () => {
   it('uuid 형식만 통과', () => {
@@ -41,5 +41,14 @@ describe('isDateRange', () => {
     expect(isDateRange('2025-11-18', '2026-11-19')).toBe(false) // 367일
     expect(isDateRange('2026-11-01', undefined)).toBe(false)
     expect(isDateRange('nope', '2026-11-19')).toBe(false)
+  })
+})
+
+describe('addDays', () => {
+  it('날짜에 날 수를 더하거나 뺌 (달과 해가 바뀌어도)', () => {
+    expect(addDays('2026-11-20', -6)).toBe('2026-11-14')
+    expect(addDays('2026-03-02', -6)).toBe('2026-02-24')
+    expect(addDays('2027-01-03', -6)).toBe('2026-12-28')
+    expect(addDays('2026-11-20', 0)).toBe('2026-11-20')
   })
 })

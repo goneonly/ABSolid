@@ -30,3 +30,10 @@ export function isDateRange(startKey, endKey) {
   const days = daysBetween(startKey, endKey) + 1 // 시작일과 종료일을 모두 세면 +1
   return days >= 1 && days <= MAX_RANGE_DAYS
 }
+
+// 날짜 키에 날 수를 더하거나 뺌: addDays('2026-11-20', -6) 은 '2026-11-14'
+export function addDays(dateKey, days) {
+  const date = new Date(`${dateKey}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
+}

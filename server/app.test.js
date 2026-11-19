@@ -346,3 +346,120 @@ describe('GET /api/groups/:groupId/workouts', () => {
     expect(second.status).toBe(503)
   })
 })
+
+// 백엔드 4-2: 그룹 현황 (멤버, 최근 7일 기록, 오늘 인증샷, 차단한 사람 제외)
+describe('GET /api/groups/:groupId/status', () => {
+  const GID = '11111111-2222-4333-8444-555555555555'
+  const TODAY = '2026-11-20'
+  const get = (path, token = 'good-token') =>
+    app.request(`/api/groups/${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  const status = (today = TODAY) => get(`${GID}/status?today=${today}`)
+  const DOWN = { data: null, error: { code: 'PGRST000', message: 'connection' } }
+  // 나(user-1), user-2, 내가 차단한 user-3 이 있는 그룹
+  const myGroup = () => {
+    db.tables.group_members = {
+      data: [{ user_id: 'user-1' }, { user_id: 'user-2' }, { user_id: 'user-3' }],
+      error: null,
+    }
+    db.tables.user_blocks = { data: [{ blocked: 'user-3' }], error: null }
+    rpc.mockResolvedValue({
+      data: [
+        { id: 'user-1', nickname: '나', avatar_url: 'https://a/1.jpg' },
+        { id: 'user-3', nickname: '차단된 사람', avatar_url: null },
+      ],
+      error: null,
+    })
+    db.tables.workouts = {
+      data: [
+        { user_id: 'user-1', date: '2026-11-19', photo_url: null },
+        { user_id: 'user-1', date: TODAY, photo_url: 'user-1/2026-11-20.jpg' },
+        { user_id: 'user-2', date: TODAY, photo_url: null },
+        { user_id: 'user-3', date: TODAY, photo_url: 'user-3/2026-11-20.jpg' },
+      ],
+      error: null,
+    }
+  }
+
+  it('토큰이 없으면 401', async () => {
+    expect((await get(`${GID}/status?today=${TODAY}`, null)).status).toBe(401)
+  })
+
+  it('그룹 id 가 uuid 가 아니거나 오늘 날짜가 이상하면 400, DB 에 묻지 않음', async () => {
+    const badGroup = await get(`abc/status?today=${TODAY}`)
+    expect(badGroup.status).toBe(400)
+    expect((await badGroup.json()).error).toBe('그룹 정보가 올바르지 않아요.')
+    for (const res of [await get(`${GID}/status`), await status('2026-11-31'), await status('11/20')]) {
+      expect(res.status).toBe(400)
+      expect((await res.json()).error).toBe('날짜가 올바르지 않아요.')
+    }
+    expect(db.calls).toEqual([])
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('내가 그 그룹 멤버가 아니면 403, 다른 것은 읽지 않음', async () => {
+    db.tables.group_members = { data: [{ user_id: 'user-2' }], error: null }
+    const res = await status()
+    expect(res.status).toBe(403)
+    expect((await res.json()).error).toBe('그룹 멤버만 볼 수 있어요.')
+    expect(db.calls).not.toContainEqual(['from', 'user_blocks'])
+    expect(db.calls).not.toContainEqual(['from', 'workouts'])
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('차단한 멤버는 빼고, 멤버별 닉네임, 사진, 최근 7일 날짜를 돌려줌', async () => {
+    myGroup()
+    const res = await status()
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.members).toEqual([
+      { id: 'user-1', nickname: '나', avatar: 'https://a/1.jpg', dates: ['2026-11-19', TODAY] },
+      { id: 'user-2', nickname: null, avatar: '', dates: [TODAY] }, // 프로필이 없으면 빈 값 (앱이 '이름 없음'으로 표시)
+    ])
+    expect(body.hiddenCount).toBe(1)
+  })
+
+  it('오늘 인증샷은 사진이 있는 것만, 차단한 사람 것은 빼고 경로로 돌려줌', async () => {
+    myGroup()
+    const body = await (await status()).json()
+    expect(body.photos).toEqual([{ id: 'user-1', path: 'user-1/2026-11-20.jpg' }])
+  })
+
+  it('최근 7일(오늘 포함)만, 그 그룹 멤버 것만 DB 에 물음', async () => {
+    myGroup()
+    await status()
+    expect(db.calls).toEqual(
+      expect.arrayContaining([
+        ['from', 'group_members'],
+        ['eq', 'group_id', GID],
+        ['from', 'user_blocks'],
+        ['from', 'workouts'],
+        ['in', 'user_id', ['user-1', 'user-2', 'user-3']],
+        ['gte', 'date', '2026-11-14'],
+        ['lte', 'date', TODAY],
+      ]),
+    )
+    expect(rpc).toHaveBeenCalledWith('get_group_profiles', { gid: GID })
+  })
+
+  it('요청한 사람의 토큰으로 DB 에 접근 (RLS 적용)', async () => {
+    myGroup()
+    await status()
+    expect(db.tokens.at(-1)).toBe('good-token')
+  })
+
+  it('멤버, 차단 목록, 프로필, 운동 기록 중 하나라도 못 읽으면 503', async () => {
+    const fail = [
+      () => (db.tables.group_members = DOWN),
+      () => (db.tables.user_blocks = DOWN),
+      () => rpc.mockResolvedValue(DOWN),
+      () => (db.tables.workouts = DOWN),
+    ]
+    for (const breakIt of fail) {
+      myGroup()
+      breakIt()
+      const res = await status()
+      expect(res.status).toBe(503)
+      expect((await res.json()).error).toBe('그룹 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.')
+    }
+  })
+})

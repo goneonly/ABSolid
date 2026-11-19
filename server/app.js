@@ -6,7 +6,7 @@
 import { Hono } from 'hono'
 import { requireUser } from './auth.js'
 import { supabaseFor } from './supabase.js'
-import { isDateRange, isUuid } from './validate.js'
+import { addDays, isDateKey, isDateRange, isUuid } from './validate.js'
 
 const app = new Hono().basePath('/api')
 
@@ -151,6 +151,88 @@ app.get('/groups/:groupId/workouts', requireUser, async (c) => {
     dates[r.user_id].push(r.date)
   }
   return c.json({ dates })
+})
+
+// 그룹 현황: 멤버, 멤버별 최근 7일 운동 날짜, 오늘 인증샷 (로그인 필수, 그 그룹 멤버만, 내가 차단한 사람은 뺌)
+// 요청: GET /api/groups/그룹id/status?today=2026-11-20  (오늘 날짜는 앱이 기기 날짜로 보냄)
+// 응답: { members: [{ id, nickname, avatar, dates }], photos: [{ id, path }], hiddenCount }
+//       사진은 경로만 보내고, 볼 수 있는 주소는 앱이 발급받음 (signPhotoPaths)
+app.get('/groups/:groupId/status', requireUser, async (c) => {
+  const DOWN = '그룹 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' // 503 문구 (여러 번 써서 상자에 담아 둠)
+
+  // 1. 주소에서 값 꺼내기
+  const groupId = c.req.param('groupId')
+  const today = c.req.query('today')
+
+  // 2. 값 검사
+  if (!isUuid(groupId)) return c.json({ error: '그룹 정보가 올바르지 않아요.' }, 400)
+  // TODO A. [복습] isDateKey(today) 가 아니면 400 '날짜가 올바르지 않아요.' (바로 위 줄과 같은 모양)
+
+  const supabase = supabaseFor(c.get('token'))
+  if (!isDateKey(today)) {
+    return c.json({ error: '날짜가 올바르지 않아요.' }, 400)
+  }
+  // 3. 그룹 멤버 읽고, 내가 멤버인지 확인
+  // TODO B. [복습] 4-1 의 4번, 5번과 똑같이 (members, membersError 로 받기, ids 만들기, 없으면 403)
+  //         실패 문구는 이제 DOWN 상자를 쓰면 됨:  return c.json({ error: DOWN }, 503)
+  const { data: members, error: membersError } = await supabase
+    .from('group_members')
+    .select('user_id')
+    .eq('group_id', groupId)
+  if (membersError) return c.json({ error: DOWN }, 503)
+
+  const ids = members.map((m) => m.user_id)
+  if (!ids.includes(c.get('user').id)) return c.json({ error: '그룹 멤버만 볼 수 있어요.' }, 403)
+  // 4. 내가 차단한 사람 목록
+  // TODO C. [복습] user_blocks 에서 'blocked' 칸 읽기 (조건 없음, DB 규칙이 내 것만 돌려줌)
+  //         결과는 { data: blocks, error: blocksError }, 실패면 503
+  const { data: blocks, error: blocksError } = await supabase.from('user_blocks').select('blocked')
+  if (blocksError) {
+    return c.json({ error: DOWN }, 503)
+  }
+  // [새 문법] Set: 중복 없는 모음. .has(값) 으로 들어 있는지 빠르게 확인
+  //   new Set(['a', 'b']).has('a')  는 true
+  const blocked = new Set(blocks.map((b) => b.blocked))
+
+  // 5. 멤버 프로필 (닉네임, 사진)
+  // TODO D. [복습] 3-1 처럼 서버 함수 부르기: supabase.rpc('get_group_profiles', { gid: groupId })
+  const { data: profiles, error: profilesError } = await supabase.rpc('get_group_profiles', { gid: groupId })
+  if (profilesError) {
+    return c.json({ error: DOWN }, 503)
+  }
+
+  // 6. 최근 7일(오늘 포함) 운동 기록
+  // TODO E. [복습] 4-1 의 6번과 같은 모양. 다른 점 두 가지
+  //         select 는 'user_id, date, photo_url'
+  //         기간은 addDays(today, -6) 이상, today 이하   (addDays('2026-11-20', -6) 은 '2026-11-14')
+
+  // [새 문법] .filter: 조건이 true 인 칸만 남긴 새 배열
+  //   [1, 2, 3, 4].filter((n) => n > 2)  는 [3, 4]
+  // 차단한 사람의 기록은 뺌 (! 는 '아니면')
+  const visible = rows.filter((r) => !blocked.has(r.user_id))
+
+  // 7. 멤버별 날짜 묶기
+  // TODO F. [복습] 4-1 의 7번과 똑같이 dates 만들기. 다른 점: rows 대신 visible 을 돌기 (return 은 아직 하지 않음)
+
+  // 8. 오늘 인증샷
+  // TODO G. [새 문법 연습] visible 에서 r.date === today 이고 r.photo_url 이 있는 것만 .filter 로 남기고,
+  //         .map 으로 { id: r.user_id, path: r.photo_url } 모양으로 바꿔 photos 에 담기
+  //   예시) const big = nums.filter((n) => n > 2).map((n) => ({ value: n }))
+  //         ({ }) 처럼 괄호로 감싸야 객체를 돌려줌 (괄호가 없으면 함수 본문으로 읽힘)
+
+  // 9. 보여 줄 멤버: 차단한 사람 빼고, 프로필이 없으면 빈 값 (앱이 '이름 없음'으로 표시)
+  const profileOf = {}
+  for (const p of profiles) profileOf[p.id] = p
+  const shown = ids
+    .filter((id) => !blocked.has(id))
+    .map((id) => ({
+      id,
+      nickname: profileOf[id]?.nickname || null, // ?. 는 앞이 없으면(undefined) 오류 대신 undefined
+      avatar: profileOf[id]?.avatar_url || '', // || 는 앞이 비었으면 뒤의 값
+      dates: dates[id] || [],
+    }))
+
+  return c.json({ members: shown, photos, hiddenCount: ids.length - shown.length })
 })
 
 // 없는 주소: 앱이 읽기 쉬운 JSON 으로 404
