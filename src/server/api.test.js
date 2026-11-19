@@ -19,6 +19,7 @@ vi.mock('./supabase.js', () => {
 })
 
 const {
+  startWorkoutSession,
   completeWorkout,
   retryPendingCompletions,
   fetchBlockedIds,
@@ -30,7 +31,9 @@ const {
 const { getRecords, saveRecord, todayKey } = await import('../lib/storage.js')
 
 const UID = 'u-1'
-const signedIn = () => client.auth.getSession.mockResolvedValue({ data: { session: { user: { id: UID } } } })
+const TOKEN = 'tok-1' // 로그인 토큰 (자체 API 서버에 Authorization 헤더로 보냄)
+const signedIn = () =>
+  client.auth.getSession.mockResolvedValue({ data: { session: { user: { id: UID }, access_token: TOKEN } } })
 const rpcError = (code, message = '거절') => ({ data: null, error: { code, message } })
 
 beforeEach(() => {
@@ -43,53 +46,126 @@ beforeEach(() => {
   workoutsTable.eq.mockImplementation(() => Object.assign(Promise.resolve({ error: null }), workoutsTable))
 })
 
-describe('운동 완료 요청', () => {
-  it('성공하면 서버가 기록한 날짜를 돌려준다', async () => {
-    client.rpc.mockResolvedValue({ data: '2026-10-14', error: null })
-    await expect(completeWorkout('s1')).resolves.toBe('2026-10-14')
-    expect(client.rpc).toHaveBeenCalledWith('complete_workout', { p_session: 's1' })
+// 백엔드 3-3: 운동 시작과 완료는 Supabase 를 직접 부르지 않고 자체 API 서버(/api/workouts/...)에 요청
+// 가짜 fetch: 부를 때마다 차례로 [상태 코드, 본문] 으로 답함
+// 정해 둔 답을 다 쓰면 진짜 fetch 로 넘김 (인증샷 업로드가 data: 주소를 fetch 로 읽기 때문)
+const realFetch = globalThis.fetch
+const replies = (...answers) => {
+  const f = vi.fn(realFetch)
+  for (const [status, body] of answers) f.mockResolvedValueOnce(new Response(JSON.stringify(body), { status }))
+  vi.stubGlobal('fetch', f)
+  return f
+}
+const offline = () => vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+// fetch 에 넘긴 두 번째 값(method, headers, body)을 꺼내 봄
+const sentOptions = (n = 0) => fetch.mock.calls[n][1]
+const sentBody = (n = 0) => JSON.parse(sentOptions(n).body)
+
+describe('운동 시작 요청 (자체 API 서버)', () => {
+  it('비회원이면 서버에 묻지 않고 null', async () => {
+    client.auth.getSession.mockResolvedValue({ data: { session: null } })
+    replies([200, { sessionId: 'x' }])
+    expect(await startWorkoutSession(600)).toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
   })
-  it('서버가 판단해 거절(P0001: 시청 시간 부족 등)하면 다시 시도하지 않는다', async () => {
-    client.rpc.mockResolvedValue(rpcError('P0001', '영상을 끝까지 시청해야 완료로 기록돼요. 약 3분 남았어요.'))
+  it('로그인 토큰을 실어 POST 로 보내고, 받은 세션 id 를 돌려준다', async () => {
+    signedIn()
+    replies([200, { sessionId: 'sess-1' }])
+    expect(await startWorkoutSession(600)).toBe('sess-1')
+    expect(fetch.mock.calls[0][0]).toBe('/api/workouts/start')
+    expect(sentOptions()).toMatchObject({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    })
+    expect(sentBody()).toEqual({ videoSeconds: 600 })
+  })
+  it('서버가 실패(503 등)하면 null', async () => {
+    signedIn()
+    replies([503, { error: '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }])
+    expect(await startWorkoutSession(600)).toBeNull()
+  })
+  it('연결이 끊겨도(오프라인) 오류를 던지지 않고 null', async () => {
+    signedIn()
+    offline()
+    expect(await startWorkoutSession(600)).toBeNull()
+  })
+  it('Supabase 서버 함수를 직접 부르지 않는다', async () => {
+    signedIn()
+    replies([200, { sessionId: 'sess-1' }])
+    await startWorkoutSession(600)
+    expect(client.rpc).not.toHaveBeenCalled()
+  })
+})
+
+describe('운동 완료 요청 (자체 API 서버)', () => {
+  beforeEach(signedIn)
+
+  it('성공하면 서버가 기록한 날짜를 돌려준다', async () => {
+    replies([200, { date: '2026-10-14' }])
+    await expect(completeWorkout('s1')).resolves.toBe('2026-10-14')
+    expect(fetch.mock.calls[0][0]).toBe('/api/workouts/complete')
+    expect(sentOptions()).toMatchObject({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    })
+    expect(sentBody()).toEqual({ sessionId: 's1' })
+  })
+  it('서버가 판단해 거절(422: 시청 시간 부족 등)하면 그 문구를 보여 주고 다시 시도하지 않는다', async () => {
+    replies([422, { error: '영상을 끝까지 시청해야 완료로 기록돼요. 약 3분 남았어요.' }])
     await expect(completeWorkout('s1')).rejects.toMatchObject({
       retryable: false,
       message: expect.stringContaining('약 3분 남았어요'),
     })
   })
-  it('연결 문제 등 그 밖의 오류는 나중에 다시 시도할 수 있다', async () => {
-    client.rpc.mockResolvedValue(rpcError('', 'TypeError: Failed to fetch'))
+  it('요청이 잘못됐으면(400) 다시 보내도 같으니 다시 시도하지 않는다', async () => {
+    replies([400, { error: '운동 세션 정보가 올바르지 않아요.' }])
+    await expect(completeWorkout('')).rejects.toMatchObject({ retryable: false })
+  })
+  it('서버나 DB 연결 문제(503, 500)는 나중에 다시 시도할 수 있다', async () => {
+    replies([503, { error: '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }], [500, {}])
+    await expect(completeWorkout('s1')).rejects.toMatchObject({ retryable: true })
     await expect(completeWorkout('s1')).rejects.toMatchObject({ retryable: true })
   })
-  it('요청 자체가 끊겨도(예외) 다시 시도 대상 — 영어 원문 대신 한국어 안내', async () => {
-    client.rpc.mockRejectedValue(new TypeError('Failed to fetch'))
+  it('로그인 정보가 만료됐으면(401) 다음 접속 때 다시 시도할 수 있다', async () => {
+    replies([401, { error: '로그인이 필요해요.' }])
+    await expect(completeWorkout('s1')).rejects.toMatchObject({ retryable: true })
+  })
+  it('요청 자체가 끊겨도(오프라인) 다시 시도 대상, 영어 원문 대신 한국어 안내', async () => {
+    offline()
     await expect(completeWorkout('s1')).rejects.toMatchObject({ retryable: true, message: '서버에 연결할 수 없어요.' })
+  })
+  it('Supabase 서버 함수를 직접 부르지 않는다', async () => {
+    replies([200, { date: '2026-10-14' }])
+    await completeWorkout('s1')
+    expect(client.rpc).not.toHaveBeenCalled()
   })
 })
 
 describe('못 보낸 완료 기록 재시도 (앱 시작 시)', () => {
   it('로그인 안 했으면 아무것도 하지 않는다', async () => {
     client.auth.getSession.mockResolvedValue({ data: { session: null } })
+    replies()
     saveRecord('2026-10-14', { completed: true, pendingSession: 's1' })
     await retryPendingCompletions()
-    expect(client.rpc).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
     expect(getRecords()['2026-10-14'].pendingSession).toBe('s1')
   })
 
   it('대기 중인 기록만 다시 보내고, 성공하면 대기 표시를 지운다', async () => {
     signedIn()
-    client.rpc.mockResolvedValue({ data: '2026-10-14', error: null })
+    replies([200, { date: '2026-10-14' }])
     saveRecord('2026-10-13', { completed: true })
     saveRecord('2026-10-14', { completed: true, pendingSession: 's1' })
     await retryPendingCompletions()
-    expect(client.rpc).toHaveBeenCalledTimes(1)
-    expect(client.rpc).toHaveBeenCalledWith('complete_workout', { p_session: 's1' })
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(sentBody()).toEqual({ sessionId: 's1' })
     expect(getRecords()['2026-10-14']).toMatchObject({ completed: true, pendingSession: null })
     expect(bucket.upload).not.toHaveBeenCalled()
   })
 
   it('인증샷이 있으면 서버가 기록한 날짜로 이어서 업로드 (자정을 넘겨 보낸 경우)', async () => {
     signedIn()
-    client.rpc.mockResolvedValue({ data: '2026-10-14', error: null })
+    replies([200, { date: '2026-10-14' }])
     saveRecord('2026-10-15', { completed: true, pendingSession: 's1', photo: 'data:image/jpeg;base64,AAAA' })
     await retryPendingCompletions()
     expect(bucket.upload).toHaveBeenCalledWith(
@@ -102,8 +178,8 @@ describe('못 보낸 완료 기록 재시도 (앱 시작 시)', () => {
 
   it('연결이 또 실패하면 대기 표시를 남겨 다음에 다시 시도', async () => {
     signedIn()
-    client.rpc.mockRejectedValueOnce(new TypeError('Failed to fetch'))
-    client.rpc.mockResolvedValueOnce(rpcError('PGRST000', 'connection error'))
+    const f = replies([503, { error: '운동 기록 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.' }])
+    f.mockRejectedValueOnce(new TypeError('Failed to fetch'))
     saveRecord('2026-10-13', { completed: true, pendingSession: 's0' })
     saveRecord('2026-10-14', { completed: true, pendingSession: 's1' })
     await retryPendingCompletions()
@@ -112,18 +188,16 @@ describe('못 보낸 완료 기록 재시도 (앱 시작 시)', () => {
     expect(r['2026-10-14'].pendingSession).toBe('s1')
   })
 
-  it('서버가 거절(세션 만료 등)하면 더 시도하지 않는다 — 다른 기록 재시도는 계속', async () => {
+  it('서버가 거절(세션 만료 등)하면 더 시도하지 않는다, 다른 기록 재시도는 계속', async () => {
     signedIn()
-    client.rpc
-      .mockResolvedValueOnce(rpcError('P0001', '시청한 지 너무 오래돼 기록할 수 없어요.'))
-      .mockResolvedValueOnce({ data: '2026-10-14', error: null })
+    replies([422, { error: '시청한 지 너무 오래돼 기록할 수 없어요.' }], [200, { date: '2026-10-14' }])
     saveRecord('2026-10-12', { completed: true, pendingSession: 'old' })
     saveRecord('2026-10-14', { completed: true, pendingSession: 's1' })
     await retryPendingCompletions()
     const r = getRecords()
     expect(r['2026-10-12'].pendingSession).toBeNull()
     expect(r['2026-10-14'].pendingSession).toBeNull()
-    expect(client.rpc).toHaveBeenCalledTimes(2)
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })
 
