@@ -3,7 +3,8 @@ import { t } from '../../lib/i18n.js'
 import { useEffect, useState } from 'react'
 import { fetchMyBlocks, unblockUser } from '../../server/api.js'
 import { toast } from '../../lib/toast.js'
-import { Button, Modal, ModalText, ModalTitle, Skeleton, Sub } from '../../components/ui.jsx'
+import { Button, Modal, ModalText, ModalTitle, Sub } from '../../components/ui.jsx'
+import { BlockedListSkeleton } from '../../components/skeletons.jsx'
 
 export default function BlockedUsersModal({ onClose }) {
   const [list, setList] = useState(null) // null = 불러오는 중
@@ -47,7 +48,7 @@ export default function BlockedUsersModal({ onClose }) {
       {error ? (
         <Sub className="mt-4 text-center text-danger">{error}</Sub>
       ) : list === null ? (
-        <Skeleton inCard lines={2} />
+        <BlockedListSkeleton />
       ) : list.length === 0 ? (
         <Sub className="mt-4 text-center">{t('차단한 사용자가 없어요.')}</Sub>
       ) : (
