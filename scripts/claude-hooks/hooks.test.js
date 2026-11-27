@@ -36,6 +36,9 @@ describe('명령 실행 전 (git 작업, 삭제)', () => {
       'git diff --stat',
       'git merge-tree --write-tree origin/main HEAD',
       'git merge-base --is-ancestor a b',
+      'git tag --sort=-v:refname',
+      'git tag -l',
+      'git tag',
       'npx vitest run',
     ]) {
       expect(checkBash(cmd), cmd).toBeNull()
