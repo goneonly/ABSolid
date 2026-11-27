@@ -39,6 +39,7 @@
 - `supabase/v0.12-group-kick.sql` 실행 필요: 참여 막은 사람 표(`group_bans`)와 `kick_member`, `group_bans_of`, `unban_member` 함수, 막힌 사람을 거절하는 `join_group`
 
 **내부**
+- Claude Code 작업 규칙과 자동 검사(훅): 프로젝트 맨 위 `CLAUDE.md` 에 꼭 지킬 규칙 요약. 훅이 영어 번역 검사, 화살표와 가운뎃점, 색 값 직접 쓰기, 비밀 값과 `.env`, 3D 담당 폴더, 자동 정렬, 변경 기록과 API 문서, 새 SQL 등록, 짝 파일(약관 영어판, 스켈레톤)을 자동으로 확인 (`scripts/claude-hooks/`, `.claude/settings.json`, 설명은 CONVENTIONS 9절). 훅 규칙 검사도 `npm test` 에 포함
 - 자체 백엔드 3단계 서버 쪽: 운동 시작 `POST /api/workouts/start` 와 운동 완료 `POST /api/workouts/complete` (`server/app.js`). 로그인한 사람 신분으로 DB 함수 `start_workout`, `complete_workout` 을 부르고, DB 가 거절하면 422 와 그 이유, 연결 실패는 503
 - 자체 백엔드 3단계 앱 쪽: 운동 시작과 완료(`startWorkoutSession`, `completeWorkout`)가 Supabase 를 직접 부르지 않고 위 주소에 로그인 토큰을 실어 요청 (`src/server/api.js`). 오프라인, 로그인 만료(401), 서버 오류(500, 503)는 기기에 먼저 저장하고 다음 접속 때 다시 기록, 서버가 거절(422)하면 그 이유를 보여 줌
 - 서버 테스트 10개 추가 (`server/app.test.js`), 앱 쪽 운동 시작, 완료, 다시 보내기 테스트를 새 주소 기준으로 바꿈 (`src/server/api.test.js`), 새 서버 문구의 영어 번역 (`src/lib/i18n.en.js`)

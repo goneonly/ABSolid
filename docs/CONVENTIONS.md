@@ -205,3 +205,36 @@ push 한 뒤 GitHub 에서 PR 을 열고 "Create a merge commit" 으로 합칩�
 - 상대가 맡은 폴더를 말없이 고치지 않습니다.
 - 작업 브랜치에서 버전을 올리지 않습니다.
 - `npm run check` 가 실패한 채로 main 에 합치지 않습니다.
+
+## 9. Claude Code 자동 검사 (훅)
+
+Claude Code 로 작업할 때 위 규칙 일부를 사람 기억 대신 훅이 자동으로 확인합니다. 판단 규칙은 `scripts/claude-hooks/hooks.mjs` 한 파일에 있고, `hooks.test.js` 가 검사합니다 (`npm test` 에 포함). 프로젝트 맨 위의 `CLAUDE.md` 는 Claude 가 매번 먼저 읽는 핵심 규칙 요약입니다.
+
+| 번호 | 언제 | 하는 일 | 근거 | 설정 위치 |
+| --- | --- | --- | --- | --- |
+| 1 | 명령 실행 전 | `git commit`, `push`, `merge`, `rebase`, `reset --hard`, `tag`, `gh pr create/merge` 를 막고, 명령을 안내하게 함 | 6절, GitHub 작업은 사람이 직접 | 개인 |
+| 2 | 명령 실행 전 | `rm`, `git clean`, `git restore`, `find -delete` 는 매번 허락을 물음 | 지우기 전 확인 | 개인 |
+| 3 | 작업을 끝낼 때 | 화면, 서버, DB 파일이 바뀌었으면 `src/lib/i18n.test.js` 를 돌리고, 실패하면 끝내지 못하게 함 | 1절 화면 문구와 언어 | 함께 |
+| 4 | 파일 수정 후 | 새로 쓴 내용에 화살표 기호, 문서의 `->`, 붙여 쓴 가운뎃점이 있으면 고치게 함 | 1절, 8절 | 함께 |
+| 5 | 파일 수정 전 | `.env` 수정과 비밀 값(JWT 키, Supabase 비밀 키, 개인 키, 서비스 키 대입)을 막음 | 8절 | 함께 |
+| 6 | 파일 수정 후 | `src`, `server`, `api`, `supabase/functions`, `scripts` 의 코드 파일에 Prettier 를 바로 적용 | 2절 | 함께 |
+| 7 | 작업을 끝낼 때 | 코드를 바꿨는데 `docs/CHANGELOG.md` 가 그대로거나, `server/app.js` 를 바꿨는데 `docs/API.md` 가 그대로면 알림 | 7절 | 함께 |
+| 8 | 작업을 끝낼 때 | 새 `supabase/*.sql` 이 `supabase/tests/run.sh` 의 MIGRATIONS 에 없으면 알림 | 5절 | 함께 |
+| 9 | 파일 수정 후 | 짝 파일 알림: 약관 `legal/ko.jsx` 와 `en.jsx`, 시행일. 화면 부품과 `src/components/skeletons.jsx`. `server/app.js` 와 `docs/API.md` | 1절, 4절 | 함께 |
+| 10 | 파일 수정 후 | 화면 코드(`src` 의 `.jsx`)에 색 값(`#ff0000` 등)을 직접 쓰면 테마 토큰을 쓰게 함 | 4절, 8절 | 함께 |
+| 11 | 파일 수정 전 | 3D 담당 폴더 `prototypes/` 를 고치려 하면 허락을 물음 | 8절, 2인 개발 | 함께 |
+
+**설정 파일**
+
+- `.claude/settings.json`: 함께 쓰는 훅 (3번부터 11번). 저장소에 올라가서 두 사람 모두에게 적용됩니다.
+- `.claude/settings.local.json`: 내 컴퓨터에만 적용하는 훅 (1번, 2번). 저장소에 올리지 않습니다. 필요하면 각자 같은 내용으로 만듭니다.
+- `CLAUDE.local.md`: 개인 작업 방식. 저장소에 올리지 않습니다.
+- `.claude/` 의 나머지(스킬, 미리보기 설정)도 저장소에 올리지 않습니다 (`.gitignore`).
+
+**동작 방식**
+
+- 새로 쓴 내용만 검사합니다. 예전부터 있던 내용은 고칠 때 함께 정리합니다.
+- 명령 검사는 파일에 쓰는 글(heredoc 본문)은 빼고 명령 부분만 봅니다.
+- 작업을 끝낼 때 검사는 한 번만 막습니다. 알림이 이번 변경에 해당하지 않으면 이유를 말하고 끝낼 수 있고, 지난번과 바뀐 게 없으면 다시 알리지 않습니다.
+- 훅 자체에 오류가 나면 작업을 막지 않고 넘어갑니다.
+- 규칙을 바꾸면 `hooks.mjs` 와 `hooks.test.js`, 이 표를 함께 고칩니다. 설정을 바꾼 뒤에는 Claude Code 세션을 새로 열어야 확실히 적용됩니다.

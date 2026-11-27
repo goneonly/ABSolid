@@ -1,7 +1,10 @@
 node_modules
 dist
 .env
-.claude/
+# Claude Code: 개인 설정(settings.local.json), 스킬, 미리보기 설정은 올리지 않고 함께 쓰는 훅 설정만 올림 (CONVENTIONS 9절)
+.claude/*
+!.claude/settings.json
+CLAUDE.local.md
 
 # AI 에이전트 스킬 (npx skills 로 설치한 원본과 잠금 파일, 개인 작업 도구라 저장소에 올리지 않음)
 .agents/

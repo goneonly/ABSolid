@@ -24,7 +24,7 @@ export default defineConfig({
   },
   // 단위 테스트(Vitest) — 날짜 계산은 사용자 기기와 같은 한국 시간으로 재현
   test: {
-    include: ['src/**/*.test.{js,jsx}', 'server/**/*.test.js'],
+    include: ['src/**/*.test.{js,jsx}', 'server/**/*.test.js', 'scripts/**/*.test.js'],
     setupFiles: ['src/test/setup.js'],
     env: { TZ: 'Asia/Seoul' },
   },
