@@ -5,6 +5,7 @@ import { fetchGroupWorkoutDates } from '../server/api.js'
 import { daysInRange, getPrevRange, getRange, rankRows, shortDate, withRankDelta } from '../lib/stats.js'
 import RankBoard from './RankBoard.jsx'
 import { Card, CardTitle, Input, Sub, cx } from './ui.jsx'
+import { RankRowsSkeleton } from './skeletons.jsx'
 
 const PERIODS = [
   { key: 'week', label: t('이번 주') },
@@ -108,7 +109,7 @@ export default function Leaderboard({ members, myId, myName, records }) {
       )}
 
       {!rows || (loading && !cur) ? (
-        <Sub className="mt-3">{t('집계 중…')}</Sub>
+        <RankRowsSkeleton count={Math.min(members.length, 5) || 3} />
       ) : (
         <>
           <RankBoard rows={rows} myId={myId} myName={myName} totalDays={totalDays} />

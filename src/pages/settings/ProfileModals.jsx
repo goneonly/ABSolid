@@ -7,7 +7,8 @@ import { saveNickname, fetchMyProfileInfo, updateMyProfileInfo } from '../../ser
 import { INVALID_CREDENTIALS } from '../../server/authErrors.js'
 import { validateNickname, validateName, validatePhone, formatPhone, validatePassword } from '../../lib/validation.js'
 import { toast } from '../../lib/toast.js'
-import { Button, Field, Modal, ModalText, ModalTitle, Sub, cx } from '../../components/ui.jsx'
+import { Button, Field, Modal, ModalText, ModalTitle, Sub } from '../../components/ui.jsx'
+import { FieldsSkeleton } from '../../components/skeletons.jsx'
 import { usePasswordCheck } from './PasswordConfirm.jsx'
 
 // ── 닉네임 변경 ──
@@ -108,8 +109,11 @@ export function ProfileInfoModal({ onClose }) {
     <Modal label={t('이름과 전화번호 변경')} onBackdrop={busy ? undefined : onClose}>
       <ModalTitle>{t('이름과 전화번호 변경')}</ModalTitle>
       <ModalText>{t("그룹 멤버에게는 보이지 않아요. '회원만 받기' 그룹에 참여하려면 둘 다 필요해요.")}</ModalText>
-      {!loaded ? (
-        <Sub className={cx('mt-4 text-center', loadError && 'text-danger')}>{loadError || t('불러오는 중…')}</Sub>
+      {/* 불러오는 동안은 입력칸 모양 자리표시, 실패하면 이유 */}
+      {loadError ? (
+        <Sub className="mt-4 text-center text-danger">{loadError}</Sub>
+      ) : !loaded ? (
+        <FieldsSkeleton />
       ) : (
         <>
           <Field

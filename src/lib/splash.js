@@ -1,7 +1,7 @@
 // 앱 시작 로딩 화면 제어 — 화면과 3초, 8초 안내는 index.html 에 있음 (앱 코드가 늦어도 먼저 보이게)
 // 단계 막대: 1 = 페이지 열림, 2 = 앱 코드 실행, 3 = 로그인 상태 확인 끝
-// 빨리 준비돼도 이만큼은 보여줌: 로고 그리기, 문구 등장(약 0.8초)을 다 보고 잠깐 머무는 시간
-const MIN_VISIBLE_MS = 1400
+// 빨리 준비돼도 이만큼은 보여줌: 로고 그리기와 문구 등장(약 0.8초)이 끝날 때까지만 (예전 1.4초는 준비가 끝나도 기다리게 했음)
+const MIN_VISIBLE_MS = 800
 const FADE_MS = 200
 
 const el = () => (typeof document !== 'undefined' ? document.getElementById('splash') : null)

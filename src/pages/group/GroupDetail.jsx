@@ -28,10 +28,15 @@ import {
   LinkButton,
   MiniButton,
   Page,
-  Skeleton,
   Sub,
   ChevronIcon,
 } from '../../components/ui.jsx'
+import {
+  LeaderboardSkeleton,
+  MemberListSkeleton,
+  PhotoGridSkeleton,
+  TitleSkeleton,
+} from '../../components/skeletons.jsx'
 import { CameraArt } from '../../components/EmptyArt.jsx'
 import MemberActions from './MemberActions.jsx'
 import MemberRow from './MemberRow.jsx'
@@ -228,9 +233,9 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
       </Card>
 
       <Card>
-        <CardTitle>{t('멤버 현황')}</CardTitle>
+        {loaded ? <CardTitle>{t('멤버 현황')}</CardTitle> : <TitleSkeleton />}
         {!loaded ? (
-          <Skeleton inCard lines={3} />
+          <MemberListSkeleton />
         ) : (
           <div className="mt-2">
             {members.map((m) => (
@@ -279,11 +284,19 @@ export default function GroupDetail({ group, records, myId, myName, myDates, onB
         </div>
       </Card>
 
-      {loaded && <Leaderboard members={members} myId={myId} myName={myName} records={records} />}
+      {/* 멤버를 받기 전에는 같은 자리에 리더보드 모양 자리표시 (받은 뒤 카드가 갑자기 끼어들어 화면이 밀리지 않게) */}
+      {loaded ? (
+        <Leaderboard members={members} myId={myId} myName={myName} records={records} />
+      ) : (
+        <LeaderboardSkeleton />
+      )}
 
       <Card>
-        <CardTitle>{t('오늘의 인증샷')}</CardTitle>
-        {todayPhotos.length ? (
+        {loaded ? <CardTitle>{t('오늘의 인증샷')}</CardTitle> : <TitleSkeleton />}
+        {/* 받기 전에는 '인증샷이 없어요' 대신 자리표시 (아직 모르는데 없다고 보이지 않게) */}
+        {!loaded && !todayPhotos.length ? (
+          <PhotoGridSkeleton />
+        ) : todayPhotos.length ? (
           <div className="mt-4 grid max-h-87 grid-cols-3 gap-2 overflow-y-auto overscroll-contain">
             {todayPhotos.map((p) => (
               <figure key={p.id}>

@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { lastNDays, getProfile } from '../lib/storage.js'
 import { supabase } from '../server/supabase.js'
 import { fetchMyGroups } from '../server/api.js'
-import { Button, Card, EmptyState, GroupPhoto, Page, PageTitle, Skeleton, Sub, ChevronIcon } from '../components/ui.jsx'
+import { Button, Card, EmptyState, GroupPhoto, Page, PageTitle, Sub, ChevronIcon } from '../components/ui.jsx'
+import { GroupListSkeleton } from '../components/skeletons.jsx'
 import { GroupArt, LockArt } from '../components/EmptyArt.jsx'
 import MemberRow from './group/MemberRow.jsx'
 import JoinCreateCard from './group/JoinCreateCard.jsx'
@@ -103,7 +104,7 @@ export default function Group({ records, session, onRequestLogin }) {
       </Sub>
 
       {loading && !groups.length ? (
-        <Skeleton lines={2} />
+        <GroupListSkeleton />
       ) : loadError ? (
         <Card>
           <Sub className="text-danger">{loadError}</Sub>
