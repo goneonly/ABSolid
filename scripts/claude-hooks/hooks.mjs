@@ -15,9 +15,9 @@ import { basename, extname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // ── 1, 2. 명령 실행 전 ─────────────────────────
-// git 으로 기록을 남기거나 GitHub 에 올리는 일은 사람이 직접 함 (merge-tree, merge-base 같은 조회는 허용)
+// git 으로 기록을 남기거나 GitHub 에 올리는 일은 사람이 직접 함 (merge-tree, merge-base, 태그 목록 같은 조회는 허용)
 const GIT_WRITE =
-  /\bgit\s+(?:-C\s+\S+\s+)?(?:commit|push|merge(?![-\w])|rebase|cherry-pick|revert|tag|reset\s+--hard|am)\b|\bgh\s+pr\s+(?:create|merge|close)\b/
+  /\bgit\s+(?:-C\s+\S+\s+)?(?:(?:commit|push|merge(?![-\w])|rebase|cherry-pick|revert|reset\s+--hard|am)\b|tag\s+(?:-[adsf]\b|[^-\s]))|\bgh\s+pr\s+(?:create|merge|close)\b/
 // 지우거나 되돌리는 명령은 매번 허락을 물음
 const DELETE =
   /(?:^|[\s;&|(])(?:rm|rmdir|unlink)\s|\bgit\s+(?:clean|rm|restore)\b|\bgit\s+checkout\s+--(?:\s|$)|\bfind\b[^|;&]*\s-delete\b/
